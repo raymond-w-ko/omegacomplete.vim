@@ -1,5 +1,8 @@
 __pycache__
+*.pyc
 *.suo
 *.user
+*.sdf
 server/Debug
 server/Release
+server/ipch
