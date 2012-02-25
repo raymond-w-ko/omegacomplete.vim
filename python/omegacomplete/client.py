@@ -1,27 +1,32 @@
 import socket
 import sys
 import socket_helper
+from omegacomplete.utils import safe_recv, safe_sendall
 
 HOST = 'localhost'
 PORT = 31337
 
-print(sys.path)
-
 def send_command(cmd, arg):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.settimeout(0.1)
     try:
         s.connect((HOST, PORT))
     except:
         return
-    #print('you are now connected to ', s.getsockname())
+
     line = cmd + ' ' + arg
-    s.sendall(bytes(line, 'utf-8'))
-    reply = s.recv(1024).decode('utf-8')
-    #print('reply was: ', reply)
+    safe_sendall(s, line)
+
+    reply = safe_recv(s)
+
     s.close()
 
+def get_current_buffer_contents():
+    return " ".join(vim.current.buffer)
+
+
 def main(*args):
-    #send_command('complete_word', 'Sy')
-    #send_command('add_text', 'Sy')
-    #send_command('exit', 'Sy')
+    send_command('complete_word', 'Sy')
+    send_command('add_text', 'Sy')
+    send_command('exit', 'Sy')
     return 0

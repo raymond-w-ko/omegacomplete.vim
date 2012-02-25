@@ -10,12 +10,30 @@ endfunction
 
 function <SID>FileOpenNotification()
     let current_filename = <SID>EscapePathname(expand('%:p'))
-    let cmd = 'send_command("BufReadPost", "' . current_filename . '")'
-    echom cmd
+    let cmd = 'send_command("file_open", "' . current_filename . '")'
+
     execute 'python ' . cmd
 endfunction
 
-autocmd BufReadPost * call <SID>FileOpenNotification()
+function <SID>CursorMovedINotification()
+    let current_filename = <SID>EscapePathname(expand('%:p'))
+    let cmd = 'send_command("current_file", "' . current_filename . '")'
+    let cmd = 'send_command("buffer_contents", get_current_buffer_contents())'
+
+    execute 'python ' . cmd
+endfunction
+
+augroup OmegaComplete
+    autocmd!
+
+    autocmd BufReadPost,BufWritePost,FileReadPost
+    \ *
+    \ call <SID>FileOpenNotification()
+
+    autocmd CursorMovedI
+    \ *
+    \ call <SID>CursorMovedINotification()
+augroup END
 
 python << EOF
 import vim
