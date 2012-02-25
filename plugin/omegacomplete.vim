@@ -1,18 +1,23 @@
 "load guard
-let g:omegacomplete_loaded = 1
-if exists("g:omegacomplete_loaded")
+if exists('g:omegacomplete_loaded')
   finish
 endif
 let g:omegacomplete_loaded = 1
 
-function <SID>FileOpenNotification()
-    let cmd = 'send_command("BufReadpost", "' . expand('%:p') . '")'
-    execute 'python3 ' . cmd
+function <SID>EscapePathname(pathname)
+    return substitute(a:pathname, '\\', '\\\\', 'g')
 endfunction
-    
+
+function <SID>FileOpenNotification()
+    let current_filename = <SID>EscapePathname(expand('%:p'))
+    let cmd = 'send_command("BufReadPost", "' . current_filename . '")'
+    echom cmd
+    execute 'python ' . cmd
+endfunction
+
 autocmd BufReadPost * call <SID>FileOpenNotification()
 
-python3 << EOF
+python << EOF
 import vim
 import os
 
@@ -27,6 +32,7 @@ for path in path_list:
 sys.path.append(omegacomplete_path)
 
 # load omegacomplete python functions
-client_path = (omegacomplete_path + "/client.py")
+client_path = omegacomplete_path + "/client.py"
 exec(compile(open(client_path).read(), client_path, "exec"))
+
 EOF
