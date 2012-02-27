@@ -1,4 +1,6 @@
 import struct
+import platform
+import string
 
 def safe_recv(conn):
     "This function guarantees the receival of variable length data over sockets."
@@ -15,7 +17,9 @@ def safe_recv(conn):
 
     msg = ""
     while len(msg) != data_length:
-        msg += conn.recv(4096)
+        msg += conn.recv( min(4096, data_length) )
+
+    assert len(msg) == data_length
 
     return msg
 
@@ -24,3 +28,12 @@ def safe_sendall(conn, msg):
 
     conn.sendall(data_length)
     conn.sendall(msg)
+
+def normalize_path_separators(path):
+    if (platform.system() == "Windows"):
+        return string.replace(path, "/", "\\")
+    else:
+        return string.replace(path, "\\", "/")
+
+def log(msg):
+    print msg
