@@ -41,6 +41,7 @@ void Session::handleReadRequest(const boost::system::error_code& error)
 
     // write response    
     std::string response = "ACK";
+    response.resize(response.size() + 1, '\0');
     async_write(
         socket_,
         buffer(&response[0], response.size()),
