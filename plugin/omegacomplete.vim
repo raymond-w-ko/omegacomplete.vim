@@ -17,9 +17,11 @@ endfunction
 
 function <SID>CursorMovedINotification()
     let current_filename = <SID>EscapePathname(expand('%:p'))
-    let cmd = 'send_command("current_file", "' . current_filename . '")'
-    let cmd = 'send_command("buffer_contents", get_current_buffer_contents())'
 
+    let cmd = 'send_command("current_file", "' . current_filename . '")'
+    execute 'python ' . cmd
+
+    let cmd = 'send_command("buffer_contents", get_current_buffer_contents())'
     execute 'python ' . cmd
 endfunction
 
