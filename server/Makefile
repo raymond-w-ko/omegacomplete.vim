@@ -1,10 +1,10 @@
 CC = g++
 
 CFLAGS =
-CFLAGS += -O0 -g
+CFLAGS += -O0
 
 LDFLAGS =
-LDFLAGS += -lboost_system -lboost_filesystem -lwsock32 -lws2_32
+LDFLAGS += -lboost_system -lboost_filesystem -lboost_regex -lwsock32 -lws2_32
 
 SOURCES = EntryPoint.cpp Server.cpp Session.cpp Participant.cpp Room.cpp
 HEADERS = $(SOURCES:.cpp=.o)
@@ -20,7 +20,7 @@ $(EXECUTABLE): Makefile $(OBJECTS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 stdafx.hpp.gch: Makefile stdafx.hpp
-	$(CC) $(CFLAGS) -Winvalid-pch -x c++-header -c stdafx.hpp $(LDFLAGS) 
+	$(CC) $(CFLAGS) -Winvalid-pch -x c++-header -c stdafx.hpp
 	
 clean:
 	del *.gch

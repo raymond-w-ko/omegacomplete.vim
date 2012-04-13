@@ -25,8 +25,11 @@ private:
 
     ip::tcp::socket socket_;
     Room& room_;
+    unsigned int connection_number_;
     
     streambuf request_;
+    
+    static unsigned int connection_ticket_;
 };
 
 typedef boost::shared_ptr<Session> SessionPtr;
