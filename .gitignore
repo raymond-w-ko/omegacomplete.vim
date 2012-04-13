@@ -6,3 +6,7 @@ __pycache__
 server/Debug
 server/Release
 server/ipch
+*.o
+*.gch
+server/omegacomplete_server.exe
+root.dir
