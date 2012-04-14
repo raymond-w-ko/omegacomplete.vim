@@ -65,20 +65,34 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     std::string command(request.begin(), request.begin() + index);
     std::string argument(request.begin() + index + 1, request.end());
     
-    boost::regex re("\\W+", boost::regex::normal | boost::regex::icase);
-    boost::sregex_token_iterator ii(argument.begin(), argument.end(), re, -1);
-    boost::sregex_token_iterator end;
-    
-    // process request
-    std::cout << command << "\n";
-    
-    while (ii != end)
-    {
-        ii++;
-    }
-
-    // write response    
     std::string response = "ACK";
+    
+    if (false) { }
+    else if (command == "open_file")
+    {
+        std::cout << boost::str(boost::format("%s: %s\n") % command % argument);
+    }
+    else if (command == "current_buffer")
+    {
+        std::cout << boost::str(boost::format("%s: %s\n") % command % argument);
+    }
+    else if (command == "buffer_contents")
+    {
+        boost::regex re("\\W+", boost::regex::normal | boost::regex::icase);
+        boost::sregex_token_iterator token(argument.begin(), argument.end(), re, -1);
+        boost::sregex_token_iterator token_end;
+        unsigned int counter = 0;
+        while (token != token_end)
+        {
+            token++;
+            counter++;
+        }
+    
+        std::cout << boost::str(boost::format(
+            "%s: parsed %u words\n") % command % counter);
+    }
+    
+    // write response    
     response.resize(response.size() + 1, '\0');
     async_write(
         socket_,

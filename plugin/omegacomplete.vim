@@ -10,19 +10,14 @@ endfunction
 
 function <SID>FileOpenNotification()
     let current_filename = <SID>EscapePathname(expand('%:p'))
-    let cmd = 'send_command("file_open", "' . current_filename . '")'
-
-    execute 'python ' . cmd
+    execute 'py send_command("open_file", "' . current_filename . '")'
 endfunction
 
 function <SID>CursorMovedINotification()
     let current_filename = <SID>EscapePathname(expand('%:p'))
 
-    let cmd = 'send_command("current_file", "' . current_filename . '")'
-    execute 'python ' . cmd
-
-    let cmd = 'send_command("buffer_contents", get_current_buffer_contents())'
-    execute 'python ' . cmd
+    execute 'py send_command("current_buffer", "' . current_filename . '")'
+    execute 'py send_command("buffer_contents", get_current_buffer_contents())'
 endfunction
 
 augroup OmegaComplete
