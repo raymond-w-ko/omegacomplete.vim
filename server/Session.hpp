@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Room.hpp"
+#include "Buffer.hpp"
 
 class Session
 :
@@ -23,13 +24,17 @@ private:
 
     void asyncReadUntilNullChar();
 
+    // connection related variables
+    static unsigned int connection_ticket_;
+
     ip::tcp::socket socket_;
     Room& room_;
     unsigned int connection_number_;
-    
     streambuf request_;
     
-    static unsigned int connection_ticket_;
+    // actually useful variables
+    std::unordered_map<std::string, Buffer> buffers_;
+    std::string current_buffer_;
 };
 
 typedef boost::shared_ptr<Session> SessionPtr;

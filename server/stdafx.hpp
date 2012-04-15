@@ -10,7 +10,11 @@
 #include <set>
 #include <vector>
 #include <iostream>
+#include <string>
+#include <functional>
 #include <sstream>
+#include <map>
+#include <unordered_map>
 
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>

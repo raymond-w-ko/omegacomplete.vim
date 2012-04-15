@@ -7,6 +7,7 @@ LDFLAGS =
 LDFLAGS += -lboost_system -lboost_filesystem -lboost_regex -lwsock32 -lws2_32
 
 SOURCES = EntryPoint.cpp Server.cpp Session.cpp Participant.cpp Room.cpp
+SOURCES += Buffer.cpp
 HEADERS = $(SOURCES:.cpp=.o)
 OBJECTS = $(SOURCES:.cpp=.o)
 EXECUTABLE = omegacomplete_server.exe

@@ -75,10 +75,18 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     else if (command == "current_buffer")
     {
         std::cout << boost::str(boost::format("%s: %s\n") % command % argument);
+        
+        current_buffer_ = argument;
+
+        // create and initialize buffer object if it doesn't exist
+        if (buffers_.find(current_buffer_) == buffers_.end())
+        {
+            buffers_[current_buffer_].Init(argument);
+        }
     }
     else if (command == "buffer_contents")
     {
-        boost::regex re("\\W+", boost::regex::normal | boost::regex::icase);
+        boost::regex re{"\\W+", boost::regex::normal | boost::regex::icase};
         boost::sregex_token_iterator token(argument.begin(), argument.end(), re, -1);
         boost::sregex_token_iterator token_end;
         unsigned int counter = 0;
