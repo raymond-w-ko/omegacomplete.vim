@@ -13,6 +13,12 @@ connection_number_(connection_ticket_++)
     ;
 }
 
+Session::~Session()
+{
+    std::cout << boost::str(boost::format(
+        "session %u destroyed\n") % connection_number_);
+}
+
 void Session::Start()
 {
     std::cout << "session started, connection number: " << connection_number_ << "\n";
@@ -84,20 +90,24 @@ void Session::handleReadRequest(const boost::system::error_code& error)
             buffers_[current_buffer_].Init(argument);
         }
     }
+    else if (command == "current_pathname")
+    {
+        std::cout << boost::str(boost::format("%s: %s\n") % command % argument);
+
+        buffers_[current_buffer_].SetPathname(argument);
+    }
     else if (command == "buffer_contents")
     {
-        boost::regex re{"\\W+", boost::regex::normal | boost::regex::icase};
-        boost::sregex_token_iterator token(argument.begin(), argument.end(), re, -1);
-        boost::sregex_token_iterator token_end;
-        unsigned int counter = 0;
-        while (token != token_end)
-        {
-            token++;
-            counter++;
-        }
-    
+        buffers_[current_buffer_].SetContents(argument);
+        buffers_[current_buffer_].Parse();
+
         std::cout << boost::str(boost::format(
-            "%s: parsed %u words\n") % command % counter);
+            "%s: length = %u\n") % command % argument.length());
+    }
+    else
+    {
+        std::cout << boost::str(boost::format(
+            "unknown command %s %s") % command % argument);
     }
     
     // write response    

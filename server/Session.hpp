@@ -10,6 +10,7 @@ public boost::enable_shared_from_this<Session>
 {
 public:
     Session(io_service& io_service, Room& room);
+    ~Session();
     
     ip::tcp::socket& Socket()
     {

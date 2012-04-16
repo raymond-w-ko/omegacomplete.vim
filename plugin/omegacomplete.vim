@@ -8,15 +8,28 @@ function <SID>EscapePathname(pathname)
     return substitute(a:pathname, '\\', '\\\\', 'g')
 endfunction
 
+function <SID>GetCurrentBufferNumber()
+    return bufnr('%')
+endfunction
+
+function <SID>GetCurrentBufferPathname()
+    return <SID>EscapePathname(expand('%:p'))
+endfunction
+
+" interface to the server
+
 function <SID>FileOpenNotification()
-    let current_filename = <SID>EscapePathname(expand('%:p'))
-    "execute 'py oc_send_command("open_file", "' . current_filename . '")'
+    let current_buffer_number = <SID>GetCurrentBufferNumber()
+    let current_pathname = <SID>GetCurrentBufferPathname()
+    "execute 'py oc_send_command("open_file", "' . current_buffer_number . '")'
 endfunction
 
 function <SID>CursorMovedINotification()
-    let current_filename = <SID>EscapePathname(expand('%:p'))
+    let current_buffer_number = <SID>GetCurrentBufferNumber()
+    let current_pathname = <SID>GetCurrentBufferPathname()
 
-    execute 'py oc_send_command("current_buffer", "' . current_filename . '")'
+    execute 'py oc_send_command("current_buffer", "' . current_buffer_number . '")'
+    execute 'py oc_send_command("current_pathname", "' . current_pathname . '")'
     execute 'py oc_send_command("buffer_contents", oc_get_current_buffer_contents())'
 endfunction
 

@@ -15,10 +15,15 @@
 #include <sstream>
 #include <map>
 #include <unordered_map>
+#include <unordered_set>
+#include <memory>
+#include <future>
 
 #include <boost/bind.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/scoped_ptr.hpp>
 #include <boost/asio.hpp>
 #include <boost/regex.hpp>
 #include <boost/thread.hpp>

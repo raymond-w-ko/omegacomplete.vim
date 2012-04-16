@@ -31,10 +31,13 @@ def oc_send_command(cmd, arg):
     if oc_is_disabled:
         return
         
-    line = cmd + ' ' + arg
-    safe_sendall(oc_conn, line)
+    try:
+        line = cmd + ' ' + arg
+        safe_sendall(oc_conn, line)
 
-    reply = safe_recv(oc_conn)
+        reply = safe_recv(oc_conn)
+    except:
+        oc_is_disabled = True
 
 def oc_get_current_buffer_contents():
     global oc_is_disabled
