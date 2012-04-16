@@ -10,14 +10,14 @@ endfunction
 
 function <SID>FileOpenNotification()
     let current_filename = <SID>EscapePathname(expand('%:p'))
-    execute 'py send_command("open_file", "' . current_filename . '")'
+    "execute 'py oc_send_command("open_file", "' . current_filename . '")'
 endfunction
 
 function <SID>CursorMovedINotification()
     let current_filename = <SID>EscapePathname(expand('%:p'))
 
-    execute 'py send_command("current_buffer", "' . current_filename . '")'
-    execute 'py send_command("buffer_contents", get_current_buffer_contents())'
+    execute 'py oc_send_command("current_buffer", "' . current_filename . '")'
+    execute 'py oc_send_command("buffer_contents", oc_get_current_buffer_contents())'
 endfunction
 
 augroup OmegaComplete
@@ -49,5 +49,7 @@ sys.path.append(omegacomplete_path)
 # load omegacomplete python functions
 client_path = omegacomplete_path + "/client.py"
 exec(compile(open(client_path).read(), client_path, "exec"))
+
+oc_init_connection()
 
 EOF

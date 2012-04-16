@@ -7,30 +7,38 @@ from omegacomplete.utils import safe_recv, safe_sendall
 
 oc_host = 'localhost'
 oc_port = 31337
-oc_num_connect_failures = 0
+oc_is_disabled = False
 oc_conn = None
 
-def send_command(cmd, arg):
-    global oc_num_connect_failures
+def oc_init_connection():
+    global oc_is_disabled
     global oc_conn
 
-    if (oc_num_connect_failures > 10):
+    try:
+        oc_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        oc_conn.settimeout(0.1)
+        oc_conn.connect((oc_host, oc_port))
+
+        oc_conn.setblocking(0)
+    except:
+        oc_is_disabled = True
+    
+
+def oc_send_command(cmd, arg):
+    global oc_is_disabled
+    global oc_conn
+
+    if oc_is_disabled:
         return
         
-    # if oc_conn is not made yet, then make it
-    if (oc_conn == None):
-        oc_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            oc_conn.connect((oc_host, oc_port))
-            oc_conn.setblocking(0)
-        except:
-            oc_num_connect_failures += 1
-            return
-
     line = cmd + ' ' + arg
     safe_sendall(oc_conn, line)
 
     reply = safe_recv(oc_conn)
 
-def get_current_buffer_contents():
+def oc_get_current_buffer_contents():
+    global oc_is_disabled
+    if oc_is_disabled:
+        return
+
     return " ".join(vim.current.buffer)
