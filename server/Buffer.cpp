@@ -1,6 +1,7 @@
 #include "stdafx.hpp"
 
 #include "Buffer.hpp"
+#include "Session.hpp"
 
 const unsigned int kTrieDepth = 3;
 const unsigned int kNumThreads = 8;
@@ -36,38 +37,26 @@ void Buffer::Parse()
     
     words.clear();
     
-    typedef std::vector<std::string> StringVector;
-    typedef boost::packaged_task<StringVector> StringVectorTask;
-    typedef boost::unique_future<StringVector> StringVectorFuture;
-
-    std::vector<StringVectorFuture> results;
+    typedef std::future<std::vector<std::string>> StringVectorFuture;
+    std::vector<StringVectorFuture> futures;
     for (size_t ii = 0; ii < kNumThreads; ++ii)
-    {
-        const size_t begin = (ii * results.size()) / kNumThreads;
-        const size_t end = ((ii + 1) * results.size()) / kNumThreads;
+    //{
+        //const size_t begin = (ii * already_processed_words_.size()) / kNumThreads;
+        //const size_t end = ((ii + 1) * already_processed_words_.size()) / kNumThreads;
         
-        StringVectorTask pt([&] {
-            auto iter_begin = words.begin() + begin;
-            auto iter_end = words.begin() + end;
-            std::vector<std::string> matches;
+        //std::vector<std::string>::iterator iter_begin = words.begin() + begin;
+        //std::vector<std::string>::iterator iter_end = words.begin() + end;
 
-            while (iter_begin != iter_end)
-            {
-                matches.push_back(*iter_begin);
-                iter_begin++;
-            }
-            
-            return matches;
-        });
+        //StringVectorFuture svf = parent_->SubmitJob( boost::bind(
+            //&Buffer::fuzzyMatch,
+            //nullptr,
+            //nullptr));
 
-        StringVectorFuture fi = pt.get_future();
-        //results.push_back(fi);
-        boost::thread task(boost::move(pt));
-    }
+        ////futures.push_back(svf);
+    //}
     
-    for (auto& future : results)
+    for (auto& future : futures)
     {
-        future.wait();
         auto chunk = future.get();
         std::copy(chunk.begin(), chunk.end(), std::back_inserter(words));
     }
@@ -75,8 +64,26 @@ void Buffer::Parse()
     std::cout << "\n";
 }
 
-bool Buffer::Init(std::string buffer_id)
+
+std::vector<std::string> Buffer::fuzzyMatch(
+    std::string* iter_begin,
+    std::string* iter_end)
 {
+    std::vector<std::string> matches;
+
+    while (iter_begin != iter_end)
+    {
+        matches.push_back(*iter_begin);
+        iter_begin++;
+    }
+            
+    return matches;
+}
+
+bool Buffer::Init(Session* parent, std::string buffer_id)
+{
+    parent_ = parent;
+
     if (buffer_id.size() == 0) throw std::exception();
     buffer_id_ = buffer_id;
 }

@@ -87,7 +87,7 @@ void Session::handleReadRequest(const boost::system::error_code& error)
         // create and initialize buffer object if it doesn't exist
         if (buffers_.find(current_buffer_) == buffers_.end())
         {
-            buffers_[current_buffer_].Init(argument);
+            buffers_[current_buffer_].Init(this, argument);
         }
     }
     else if (command == "current_pathname")

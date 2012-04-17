@@ -2,12 +2,14 @@
 
 #include "KeywordTrie.hpp"
 
+class Session;
+
 class Buffer
 {
 public:
     Buffer();
     ~Buffer();
-    bool Init(std::string buffer_id);
+    bool Init(Session* parent, std::string buffer_id);
     
     bool operator==(const Buffer& other);
     std::string GetBufferId() const;
@@ -19,6 +21,12 @@ public:
 
 private:
     void tokenizeKeywords();
+    
+    static std::vector<std::string> fuzzyMatch( 
+        std::string* iter_begin,
+        std::string* iter_end);
+    
+    Session* parent_;
 
     std::string buffer_id_;
     std::string pathname_;

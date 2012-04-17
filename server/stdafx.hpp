@@ -13,7 +13,6 @@
 #include <string>
 #include <functional>
 #include <sstream>
-#include <map>
 #include <unordered_map>
 #include <unordered_set>
 #include <memory>
@@ -28,6 +27,7 @@
 #include <boost/regex.hpp>
 #include <boost/thread.hpp>
 #include <boost/format.hpp>
+#include <boost/utility/result_of.hpp>
 
 using namespace boost::asio;
 
