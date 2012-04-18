@@ -27,10 +27,7 @@ private:
         std::string* iter_end);
     
     Session* parent_;
-<<<<<<< Updated upstream
-=======
     boost::xpressive::sregex word_split_regex_;
->>>>>>> Stashed changes
 
     std::string buffer_id_;
     std::string pathname_;
