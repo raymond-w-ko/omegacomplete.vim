@@ -8,7 +8,7 @@ const unsigned int kNumThreads = 8;
 
 Buffer::Buffer()
 {
-    ;
+    word_split_regex_ = boost::xpressive::sregex::compile("\\W+");
 }
 
 Buffer::~Buffer()
@@ -37,9 +37,15 @@ void Buffer::Parse()
     
     words.clear();
     
+<<<<<<< Updated upstream
     typedef std::future<std::vector<std::string>> StringVectorFuture;
     std::vector<StringVectorFuture> futures;
     for (size_t ii = 0; ii < kNumThreads; ++ii)
+=======
+    //typedef std::future<std::vector<std::string>> StringVectorFuture;
+    //std::vector<StringVectorFuture> futures;
+    //for (size_t ii = 0; ii < kNumThreads; ++ii)
+>>>>>>> Stashed changes
     //{
         //const size_t begin = (ii * already_processed_words_.size()) / kNumThreads;
         //const size_t end = ((ii + 1) * already_processed_words_.size()) / kNumThreads;
@@ -55,11 +61,19 @@ void Buffer::Parse()
         ////futures.push_back(svf);
     //}
     
+<<<<<<< Updated upstream
     for (auto& future : futures)
     {
         auto chunk = future.get();
         std::copy(chunk.begin(), chunk.end(), std::back_inserter(words));
     }
+=======
+    //for (auto& future : futures)
+    //{
+        //auto chunk = future.get();
+        //std::copy(chunk.begin(), chunk.end(), std::back_inserter(words));
+    //}
+>>>>>>> Stashed changes
 
     std::cout << "\n";
 }
@@ -105,6 +119,7 @@ void Buffer::SetContents(std::string contents)
 
 void Buffer::tokenizeKeywords()
 {
+<<<<<<< Updated upstream
     boost::regex re("\\W+", boost::regex::normal | boost::regex::icase);
     boost::sregex_token_iterator token(contents_.begin(), contents_.end(), re, -1);
     boost::sregex_token_iterator token_end;
@@ -112,13 +127,26 @@ void Buffer::tokenizeKeywords()
     while (token != token_end)
     {
         const std::string& word = *token;
+=======
+    using namespace boost::xpressive;
+    sregex_token_iterator token_cur(contents_.begin(), contents_.end(), word_split_regex_, -1);
+    sregex_token_iterator token_end;
+    unsigned int counter = 0;
+    for (; token_cur != token_end; ++token_cur)
+    {
+        const std::string& word = *token_cur;
+        // add word only if we haven't processed it yet
+>>>>>>> Stashed changes
         if (already_processed_words_.find(word) == already_processed_words_.end())
         {
             words_.AddKeyword(&word[0], word, kTrieDepth);
             already_processed_words_.insert(word);
         }
         
+<<<<<<< Updated upstream
         token++;
+=======
+>>>>>>> Stashed changes
         counter++;
     }
 

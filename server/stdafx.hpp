@@ -24,7 +24,7 @@
 #include <boost/make_shared.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/asio.hpp>
-#include <boost/regex.hpp>
+#include <boost/xpressive/xpressive.hpp>
 #include <boost/thread.hpp>
 #include <boost/format.hpp>
 #include <boost/utility/result_of.hpp>

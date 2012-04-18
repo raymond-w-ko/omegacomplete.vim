@@ -1,8 +1,12 @@
 CC = g++
 
 CFLAGS =
+<<<<<<< Updated upstream
 CFLAGS += -O0
 CFLAGS += -I./threadpool
+=======
+CFLAGS += -O3 -march=native
+>>>>>>> Stashed changes
 
 LDFLAGS =
 LDFLAGS += -lboost_system -lboost_filesystem -lboost_regex -lboost_thread
