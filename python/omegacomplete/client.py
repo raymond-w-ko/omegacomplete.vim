@@ -11,37 +11,40 @@ oc_is_disabled = False
 oc_conn = None
 
 def oc_init_connection():
-    global oc_is_disabled
-    global oc_conn
+	global oc_is_disabled
+	global oc_conn
 
-    try:
-        oc_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        oc_conn.settimeout(0.1)
-        oc_conn.connect((oc_host, oc_port))
+	try:
+		oc_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		oc_conn.settimeout(0.1)
+		oc_conn.connect((oc_host, oc_port))
 
-        oc_conn.setblocking(0)
-    except:
-        oc_is_disabled = True
+		oc_conn.setblocking(0)
+	except:
+		oc_is_disabled = True
     
 
-def oc_send_command(cmd, arg):
-    global oc_is_disabled
-    global oc_conn
+def oc_send_command(cmd):
+	global oc_is_disabled
+	global oc_conn
 
-    if oc_is_disabled:
-        return
+	if oc_is_disabled:
+		return
         
-    try:
-        line = cmd + ' ' + arg
-        safe_sendall(oc_conn, line)
+	try:
+		safe_sendall(oc_conn, cmd)
 
-        reply = safe_recv(oc_conn)
-    except:
-        oc_is_disabled = True
+		reply = safe_recv(oc_conn)
+		return reply
+
+	except:
+		oc_is_disabled = True
+		
 
 def oc_get_current_buffer_contents():
-    global oc_is_disabled
-    if oc_is_disabled:
-        return
+	global oc_is_disabled
 
-    return " ".join(vim.current.buffer)
+	if oc_is_disabled:
+		return
+
+	return " ".join(vim.current.buffer)

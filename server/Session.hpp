@@ -22,8 +22,9 @@ public:
 private:
     void handleReadRequest(const boost::system::error_code& error);
     void handleWriteResponse(const boost::system::error_code& error);
-
     void asyncReadUntilNullChar();
+	
+	std::string calculateCompletionCandidates(const std::string& line);
 
     // connection related variables
     static unsigned int connection_ticket_;

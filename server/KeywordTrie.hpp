@@ -16,7 +16,7 @@ public:
         std::vector<std::string>* matching_words);
 
 private:
-    std::unordered_map<char, boost::shared_ptr<KeywordTrie>> letters_;
+    boost::unordered_map<char, boost::shared_ptr<KeywordTrie>> letters_;
     // this is case sensitive
-    std::unordered_set<std::string> words_;
+    boost::unordered_set<std::string> words_;
 };

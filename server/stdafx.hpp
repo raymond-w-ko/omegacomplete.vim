@@ -1,7 +1,7 @@
 #define _WIN32_WINNT 0x0501
 
-#include <windows.h>
 #include <winsock2.h>
+#include <windows.h>
 
 #include <cstdio>
 #include <cstdlib>
@@ -28,6 +28,9 @@
 #include <boost/thread.hpp>
 #include <boost/format.hpp>
 #include <boost/utility/result_of.hpp>
+#include <boost/unordered_map.hpp>
+#include <boost/unordered_set.hpp>
+#include <boost/algorithm/string.hpp>
 
 using namespace boost::asio;
 
@@ -40,3 +43,17 @@ inline void LogAsioError(const boost::system::error_code& error, std::string mes
         % message.c_str());
     std::cerr << msg << std::endl;
 }
+
+inline bool IsPartOfWord(char c)
+{
+	if ( (('a' <= c) && (c <= 'z')) ||
+	     (('A' <= c) && (c <= 'Z')) ||
+		 (c == '_') ||
+		 (('0' <= c) && (c <= '9')) )
+	{
+		return true;
+	}
+
+	return false;
+}
+

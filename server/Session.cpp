@@ -51,6 +51,7 @@ void Session::handleReadRequest(const boost::system::error_code& error)
         return;
     }
 
+	// convert to a string
     std::ostringstream ss;
     ss << &request_;
     std::string request = ss.str();
@@ -68,6 +69,7 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     
     if (index == -1) throw std::exception();
     
+	// break it up into a "request" string and a "argument"
     std::string command(request.begin(), request.begin() + index);
     std::string argument(request.begin() + index + 1, request.end());
     
@@ -76,11 +78,11 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     if (false) { }
     else if (command == "open_file")
     {
-        std::cout << boost::str(boost::format("%s: %s\n") % command % argument);
+        //std::cout << boost::str(boost::format("%s: %s\n") % command % argument);
     }
     else if (command == "current_buffer")
     {
-        std::cout << boost::str(boost::format("%s: %s\n") % command % argument);
+		std::cout << boost::str(boost::format("%s: %s\n") % command % argument);
         
         current_buffer_ = argument;
 
@@ -92,24 +94,28 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     }
     else if (command == "current_pathname")
     {
-        std::cout << boost::str(boost::format("%s: %s\n") % command % argument);
+		std::cout << boost::str(boost::format("%s: %s\n") % command % argument);
 
         buffers_[current_buffer_].SetPathname(argument);
     }
     else if (command == "buffer_contents")
     {
-        buffers_[current_buffer_].SetContents(argument);
-        buffers_[current_buffer_].Parse();
+		auto& buffer = buffers_[current_buffer_];
+        buffer.Parse(argument, false);
 
-        std::cout << boost::str(boost::format(
-            "%s: length = %u\n") % command % argument.length());
+		std::cout << boost::str(boost::format(
+			"%s: length = %u\n") % command % argument.length());
     }
+	else if (command == "complete")
+	{
+		response = calculateCompletionCandidates(std::string(argument.begin(), argument.end() - 1));
+	}
     else
     {
         std::cout << boost::str(boost::format(
             "unknown command %s %s") % command % argument);
     }
-    
+	
     // write response    
     response.resize(response.size() + 1, '\0');
     async_write(
@@ -132,4 +138,32 @@ void Session::handleWriteResponse(const boost::system::error_code& error)
         LogAsioError(error, "failed in handleWriteResponse()");
         return;
     }
+}
+
+std::string Session::calculateCompletionCandidates(const std::string& line)
+{
+	//std::cout << line << std::endl;
+	if (line.length() == 0) return "";
+	
+	int partial_end = line.length();
+	int partial_begin = partial_end - 1;
+	std::cout << partial_begin << " " << partial_end << std::endl;
+	for (; partial_begin >= 0; --partial_begin)
+	{
+		char c = line[partial_begin];
+		std::cout << "char: " << c << std::endl;
+		if (IsPartOfWord(c) == true)
+		{
+			continue;
+		}
+			
+		break;
+	}
+	
+	if ((partial_begin + 1) == partial_end) return "";
+
+	std::string partial( &line[partial_begin + 1], &line[partial_end] );
+	std::cout << partial << std::endl;
+	std::cout << "word: " << partial << std::endl;
+	return "";
 }

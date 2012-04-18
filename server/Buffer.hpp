@@ -15,12 +15,12 @@ public:
     std::string GetBufferId() const;
     
     void SetPathname(std::string pathname);
-    void SetContents(std::string contents);
     
-    void Parse();
+    void Parse(const std::string& new_contents, bool force);
 
 private:
     void tokenizeKeywords();
+	void tokenizeKeywordsUsingRegex();
     
     static std::vector<std::string> fuzzyMatch( 
         std::string* iter_begin,
@@ -34,7 +34,7 @@ private:
     std::string contents_;
     
     KeywordTrie words_;
-    std::unordered_set<std::string> already_processed_words_;
+    boost::unordered_set<std::string> already_processed_words_;
 };
 
 namespace std
