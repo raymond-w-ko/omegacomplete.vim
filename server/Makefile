@@ -1,6 +1,5 @@
 CC = g++
 
-CFLAGS =
 CFLAGS = -std=c++11
 CFLAGS += -O3 -march=native
 #CFLAGS += -O0

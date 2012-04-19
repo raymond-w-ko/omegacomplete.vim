@@ -36,8 +36,11 @@ private:
     streambuf request_;
     
     // actually useful variables
-    std::unordered_map<std::string, Buffer> buffers_;
+    boost::unordered_map<std::string, Buffer> buffers_;
     std::string current_buffer_;
+	
+	std::string current_line_;
+	std::pair<int, int> cursor_pos_;
 };
 
 typedef boost::shared_ptr<Session> SessionPtr;

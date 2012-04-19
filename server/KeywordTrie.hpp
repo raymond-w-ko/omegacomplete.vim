@@ -13,7 +13,9 @@ public:
     
     void GetAllWordsWithPrefix(
         const char* prefix,
-        std::vector<std::string>* matching_words);
+		const std::string& whole_prefix,
+        std::vector<std::string>* matching_words,
+		const unsigned int depth_remaining);
 
 private:
     boost::unordered_map<char, boost::shared_ptr<KeywordTrie>> letters_;

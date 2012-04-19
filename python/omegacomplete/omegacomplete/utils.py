@@ -19,7 +19,8 @@ def safe_recv(conn):
         
     # segment buffer and save rest
     sentinel = receive_buffer.index("\x00") + 1
-    msg = receive_buffer[:sentinel]
+	# don't want the NUL byte
+    msg = receive_buffer[:(sentinel - 1)]
     receive_buffer = receive_buffer[sentinel:]
 
     return msg

@@ -4,10 +4,12 @@
 #include "Session.hpp"
 #include "Stopwatch.hpp"
 
-const unsigned int kTrieDepth = 3;
+const unsigned int kTrieDepth = 4;
 const unsigned int kNumThreads = 8;
 
 Buffer::Buffer()
+:
+cursor_pos_(0, 0)
 {
     word_split_regex_ = boost::xpressive::sregex::compile("\\W+");
 }
@@ -22,33 +24,8 @@ bool Buffer::operator==(const Buffer& other)
     return (this->buffer_id_ == other.buffer_id_);
 }
 
-void Buffer::Parse(const std::string& new_contents, bool force)
+static void dummy()
 {
-	Stopwatch watch;
-
-	if (force)
-	{
-		contents_ = new_contents;
-	}
-	else
-	{
-		if (contents_ == new_contents)
-		{
-			//std::cout << "no need to Parse() contents" << std::endl;
-			return;
-		}
-		
-		contents_ = new_contents;
-	}
-
-    already_processed_words_.clear();
-    words_.Clear();
-
-	//watch.Start();
-    tokenizeKeywords();
-	//watch.Stop();
-	//watch.PrintResultMilliseconds();
-    
 	//std::vector<std::string> words;
 	//words_.GetAllWordsWithPrefix("mo", &words);
 	//for (const std::string& word : words)
@@ -89,20 +66,77 @@ void Buffer::Parse(const std::string& new_contents, bool force)
     //std::cout << "\n";
 }
 
-
-std::vector<std::string> Buffer::fuzzyMatch(
-    std::string* iter_begin,
-    std::string* iter_end)
+void Buffer::ParseInsertMode(
+	const std::string& new_contents,
+	const std::string& cur_line,
+	std::pair<int, int> cursor_pos)
 {
-    std::vector<std::string> matches;
+	bool need_total_reparse = false;
+	//std::cout << "cur_line: " << cur_line << "#" <<std::endl;
+	//std::cout << "prev_cur_line_: " << prev_cur_line_ << "#" << std::endl;
+	if (boost::starts_with(cur_line, prev_cur_line_))
+	{
+		// since the old current line is a prefix of the new current
+		// line (the common case), we can only have new words to add
+		// just parse the current line and re-add all the words,
+		// since we are usinga  set dupicates can't happen
+		need_total_reparse = false;
 
-    while (iter_begin != iter_end)
-    {
-        matches.push_back(*iter_begin);
-        iter_begin++;
-    }
-            
-    return matches;
+		current_line_words_.Clear();
+		tokenizeKeywordsOfLine(cur_line);
+		//std::cout << "no need to do total reparse, just re-adding line\n";
+	}
+	else
+	{
+		// if the old current_line is no longer the prefix of
+		// current line, then something is deleted, or has changed
+		// we have to trigger a reparse since we don't maintain original
+		// unchanged words on the line
+		need_total_reparse = true;
+	}
+	// NUL byte at the end
+	prev_cur_line_ = std::string(cur_line.begin(), cur_line.end() - 1);
+
+	// if we have somehow changed rows in insert mode
+	// (are you really using arrow keys?) then we should reparse just to be sure
+    std::cout << boost::str(boost::format("%d %d ? %d %d\n")
+		% cursor_pos_.first % cursor_pos_.second
+		% cursor_pos.first % cursor_pos.second);
+	if (need_total_reparse ||
+	    (cursor_pos_.first != cursor_pos.first) &&
+		(cursor_pos_.first != 0 && cursor_pos_.second != 0)
+		)
+	{
+		if (contents_ != new_contents)
+		{
+			std::cout << "doing total reparse\n";
+			contents_ = new_contents;
+
+			already_processed_words_.clear();
+			words_.Clear();
+
+			tokenizeKeywords();
+		}
+
+	}
+	cursor_pos_ = cursor_pos;
+}
+
+void Buffer::ParseNormalMode(
+	const std::string& new_contents)
+{
+	if (contents_ == new_contents) return;
+	
+	contents_ = new_contents;
+
+    already_processed_words_.clear();
+    words_.Clear();
+
+	//Stopwatch watch;
+	//watch.Start();
+    tokenizeKeywords();
+	//watch.Stop();
+	//watch.PrintResultMilliseconds();
 }
 
 bool Buffer::Init(Session* parent, std::string buffer_id)
@@ -163,6 +197,42 @@ void Buffer::tokenizeKeywords()
         //"stored %u words\n") % already_processed_words_.size());
 }
 
+void Buffer::tokenizeKeywordsOfLine(const std::string& line)
+{
+	size_t contents_size = line.size();
+
+	for (size_t ii = 0; ii < contents_size; ++ii)
+	{
+		// initial case, find character in the set of ([a-z][A-Z][0-9]_)
+		// this will be what is considered a word
+		// I guess we have unicode stuff we are screwed :(
+		char c = line[ii];
+		if (IsPartOfWord(c) == false) continue;
+		
+		// we have found the beginning of the word, loop until
+		// we reach the end or we find a non world character
+		size_t jj = ii + 1;
+		for (; jj < contents_size; ++jj)
+		{
+			if (IsPartOfWord(line[jj]) == true)
+				continue;
+			break;
+		}
+		if (jj == contents_size) break;
+		
+		// construct word based off of pointer
+		std::string word(&line[ii], &line[jj]);
+
+		current_line_words_.AddKeyword(&word[0], word, kTrieDepth);
+		
+		// for loop will autoincrement
+		ii = jj;
+	}
+	
+    //std::cout << boost::str(boost::format(
+        //"stored %u words\n") % already_processed_words_.size());
+}
+
 void Buffer::tokenizeKeywordsUsingRegex()
 {
 	// too slow, takes around 750 ms on a 500KB file (Hub/Window.cpp)
@@ -173,12 +243,7 @@ void Buffer::tokenizeKeywordsUsingRegex()
     for (; token_cur != token_end; ++token_cur)
     {
         const std::string& word = *token_cur;
-        // add word only if we haven't processed it yet
-        if (already_processed_words_.find(word) == already_processed_words_.end())
-        {
-            words_.AddKeyword(word.c_str(), word, kTrieDepth);
-            already_processed_words_.insert(word);
-        }
+		words_.AddKeyword(word.c_str(), word, kTrieDepth);
         
         counter++;
     }
@@ -188,5 +253,12 @@ void Buffer::GetAllWordsWithPrefix(
 	const std::string& prefix,
 	std::vector<std::string>* results)
 {
-	words_.GetAllWordsWithPrefix(prefix.c_str(), results);
+	words_.GetAllWordsWithPrefix(prefix.c_str(), prefix, results, kTrieDepth);
+}
+
+void Buffer::GetAllWordsWithPrefixFromCurrentLine(
+	const std::string& prefix,
+	std::vector<std::string>* results)
+{
+	current_line_words_.GetAllWordsWithPrefix(prefix.c_str(), prefix, results, kTrieDepth);
 }

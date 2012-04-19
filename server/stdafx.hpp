@@ -13,8 +13,6 @@
 #include <string>
 #include <functional>
 #include <sstream>
-#include <unordered_map>
-#include <unordered_set>
 #include <memory>
 #include <future>
 
@@ -31,6 +29,8 @@
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/lexical_cast.hpp>
 
 using namespace boost::asio;
 

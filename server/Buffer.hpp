@@ -16,18 +16,23 @@ public:
     
     void SetPathname(std::string pathname);
     
-    void Parse(const std::string& new_contents, bool force);
+    void ParseNormalMode(
+		const std::string& new_contents);
+    void ParseInsertMode(
+		const std::string& new_contents,
+		const std::string& cur_line,
+		std::pair<int, int> cursor_pos);
+	void GetAllWordsWithPrefixFromCurrentLine(
+		const std::string& prefix,
+		std::vector<std::string>* results);
 	void GetAllWordsWithPrefix(
 		const std::string& prefix,
 		std::vector<std::string>* results);
 
 private:
     void tokenizeKeywords();
+    void tokenizeKeywordsOfLine(const std::string& line);
 	void tokenizeKeywordsUsingRegex();
-    
-    static std::vector<std::string> fuzzyMatch( 
-        std::string* iter_begin,
-        std::string* iter_end);
     
     Session* parent_;
     boost::xpressive::sregex word_split_regex_;
@@ -35,8 +40,12 @@ private:
     std::string buffer_id_;
     std::string pathname_;
     std::string contents_;
-    
+	
+	std::string prev_cur_line_;
+	std::pair<int, int> cursor_pos_;
+	
     KeywordTrie words_;
+	KeywordTrie current_line_words_;
     boost::unordered_set<std::string> already_processed_words_;
 };
 

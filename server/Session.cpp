@@ -76,10 +76,10 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     std::string response = "ACK";
     
     if (false) { }
-    else if (command == "open_file")
-    {
-        //std::cout << boost::str(boost::format("%s: %s\n") % command % argument);
-    }
+    //else if (command == "open_file")
+    //{
+		//std::cout << boost::str(boost::format("%s: %s\n") % command % argument);
+    //}
     else if (command == "current_buffer")
     {
 		//std::cout << boost::str(boost::format("%s: %s\n") % command % argument);
@@ -98,14 +98,43 @@ void Session::handleReadRequest(const boost::system::error_code& error)
 
         buffers_[current_buffer_].SetPathname(argument);
     }
-    else if (command == "buffer_contents")
+    else if (command == "current_line")
+    {
+		//std::cout << boost::str(boost::format("%s: %s\n") % command % argument);
+
+		current_line_ = argument;
+    }
+    else if (command == "buffer_contents_insert_mode")
     {
 		auto& buffer = buffers_[current_buffer_];
-        buffer.Parse(argument, false);
+        buffer.ParseInsertMode(argument, current_line_, cursor_pos_);
 
 		//std::cout << boost::str(boost::format(
 			//"%s: length = %u\n") % command % argument.length());
     }
+    else if (command == "buffer_contents")
+    {
+		auto& buffer = buffers_[current_buffer_];
+        buffer.ParseNormalMode(argument);
+
+		//std::cout << boost::str(boost::format(
+			//"%s: length = %u\n") % command % argument.length());
+    }
+	else if (command == "cursor_position")
+	{
+		std::vector<std::string> position;
+		std::string trimmed_argument = std::string(argument.begin(), argument.end() - 1);
+		boost::split(
+			position,
+			trimmed_argument,
+			boost::is_any_of(" "),
+			boost::token_compress_on);
+		int x = boost::lexical_cast<int>(position[0]);
+		int y = boost::lexical_cast<int>(position[1]);
+		cursor_pos_.first = x; cursor_pos_.second = y;
+
+		//std::cout << boost::str(boost::format("%s: %d %d\n") % command % x % y);
+	}
 	else if (command == "complete")
 	{
 		response = calculateCompletionCandidates(std::string(argument.begin(), argument.end() - 1));
@@ -150,14 +179,31 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
 	std::vector<std::string> completions;
 	// consider completions from the current buffer first
 	// because of spatial locality
+	buffers_[current_buffer_].GetAllWordsWithPrefixFromCurrentLine(word_to_complete, &completions);
 	buffers_[current_buffer_].GetAllWordsWithPrefix(word_to_complete, &completions);
 	
+	// then look at other buffers
+	for (auto& buffer : buffers_)
+	{
+		if (completions.size() >= 32) break;
+		if (buffer.first == current_buffer_) continue;
+		
+		buffer.second.GetAllWordsWithPrefix(word_to_complete, &completions);
+	}
+
+	std::stringstream results;
 	for (const std::string& word : completions)
 	{
+		if (word == word_to_complete) continue;
+
 		std::cout << word << "\n";
+		
+		results << word << " ";
 	}
 	
 	std::cout << "--- END COMPLETIONS ---\n";
+	
+	return results.str();
 }
 
 std::string Session::getWordToComplete(const std::string& line)

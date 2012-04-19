@@ -31,11 +31,25 @@ function <SID>CursorMovedINotification()
 	" synchronize current buffer
     execute 'py oc_send_command("current_buffer ' . current_buffer_number . '")'
     execute 'py oc_send_command("current_pathname ' . current_pathname . '")'
-    execute 'py oc_send_command("buffer_contents " + oc_get_current_buffer_contents())'
+    execute 'py oc_send_command("current_line " + oc_get_current_line())'
+    execute 'py oc_send_command("buffer_contents_insert_mode " + oc_get_current_buffer_contents())'
+	
+	let is_oc_disabled=""
+	execute 'py vim.command("let is_oc_disabled=" + oc_disable_check())'
+	if (is_oc_disabled == "1")
+		return
+	endif
 	
 	" request completion
+	let cursor_row = line('.')
+	let cursor_col = col('.') - 1
+	execute 'py oc_send_command("cursor_position " + str(' . cursor_row . ') + " " + str(' . cursor_col . '))'
+
     let partial_line = strpart(getline('.'), 0, col('.') - 1)
-	execute 'py oc_send_command("complete " + vim.eval("partial_line"))'
+	execute 'py oc_server_result = oc_send_command("complete " + vim.eval("partial_line"))'
+	let server_result = ''
+	execute 'py vim.command("let server_result=\"" + oc_server_result + "\"")'
+	echom server_result
 endfunction
 
 function <SID>CursorMovedNotification()
@@ -51,9 +65,9 @@ endfunction
 augroup OmegaComplete
     autocmd!
 
-    autocmd BufReadPost,BufWritePost,FileReadPost
-    \ *
-    \ call <SID>FileOpenNotification()
+    "autocmd BufReadPost,BufWritePost,FileReadPost
+    "\ *
+    "\ call <SID>FileOpenNotification()
 
     autocmd CursorMovedI
     \ *
