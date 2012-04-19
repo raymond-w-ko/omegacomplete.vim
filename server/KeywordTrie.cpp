@@ -42,7 +42,6 @@ void KeywordTrie::AddKeyword(
 
 void KeywordTrie::GetAllWordsWithPrefix(
     const char* prefix,
-	const std::string& whole_prefix,
     std::vector<std::string>* matching_words,
 	const unsigned int depth_remaining)
 {
@@ -50,18 +49,15 @@ void KeywordTrie::GetAllWordsWithPrefix(
     {
         for (const std::string& word : words_)
         {
-			if (boost::starts_with(word, whole_prefix) == true)
-			{
-				matching_words->push_back(word);
-			}
-        }
+			matching_words->push_back(word);
+		}
         
         // store all words in children also
         for (auto& child : letters_)
         {
 			if (child.second == nullptr) continue;
             child.second->GetAllWordsWithPrefix(
-				nullptr, whole_prefix,
+				nullptr,
 				matching_words, 0);
         }
     }
@@ -71,7 +67,7 @@ void KeywordTrie::GetAllWordsWithPrefix(
         if (next_letter == NULL) return;
 
         letters_[*prefix]->GetAllWordsWithPrefix(
-			prefix + 1, whole_prefix,
+			prefix + 1,
 			matching_words, depth_remaining - 1);
     }
 }

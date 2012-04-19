@@ -13,7 +13,6 @@ public:
     
     void GetAllWordsWithPrefix(
         const char* prefix,
-		const std::string& whole_prefix,
         std::vector<std::string>* matching_words,
 		const unsigned int depth_remaining);
 

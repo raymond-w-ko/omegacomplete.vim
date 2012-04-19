@@ -99,9 +99,9 @@ void Buffer::ParseInsertMode(
 
 	// if we have somehow changed rows in insert mode
 	// (are you really using arrow keys?) then we should reparse just to be sure
-    std::cout << boost::str(boost::format("%d %d ? %d %d\n")
-		% cursor_pos_.first % cursor_pos_.second
-		% cursor_pos.first % cursor_pos.second);
+    //std::cout << boost::str(boost::format("%d %d ? %d %d\n")
+		//% cursor_pos_.first % cursor_pos_.second
+		//% cursor_pos.first % cursor_pos.second);
 	if (need_total_reparse ||
 	    (cursor_pos_.first != cursor_pos.first) &&
 		(cursor_pos_.first != 0 && cursor_pos_.second != 0)
@@ -109,7 +109,7 @@ void Buffer::ParseInsertMode(
 	{
 		if (contents_ != new_contents)
 		{
-			std::cout << "doing total reparse\n";
+			//std::cout << "doing total reparse\n";
 			contents_ = new_contents;
 
 			already_processed_words_.clear();
@@ -253,12 +253,12 @@ void Buffer::GetAllWordsWithPrefix(
 	const std::string& prefix,
 	std::vector<std::string>* results)
 {
-	words_.GetAllWordsWithPrefix(prefix.c_str(), prefix, results, kTrieDepth);
+	words_.GetAllWordsWithPrefix(prefix.c_str(), results, kTrieDepth);
 }
 
 void Buffer::GetAllWordsWithPrefixFromCurrentLine(
 	const std::string& prefix,
 	std::vector<std::string>* results)
 {
-	current_line_words_.GetAllWordsWithPrefix(prefix.c_str(), prefix, results, kTrieDepth);
+	current_line_words_.GetAllWordsWithPrefix(prefix.c_str(), results, kTrieDepth);
 }

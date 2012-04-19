@@ -174,7 +174,7 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
 	std::string word_to_complete = getWordToComplete(line);
 	if (word_to_complete.empty()) return "";
 
-	std::cout << "--- BEGIN COMPLETIONS ---\n";
+	//std::cout << "--- BEGIN COMPLETIONS ---\n";
 	
 	std::vector<std::string> completions;
 	// consider completions from the current buffer first
@@ -192,16 +192,24 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
 	}
 
 	std::stringstream results;
-	for (const std::string& word : completions)
+	results << "[";
+	for (size_t ii = 0; ii < completions.size(); ++ii)
 	{
+		const std::string& word = completions[ii];
 		if (word == word_to_complete) continue;
+		if (boost::starts_with(word, word_to_complete) == false) continue;
 
-		std::cout << word << "\n";
+		//std::cout << word << "\n";
 		
-		results << word << " ";
+		results << "\"" << word << "\"";
+		if (ii != (completions.size() - 1))
+		{
+			results << ", ";
+		}
 	}
+	results << "]";
 	
-	std::cout << "--- END COMPLETIONS ---\n";
+	//std::cout << "--- END COMPLETIONS ---\n";
 	
 	return results.str();
 }
@@ -226,6 +234,6 @@ std::string Session::getWordToComplete(const std::string& line)
 	if ((partial_begin + 1) == partial_end) return "";
 
 	std::string partial( &line[partial_begin + 1], &line[partial_end] );
-	std::cout << "complete word: " << partial << std::endl;
+	//std::cout << "complete word: " << partial << std::endl;
 	return partial;
 }
