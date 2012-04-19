@@ -176,10 +176,17 @@ void Buffer::tokenizeKeywordsUsingRegex()
         // add word only if we haven't processed it yet
         if (already_processed_words_.find(word) == already_processed_words_.end())
         {
-            words_.AddKeyword(&word[0], word, kTrieDepth);
+            words_.AddKeyword(word.c_str(), word, kTrieDepth);
             already_processed_words_.insert(word);
         }
         
         counter++;
     }
+}
+
+void Buffer::GetAllWordsWithPrefix(
+	const std::string& prefix,
+	std::vector<std::string>* results)
+{
+	words_.GetAllWordsWithPrefix(prefix.c_str(), results);
 }

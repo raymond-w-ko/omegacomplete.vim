@@ -54,6 +54,7 @@ void KeywordTrie::GetAllWordsWithPrefix(
         // store all words in children also
         for (auto& child : letters_)
         {
+			if (child.second == nullptr) continue;
             child.second->GetAllWordsWithPrefix(nullptr, matching_words);
         }
     }

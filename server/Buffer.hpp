@@ -17,6 +17,9 @@ public:
     void SetPathname(std::string pathname);
     
     void Parse(const std::string& new_contents, bool force);
+	void GetAllWordsWithPrefix(
+		const std::string& prefix,
+		std::vector<std::string>* results);
 
 private:
     void tokenizeKeywords();

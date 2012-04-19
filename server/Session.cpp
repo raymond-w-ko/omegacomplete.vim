@@ -142,6 +142,26 @@ void Session::handleWriteResponse(const boost::system::error_code& error)
 
 std::string Session::calculateCompletionCandidates(const std::string& line)
 {
+	std::string word_to_complete = getWordToComplete(line);
+	if (word_to_complete.empty()) return "";
+
+	std::cout << "--- BEGIN COMPLETIONS ---\n";
+	
+	std::vector<std::string> completions;
+	// consider completions from the current buffer first
+	// because of spatial locality
+	buffers_[current_buffer_].GetAllWordsWithPrefix(word_to_complete, &completions);
+	
+	for (const std::string& word : completions)
+	{
+		std::cout << word << "\n";
+	}
+	
+	std::cout << "--- END COMPLETIONS ---\n";
+}
+
+std::string Session::getWordToComplete(const std::string& line)
+{
 	if (line.length() == 0) return "";
 	
 	int partial_end = line.length();
@@ -161,5 +181,5 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
 
 	std::string partial( &line[partial_begin + 1], &line[partial_end] );
 	std::cout << "complete word: " << partial << std::endl;
-	return "";
+	return partial;
 }

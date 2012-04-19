@@ -25,6 +25,7 @@ private:
     void asyncReadUntilNullChar();
 	
 	std::string calculateCompletionCandidates(const std::string& line);
+	std::string getWordToComplete(const std::string& line);
 
     // connection related variables
     static unsigned int connection_ticket_;
