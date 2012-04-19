@@ -49,14 +49,14 @@ void Buffer::Parse(const std::string& new_contents, bool force)
 	//watch.Stop();
 	//watch.PrintResultMilliseconds();
     
-	std::vector<std::string> words;
-	words_.GetAllWordsWithPrefix("mo", &words);
-	for (const std::string& word : words)
-	{
-		std::cout << word << " ";
-	}
+	//std::vector<std::string> words;
+	//words_.GetAllWordsWithPrefix("mo", &words);
+	//for (const std::string& word : words)
+	//{
+		//std::cout << word << " ";
+	//}
     
-	words.clear();
+	//words.clear();
     
 	//typedef std::future<std::vector<std::string>> StringVectorFuture;
 	//std::vector<StringVectorFuture> futures;
@@ -86,7 +86,7 @@ void Buffer::Parse(const std::string& new_contents, bool force)
         //std::copy(chunk.begin(), chunk.end(), std::back_inserter(words));
     //}
 
-    std::cout << "\n";
+    //std::cout << "\n";
 }
 
 

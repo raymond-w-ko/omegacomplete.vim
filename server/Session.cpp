@@ -82,7 +82,7 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     }
     else if (command == "current_buffer")
     {
-		std::cout << boost::str(boost::format("%s: %s\n") % command % argument);
+		//std::cout << boost::str(boost::format("%s: %s\n") % command % argument);
         
         current_buffer_ = argument;
 
@@ -94,7 +94,7 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     }
     else if (command == "current_pathname")
     {
-		std::cout << boost::str(boost::format("%s: %s\n") % command % argument);
+		//std::cout << boost::str(boost::format("%s: %s\n") % command % argument);
 
         buffers_[current_buffer_].SetPathname(argument);
     }
@@ -103,8 +103,8 @@ void Session::handleReadRequest(const boost::system::error_code& error)
 		auto& buffer = buffers_[current_buffer_];
         buffer.Parse(argument, false);
 
-		std::cout << boost::str(boost::format(
-			"%s: length = %u\n") % command % argument.length());
+		//std::cout << boost::str(boost::format(
+			//"%s: length = %u\n") % command % argument.length());
     }
 	else if (command == "complete")
 	{
@@ -142,16 +142,13 @@ void Session::handleWriteResponse(const boost::system::error_code& error)
 
 std::string Session::calculateCompletionCandidates(const std::string& line)
 {
-	//std::cout << line << std::endl;
 	if (line.length() == 0) return "";
 	
 	int partial_end = line.length();
 	int partial_begin = partial_end - 1;
-	std::cout << partial_begin << " " << partial_end << std::endl;
 	for (; partial_begin >= 0; --partial_begin)
 	{
 		char c = line[partial_begin];
-		std::cout << "char: " << c << std::endl;
 		if (IsPartOfWord(c) == true)
 		{
 			continue;
@@ -163,7 +160,6 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
 	if ((partial_begin + 1) == partial_end) return "";
 
 	std::string partial( &line[partial_begin + 1], &line[partial_end] );
-	std::cout << partial << std::endl;
-	std::cout << "word: " << partial << std::endl;
+	std::cout << "complete word: " << partial << std::endl;
 	return "";
 }
