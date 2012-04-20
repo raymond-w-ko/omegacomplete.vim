@@ -144,6 +144,10 @@ void Session::handleReadRequest(const boost::system::error_code& error)
 		response = calculateCompletionCandidates(std::string(argument.begin(), argument.end() - 1));
 		//watch.Stop(); watch.PrintResultMilliseconds();
 	}
+	else if (command == "free_buffer")
+	{
+		buffers_.erase(argument);
+	}
     else
     {
         std::cout << boost::str(boost::format(

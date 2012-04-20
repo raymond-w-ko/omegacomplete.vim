@@ -99,9 +99,15 @@ function <SID>CursorMovedNotification()
     execute 'py oc_send_command("buffer_contents " + oc_get_current_buffer_contents())'
 endfunction
 
+function <SID>FreeBuffer()
+    let current_buffer_number = expand('<abuf>')
+    execute 'py oc_send_command("free_buffer ' . current_buffer_number . '")'
+endfunction
+
 augroup OmegaComplete
     autocmd!
 
+	" feedPopup() replaces this
     "autocmd CursorMovedI
     "\ *
     "\ call <SID>CursorMovedINotification()
@@ -109,6 +115,10 @@ augroup OmegaComplete
     autocmd CursorMoved,InsertLeave
     \ *
     \ call <SID>CursorMovedNotification()
+	
+	autocmd BufDelete
+	\ *
+	\ call <SID>FreeBuffer()
 augroup END
 
 function <SID>IsPartOfWord(character)
