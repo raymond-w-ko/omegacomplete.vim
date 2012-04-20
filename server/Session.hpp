@@ -26,6 +26,9 @@ private:
 	
 	std::string calculateCompletionCandidates(const std::string& line);
 	std::string getWordToComplete(const std::string& line);
+	void calculatePrefixCompletions(
+		const std::string& word_to_complete,
+		std::vector<std::string>* completions);
 
     // connection related variables
     static unsigned int connection_ticket_;

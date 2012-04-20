@@ -237,7 +237,10 @@ void Buffer::tokenizeKeywordsUsingRegex()
 {
 	// too slow, takes around 750 ms on a 500KB file (Hub/Window.cpp)
     using namespace boost::xpressive;
-    sregex_token_iterator token_cur(contents_.begin(), contents_.end(), word_split_regex_, -1);
+    sregex_token_iterator token_cur(
+		contents_.begin(),
+		contents_.end(),
+		word_split_regex_, -1);
     sregex_token_iterator token_end;
     unsigned int counter = 0;
     for (; token_cur != token_end; ++token_cur)

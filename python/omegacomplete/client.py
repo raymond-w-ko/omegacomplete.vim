@@ -47,7 +47,7 @@ def oc_get_current_buffer_contents():
 	if oc_is_disabled:
 		return ""
 
-	return " ".join(vim.current.buffer)
+	return "\n".join(vim.current.buffer)
 
 def oc_get_current_line():
 	global oc_is_disabled

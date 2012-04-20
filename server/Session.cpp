@@ -177,23 +177,19 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
 	//std::cout << "--- BEGIN COMPLETIONS ---\n";
 	
 	std::vector<std::string> completions;
-	// consider completions from the current buffer first
-	// because of spatial locality
-	buffers_[current_buffer_].GetAllWordsWithPrefixFromCurrentLine(word_to_complete, &completions);
-	buffers_[current_buffer_].GetAllWordsWithPrefix(word_to_complete, &completions);
 	
-	// then look at other buffers
-	for (auto& buffer : buffers_)
-	{
-		if (completions.size() >= 32) break;
-		if (buffer.first == current_buffer_) continue;
-		
-		buffer.second.GetAllWordsWithPrefix(word_to_complete, &completions);
-	}
+	calculatePrefixCompletions(word_to_complete, &completions);
 
+	// sort to enforce conformity
+	std::sort(completions.begin(), completions.end());
+
+	// compile results and send
 	std::stringstream results;
 	results << "[";
-	for (size_t ii = 0; ii < completions.size(); ++ii)
+	size_t upper_bound = std::min(
+		completions.size(),
+		static_cast<size_t>(10));
+	for (size_t ii = 0; ii < upper_bound; ++ii)
 	{
 		const std::string& word = completions[ii];
 		if (word == word_to_complete) continue;
@@ -202,7 +198,7 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
 		//std::cout << word << "\n";
 		
 		results << "\"" << word << "\"";
-		if (ii != (completions.size() - 1))
+		if (ii != (upper_bound - 1))
 		{
 			results << ", ";
 		}
@@ -236,4 +232,27 @@ std::string Session::getWordToComplete(const std::string& line)
 	std::string partial( &line[partial_begin + 1], &line[partial_end] );
 	//std::cout << "complete word: " << partial << std::endl;
 	return partial;
+}
+
+void Session::calculatePrefixCompletions(
+	const std::string& word_to_complete,
+	std::vector<std::string>* completions)
+{
+	// consider completions from the current buffer first
+	// because of spatial locality
+	buffers_[current_buffer_].GetAllWordsWithPrefixFromCurrentLine(
+		word_to_complete,
+		completions);
+	buffers_[current_buffer_].GetAllWordsWithPrefix(
+		word_to_complete,
+		completions);
+	
+	// then look at other buffers
+	for (auto& buffer : buffers_)
+	{
+		//if (completions->size() >= 10) break;
+		if (buffer.first == current_buffer_) continue;
+		
+		buffer.second.GetAllWordsWithPrefix(word_to_complete, completions);
+	}
 }
