@@ -17,7 +17,7 @@ public:
 		const unsigned int depth_remaining);
 
 private:
-    boost::unordered_map<char, boost::shared_ptr<KeywordTrie>> letters_;
+    boost::unordered_map<char, std::unique_ptr<KeywordTrie>> letters_;
     // this is case sensitive
     boost::unordered_set<std::string> words_;
 };

@@ -33,6 +33,8 @@ private:
     void tokenizeKeywords();
     void tokenizeKeywordsOfLine(const std::string& line);
 	void tokenizeKeywordsUsingRegex();
+	
+	void dummy2();
     
     Session* parent_;
     boost::xpressive::sregex word_split_regex_;
@@ -44,9 +46,14 @@ private:
 	std::string prev_cur_line_;
 	std::pair<int, int> cursor_pos_;
 	
-    KeywordTrie words_;
-	KeywordTrie current_line_words_;
-    boost::unordered_set<std::string> already_processed_words_;
+	//std::mutex lock_;
+    //KeywordTrie words_;
+	//KeywordTrie current_line_words_;
+    //boost::unordered_set<std::string> already_processed_words_;
+	std::set<std::string> words_;
+	std::set<std::string> current_line_words_;
+	
+	char is_part_of_word_[256];
 };
 
 namespace std

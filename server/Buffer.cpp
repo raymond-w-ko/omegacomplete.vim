@@ -4,7 +4,7 @@
 #include "Session.hpp"
 #include "Stopwatch.hpp"
 
-const unsigned int kTrieDepth = 4;
+const unsigned int kTrieDepth = 2;
 const unsigned int kNumThreads = 8;
 
 Buffer::Buffer()
@@ -12,6 +12,11 @@ Buffer::Buffer()
 cursor_pos_(0, 0)
 {
     word_split_regex_ = boost::xpressive::sregex::compile("\\W+");
+	
+	for (size_t index = 0; index <= 255; ++index)
+	{
+		is_part_of_word_[index] = IsPartOfWord(index) ? 1 : 0;
+	}
 }
 
 Buffer::~Buffer()
@@ -22,48 +27,6 @@ Buffer::~Buffer()
 bool Buffer::operator==(const Buffer& other)
 {
     return (this->buffer_id_ == other.buffer_id_);
-}
-
-static void dummy()
-{
-	//std::vector<std::string> words;
-	//words_.GetAllWordsWithPrefix("mo", &words);
-	//for (const std::string& word : words)
-	//{
-		//std::cout << word << " ";
-	//}
-    
-	//words.clear();
-    
-	//typedef std::future<std::vector<std::string>> StringVectorFuture;
-	//std::vector<StringVectorFuture> futures;
-	
-	//std::future<int> the_answer = std::async([] { return 42; });
-	//int foobar = the_answer.get();
-
-    //for (size_t ii = 0; ii < kNumThreads; ++ii)
-    //{
-        //const size_t begin = (ii * already_processed_words_.size()) / kNumThreads;
-        //const size_t end = ((ii + 1) * already_processed_words_.size()) / kNumThreads;
-        
-        //std::vector<std::string>::iterator iter_begin = words.begin() + begin;
-        //std::vector<std::string>::iterator iter_end = words.begin() + end;
-
-        //StringVectorFuture svf = parent_->SubmitJob( boost::bind(
-            //&Buffer::fuzzyMatch,
-            //nullptr,
-            //nullptr));
-
-        ////futures.push_back(svf);
-    //}
-    
-    //for (auto& future : futures)
-    //{
-        //auto chunk = future.get();
-        //std::copy(chunk.begin(), chunk.end(), std::back_inserter(words));
-    //}
-
-    //std::cout << "\n";
 }
 
 void Buffer::ParseInsertMode(
@@ -82,7 +45,7 @@ void Buffer::ParseInsertMode(
 		// since we are usinga  set dupicates can't happen
 		need_total_reparse = false;
 
-		current_line_words_.Clear();
+		current_line_words_.clear();
 		tokenizeKeywordsOfLine(cur_line);
 		//std::cout << "no need to do total reparse, just re-adding line\n";
 	}
@@ -112,8 +75,8 @@ void Buffer::ParseInsertMode(
 			//std::cout << "doing total reparse\n";
 			contents_ = new_contents;
 
-			already_processed_words_.clear();
-			words_.Clear();
+			//already_processed_words_.clear();
+			words_.clear();
 
 			tokenizeKeywords();
 		}
@@ -127,16 +90,26 @@ void Buffer::ParseNormalMode(
 {
 	if (contents_ == new_contents) return;
 	
-	contents_ = new_contents;
-
-    already_processed_words_.clear();
-    words_.Clear();
-
-	//Stopwatch watch;
+	Stopwatch watch;
+	
+	// around 0.02 ms, not a problem
 	//watch.Start();
+	contents_ = new_contents;
+	//watch.Stop(); watch.PrintResultMilliseconds();
+
+	// around 60 ms, could be a problem
+	// using std::unique_ptr<T> this drops to around 45 ms
+	//watch.Start();
+    //already_processed_words_.clear();
+    words_.clear();
+	current_line_words_.clear();
+	//watch.Stop(); watch.PrintResultMilliseconds();
+
+	// around 375 ms, this is the bottleneck
+	watch.Start();
     tokenizeKeywords();
-	//watch.Stop();
-	//watch.PrintResultMilliseconds();
+	watch.Stop(); watch.PrintResultMilliseconds();
+	std::cout << "\n";
 }
 
 bool Buffer::Init(Session* parent, std::string buffer_id)
@@ -165,16 +138,16 @@ void Buffer::tokenizeKeywords()
 	{
 		// initial case, find character in the set of ([a-z][A-Z][0-9]_)
 		// this will be what is considered a word
-		// I guess we have unicode stuff we are screwed :(
+		// I guess we have unicode stuff we are screwed :(http://nah-pxscript.am.boehringer.com/am.pac
 		char c = contents_[ii];
-		if (IsPartOfWord(c) == false) continue;
+		if (!is_part_of_word_[c]) continue;
 		
 		// we have found the beginning of the word, loop until
 		// we reach the end or we find a non world character
 		size_t jj = ii + 1;
 		for (; jj < contents_size; ++jj)
 		{
-			if (IsPartOfWord(contents_[jj]) == true)
+			if (is_part_of_word_[contents_[jj]])
 				continue;
 			break;
 		}
@@ -182,12 +155,7 @@ void Buffer::tokenizeKeywords()
 		
 		// construct word based off of pointer
 		std::string word(&contents_[ii], &contents_[jj]);
-
-        if (already_processed_words_.find(word) == already_processed_words_.end())
-        {
-			words_.AddKeyword(&word[0], word, kTrieDepth);
-            already_processed_words_.insert(word);
-        }
+		words_.insert(word);
 		
 		// for loop will autoincrement
 		ii = jj;
@@ -207,14 +175,14 @@ void Buffer::tokenizeKeywordsOfLine(const std::string& line)
 		// this will be what is considered a word
 		// I guess we have unicode stuff we are screwed :(
 		char c = line[ii];
-		if (IsPartOfWord(c) == false) continue;
+		if (!is_part_of_word_[c]) continue;
 		
 		// we have found the beginning of the word, loop until
 		// we reach the end or we find a non world character
 		size_t jj = ii + 1;
 		for (; jj < contents_size; ++jj)
 		{
-			if (IsPartOfWord(line[jj]) == true)
+			if (is_part_of_word_[line[jj]])
 				continue;
 			break;
 		}
@@ -222,8 +190,7 @@ void Buffer::tokenizeKeywordsOfLine(const std::string& line)
 		
 		// construct word based off of pointer
 		std::string word(&line[ii], &line[jj]);
-
-		current_line_words_.AddKeyword(&word[0], word, kTrieDepth);
+		current_line_words_.insert(word);
 		
 		// for loop will autoincrement
 		ii = jj;
@@ -233,35 +200,26 @@ void Buffer::tokenizeKeywordsOfLine(const std::string& line)
         //"stored %u words\n") % already_processed_words_.size());
 }
 
-void Buffer::tokenizeKeywordsUsingRegex()
-{
-	// too slow, takes around 750 ms on a 500KB file (Hub/Window.cpp)
-    using namespace boost::xpressive;
-    sregex_token_iterator token_cur(
-		contents_.begin(),
-		contents_.end(),
-		word_split_regex_, -1);
-    sregex_token_iterator token_end;
-    unsigned int counter = 0;
-    for (; token_cur != token_end; ++token_cur)
-    {
-        const std::string& word = *token_cur;
-		words_.AddKeyword(word.c_str(), word, kTrieDepth);
-        
-        counter++;
-    }
-}
-
 void Buffer::GetAllWordsWithPrefix(
 	const std::string& prefix,
 	std::vector<std::string>* results)
 {
-	words_.GetAllWordsWithPrefix(prefix.c_str(), results, kTrieDepth);
+	auto iter = words_.lower_bound(prefix);
+	while (iter != words_.end() && boost::starts_with(*iter, prefix))
+	{
+		results->emplace_back(*iter);
+		++iter;
+	}
 }
 
 void Buffer::GetAllWordsWithPrefixFromCurrentLine(
 	const std::string& prefix,
 	std::vector<std::string>* results)
 {
-	current_line_words_.GetAllWordsWithPrefix(prefix.c_str(), results, kTrieDepth);
+	auto iter = current_line_words_.lower_bound(prefix);
+	while (iter != current_line_words_.end() && boost::starts_with(*iter, prefix))
+	{
+		results->emplace_back(*iter);
+		++iter;
+	}
 }

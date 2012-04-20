@@ -28,12 +28,13 @@ void KeywordTrie::AddKeyword(
     }
     else
     {
-        auto& next_letter = letters_[*word_part];
-        if (next_letter == NULL) {
-            next_letter = boost::make_shared<KeywordTrie>();
-        }
+		char letter = *word_part;
+		if (letters_.find(letter) == letters_.end())
+		{
+			letters_.emplace(letter, std::unique_ptr<KeywordTrie>(new KeywordTrie));
+		}
 
-        next_letter->AddKeyword(
+        letters_[letter]->AddKeyword(
             ++word_part,
             whole_word,
             depth_remaining - 1);

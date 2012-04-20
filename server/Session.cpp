@@ -1,6 +1,7 @@
 #include "stdafx.hpp"
 
 #include "Session.hpp"
+#include "Stopwatch.hpp"
 
 unsigned int Session::connection_ticket_ = 0;
 
@@ -106,8 +107,10 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     }
     else if (command == "buffer_contents_insert_mode")
     {
+		//Stopwatch watch; watch.Start();
 		auto& buffer = buffers_[current_buffer_];
         buffer.ParseInsertMode(argument, current_line_, cursor_pos_);
+		//watch.Stop(); watch.PrintResultMilliseconds();
 
 		//std::cout << boost::str(boost::format(
 			//"%s: length = %u\n") % command % argument.length());
@@ -115,7 +118,7 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     else if (command == "buffer_contents")
     {
 		auto& buffer = buffers_[current_buffer_];
-        buffer.ParseNormalMode(argument);
+		buffer.ParseNormalMode(argument);
 
 		//std::cout << boost::str(boost::format(
 			//"%s: length = %u\n") % command % argument.length());
@@ -137,7 +140,9 @@ void Session::handleReadRequest(const boost::system::error_code& error)
 	}
 	else if (command == "complete")
 	{
+		//Stopwatch watch; watch.Start();
 		response = calculateCompletionCandidates(std::string(argument.begin(), argument.end() - 1));
+		//watch.Stop(); watch.PrintResultMilliseconds();
 	}
     else
     {

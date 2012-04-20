@@ -15,6 +15,8 @@
 #include <sstream>
 #include <memory>
 #include <future>
+#include <utility>
+#include <mutex>
 
 #include <boost/bind.hpp>
 #include <boost/enable_shared_from_this.hpp>
