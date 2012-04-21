@@ -104,6 +104,12 @@ function <SID>FreeBuffer()
     execute 'py oc_send_command("free_buffer ' . current_buffer_number . '")'
 endfunction
 
+function <SID>OnBufLeave()
+    let current_buffer_number = <SID>GetCurrentBufferNumber()
+    let current_pathname = <SID>GetCurrentBufferPathname()
+	echom current_pathname
+endfunction
+
 augroup OmegaComplete
     autocmd!
 
@@ -119,6 +125,10 @@ augroup OmegaComplete
 	autocmd BufDelete
 	\ *
 	\ call <SID>FreeBuffer()
+	
+	autocmd BufLeave
+	\ *
+	\ call <SID>OnBufLeave()
 augroup END
 
 function <SID>IsPartOfWord(character)
