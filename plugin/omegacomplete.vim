@@ -107,7 +107,7 @@ endfunction
 function <SID>OnBufLeave()
     let current_buffer_number = <SID>GetCurrentBufferNumber()
     let current_pathname = <SID>GetCurrentBufferPathname()
-	echom current_pathname
+	"echom current_pathname
 endfunction
 
 augroup OmegaComplete
