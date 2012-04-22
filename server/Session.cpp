@@ -101,7 +101,7 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     }
     else if (command == "current_line")
     {
-		//std::cout << boost::str(boost::format("%s: %s\n") % command % argument);
+		//std::cout << boost::str(boost::format("%s: \"%s\"\n") % command % argument);
 
 		current_line_ = argument;
     }

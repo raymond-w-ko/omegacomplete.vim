@@ -1,23 +1,12 @@
 #pragma once
 
-class KeywordTrie
+struct TrieNode
 {
-public:
-    KeywordTrie();
-    ~KeywordTrie();
-    
-    void Clear();
-    void AddKeyword(
-        const char* word_part, const std::string& whole_word,
-        const unsigned int depth_remaining);
-    
-    void GetAllWordsWithPrefix(
-        const char* prefix,
-        std::vector<std::string>* matching_words,
-		const unsigned int depth_remaining);
+    TrieNode();
+    ~TrieNode();
+	
+	void Insert(const std::string& word);
 
-private:
-    boost::unordered_map<char, std::unique_ptr<KeywordTrie>> letters_;
-    // this is case sensitive
-    boost::unordered_set<std::string> words_;
+	std::string Word;
+    boost::unordered_map<char, std::unique_ptr<TrieNode>> Children;
 };

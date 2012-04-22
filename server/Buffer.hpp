@@ -1,6 +1,6 @@
 #pragma once
 
-#include "KeywordTrie.hpp"
+#include "TrieNode.hpp"
 
 class Session;
 

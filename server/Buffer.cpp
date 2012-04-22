@@ -42,7 +42,7 @@ void Buffer::ParseInsertMode(
 		// since the old current line is a prefix of the new current
 		// line (the common case), we can only have new words to add
 		// just parse the current line and re-add all the words,
-		// since we are usinga  set dupicates can't happen
+		// since we are using a  set dupicates can't happen
 		need_total_reparse = false;
 
 		current_line_words_.clear();
@@ -55,7 +55,7 @@ void Buffer::ParseInsertMode(
 		// current line, then something is deleted, or has changed
 		// we have to trigger a reparse since we don't maintain original
 		// unchanged words on the line
-		need_total_reparse = true;
+		//std::cout << "need to do total reparse\n"; need_total_reparse = true;
 	}
 	// NUL byte at the end
 	prev_cur_line_ = std::string(cur_line.begin(), cur_line.end() - 1);
@@ -72,11 +72,11 @@ void Buffer::ParseInsertMode(
 	{
 		if (contents_ != new_contents)
 		{
-			//std::cout << "doing total reparse\n";
+			std::cout << "doing total reparse\n";
 			contents_ = new_contents;
 
-			//already_processed_words_.clear();
 			words_.clear();
+			current_line_words_.clear();
 
 			tokenizeKeywords();
 		}
@@ -106,10 +106,10 @@ void Buffer::ParseNormalMode(
 	//watch.Stop(); watch.PrintResultMilliseconds();
 
 	// around 375 ms, this is the bottleneck
-	watch.Start();
+	//watch.Start();
     tokenizeKeywords();
-	watch.Stop(); watch.PrintResultMilliseconds();
-	std::cout << "\n";
+	//watch.Stop(); watch.PrintResultMilliseconds();
+	//std::cout << "\n";
 }
 
 bool Buffer::Init(Session* parent, std::string buffer_id)
@@ -138,7 +138,7 @@ void Buffer::tokenizeKeywords()
 	{
 		// initial case, find character in the set of ([a-z][A-Z][0-9]_)
 		// this will be what is considered a word
-		// I guess we have unicode stuff we are screwed :(http://nah-pxscript.am.boehringer.com/am.pac
+		// I guess we have unicode stuff we are screwed :
 		char c = contents_[ii];
 		if (!is_part_of_word_[c]) continue;
 		

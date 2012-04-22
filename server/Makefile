@@ -22,7 +22,7 @@ LDFLAGS += -lboost_thread$(BOOST_SUFFIX)
 LDFLAGS += -lwsock32 -lws2_32
 
 SOURCES = EntryPoint.cpp Server.cpp Session.cpp Participant.cpp Room.cpp
-SOURCES += Buffer.cpp KeywordTrie.cpp
+SOURCES += Buffer.cpp TrieNode.cpp
 
 HEADERS = $(SOURCES:.cpp=.hpp)
 OBJECTS = $(SOURCES:.cpp=.o)

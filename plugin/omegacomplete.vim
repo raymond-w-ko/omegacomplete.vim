@@ -31,7 +31,7 @@ function s:mapForMappingDriven()
 
 		"\ '-', '_', '~', '^', '.', ',', ':', '!', '#', '=', '%', '$', '@', '<', '>', '/', '\',
 	for key in s:keysMappingDriven
-		execute printf('inoremap <silent> %s %s<C-r>=<SID>feedPopup()<CR>',
+		execute printf('inoremap <silent> %s %s<C-r>=<SID>FeedPopup()<CR>',
 			\          key, key)
 	endfor
 endfunction
@@ -46,7 +46,7 @@ function s:unmapForMappingDriven()
 	let s:keysMappingDriven = []
 endfunction
 
-function <SID>feedPopup()
+function <SID>FeedPopup()
 	if &paste
 		return ''
 	endif
@@ -60,6 +60,7 @@ function <SID>feedPopup()
     execute 'py oc_send_command("current_line " + oc_get_current_line())'
     execute 'py oc_send_command("buffer_contents_insert_mode " + oc_get_current_buffer_contents())'
 	
+	" check if plugin has disabled itself because of connection problems
 	let is_oc_disabled=""
 	execute 'py vim.command("let is_oc_disabled=" + oc_disable_check())'
 	if (is_oc_disabled == "1")
@@ -89,46 +90,58 @@ EOF
 	return ''
 endfunction
 
-function <SID>CursorMovedNotification()
+function <SID>NormalModeSyncBuffer()
     let current_buffer_number = <SID>GetCurrentBufferNumber()
     let current_pathname = <SID>GetCurrentBufferPathname()
 
-	" synchronize current buffer
     execute 'py oc_send_command("current_buffer ' . current_buffer_number . '")'
     execute 'py oc_send_command("current_pathname ' . current_pathname . '")'
     execute 'py oc_send_command("buffer_contents " + oc_get_current_buffer_contents())'
 endfunction
 
-function <SID>FreeBuffer()
+" When we don't want a buffer loaded in memory in VIM, we can 'delete' the
+" buffer. This must be reflected on the server, otherwise we get completions
+" that we no longer want.
+function <SID>OnBufDelete()
     let current_buffer_number = expand('<abuf>')
     execute 'py oc_send_command("free_buffer ' . current_buffer_number . '")'
 endfunction
 
+" When we are leaving buffer (either by opening another buffer, switching
+" tabs, or moving to another split), then we have to inform send the contents
+" of the buffer to the server since we could have changed the contents of the
+" buffer while in normal though commands like 'dd'
 function <SID>OnBufLeave()
-    let current_buffer_number = <SID>GetCurrentBufferNumber()
-    let current_pathname = <SID>GetCurrentBufferPathname()
-	"echom current_pathname
+	call <SID>NormalModeSyncBuffer()
+endfunction
+
+function <SID>OnInsertEnter()
+	call <SID>NormalModeSyncBuffer()
 endfunction
 
 augroup OmegaComplete
     autocmd!
-
-	" feedPopup() replaces this
-    "autocmd CursorMovedI
-    "\ *
-    "\ call <SID>CursorMovedINotification()
-
-    autocmd CursorMoved,InsertLeave
-    \ *
-    \ call <SID>CursorMovedNotification()
 	
+	" whenever you delete a buffer, remove it so that it doesn't introduce
+	" any false positive completions
 	autocmd BufDelete
 	\ *
-	\ call <SID>FreeBuffer()
+	\ call <SID>OnBufDelete()
 	
+	" whenever we leave a current buffer, send it to the server to it can
+	" decide if we have to update it. I'm going to to try going this route
+	" so we can defer buffer processing until we leave or enter into insert mode
 	autocmd BufLeave
 	\ *
 	\ call <SID>OnBufLeave()
+
+	" just before you enter insert mode send the contents of the buffer so
+	" that the server has a chance to synchronize before popping up the
+	" insertion completion menu
+	autocmd InsertEnter
+	\ *
+	\ call <SID>OnInsertEnter()
+	
 augroup END
 
 function <SID>IsPartOfWord(character)
