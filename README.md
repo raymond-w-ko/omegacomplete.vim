@@ -4,7 +4,7 @@ This is my crazy sideproject which attempts to provide the fastest and most
 useful keyword completions for VIM.
 
 To accomplish this it talks to a server component coded in C++ for maximum
-speed, uses python glue code to send the contents of the current buffer to the
+speed, and uses python glue code to send the contents of the current buffer to the
 server component for synchronization.
 
 ## Current Completion Types
