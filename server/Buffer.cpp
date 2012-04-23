@@ -57,7 +57,8 @@ void Buffer::ParseInsertMode(
 		// current line, then something is deleted, or has changed
 		// we have to trigger a reparse since we don't maintain original
 		// unchanged words on the line
-		//std::cout << "need to do total reparse\n"; need_total_reparse = true;
+		//std::cout << "need to do total reparse\n";
+		need_total_reparse = true;
 	}
 	// NUL byte at the end
 	prev_cur_line_ = std::string(cur_line.begin(), cur_line.end() - 1);
@@ -349,7 +350,7 @@ void Buffer::GetLevenshteinCompletions(
 
 	// only try fancier matching if we have a sufficiently long enough
 	// word to make it worthwhile
-	if (prefix.length() >= kMinLengthForLevenshteinCompletion) return;
+	if (prefix.length() < kMinLengthForLevenshteinCompletion) return;
 
 	levenshteinSearch(prefix, kLevenshteinMaxCost, results);
 }
