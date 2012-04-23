@@ -3,9 +3,12 @@
 This is my crazy sideproject which attempts to provide the fastest and most
 useful keyword completions for VIM.
 
-To accomplish this it talks to a server component coded in C++ for maximum
+To accomplish this it talks to a server component coded in C++11 for maximum
 speed, and uses python glue code to send the contents of the current buffer to the
 server component for synchronization.
+
+Since this uses C++11, you need a recent compiler and also the compiled portion
+of the Boost C++ libraries.
 
 ## Completion Types
 
