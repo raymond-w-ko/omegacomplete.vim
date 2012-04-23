@@ -3,6 +3,8 @@
 #include "Session.hpp"
 #include "Stopwatch.hpp"
 
+const size_t kMinLengthForLevenshteinCompletion = 4;
+
 unsigned int Session::connection_ticket_ = 0;
 
 Session::Session(io_service& io_service, Room& room)
@@ -186,38 +188,62 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
 
 	//std::cout << "--- BEGIN COMPLETIONS ---\n";
 	
-	std::vector<std::string> completions;
-	
-	calculatePrefixCompletions(word_to_complete, &completions);
-	// sort to enforce conformity
-	std::sort(completions.begin(), completions.end());
+	std::set<std::string> prefix_completions;
+	calculatePrefixCompletions(word_to_complete, &prefix_completions);
 
+	Buffer::LevenshteinSearchResults levenshtein_completions;
 	// try to get completions which correct misspellings
-	calculateLevenshteinCompletions(word_to_complete, &completions);
+	calculateLevenshteinCompletions(word_to_complete, levenshtein_completions);
 
 	// compile results and send
+	unsigned int num_completions_added;
+
+	num_completions_added = 0;
 	std::stringstream results;
 	results << "[";
-	size_t upper_bound = std::min(
-		completions.size(),
-		static_cast<size_t>(32));
-	for (size_t ii = 0; ii < upper_bound; ++ii)
+	// append prefix completions
+	for (const std::string& word : prefix_completions)
 	{
-		const std::string& word = completions[ii];
 		if (word == word_to_complete) continue;
 
-		//std::cout << word << "\n";
-		
-		results << "\"" << word << "\"";
-		if (ii != (upper_bound - 1))
-		{
-			results << ", ";
-		}
+		results << boost::str(boost::format(
+			"{'word':'%s'},")
+			% word);
+
+		num_completions_added++;
+		if (num_completions_added >= 10) break;
 	}
+	
+	// append levenshtein completions
+	num_completions_added = 0;
+	bool done = false;
+	for (auto& completion : levenshtein_completions)
+	{
+		auto& cost = completion.first;
+		auto& word_set = completion.second;
+		for (const std::string& word : word_set)
+		{
+			if (word == word_to_complete) continue;
+
+			results << boost::str(boost::format(
+				"{'word':'%s','menu':'[%d]'},")
+				% word % cost);
+
+			num_completions_added++;
+			if (num_completions_added >= 10)
+			{
+				done = true;
+				break;
+			}
+		}
+
+		if (done) break;
+	}
+
 	results << "]";
 	
 	//std::cout << "--- END COMPLETIONS ---\n";
-	std::cout << results.str() << std::endl;
+	//std::cout << results.str() << std::endl;
 	
 	return results.str();
 }
@@ -248,7 +274,7 @@ std::string Session::getWordToComplete(const std::string& line)
 
 void Session::calculatePrefixCompletions(
 	const std::string& word_to_complete,
-	std::vector<std::string>* completions)
+	std::set<std::string>* completions)
 {
 	// consider completions from the current buffer first
 	// because of spatial locality
@@ -271,15 +297,16 @@ void Session::calculatePrefixCompletions(
 
 void Session::calculateLevenshteinCompletions(
 	const std::string& word_to_complete,
-	std::vector<std::string>* completions)
+	Buffer::LevenshteinSearchResults& completions)
 {
-	// TODO decide when to actually add levenshtein completions
+	// only try fancier matching if we have a sufficiently long enough
+	// word to make it worthwhile
+	if (word_to_complete.length() >= kMinLengthForLevenshteinCompletion) return;
 
 	buffers_[current_buffer_].GetLevenshteinCompletions(
 		word_to_complete,
 		completions);
 
-	return;
 	for (auto& buffer : buffers_)
 	{
 		if (buffer.first == current_buffer_) continue;

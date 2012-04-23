@@ -6,7 +6,7 @@
 
 const unsigned int kTrieDepth = 2;
 const unsigned int kNumThreads = 8;
-const int kLevenshteinMaxCost = 3;
+const int kLevenshteinMaxCost = 2;
 
 Buffer::Buffer()
 :
@@ -216,7 +216,7 @@ void Buffer::tokenizeKeywordsOfLine(const std::string& line)
 
 void Buffer::GetAllWordsWithPrefix(
 	const std::string& prefix,
-	std::vector<std::string>* results)
+	std::set<std::string>* results)
 {
 	// with std::set
 	//auto iter = words_.lower_bound(prefix);
@@ -231,35 +231,34 @@ void Buffer::GetAllWordsWithPrefix(
 	{
 		if (boost::starts_with(word, prefix))
 		{
-			results->emplace_back(word);
+			results->insert(word);
 		}
 	}
 }
 
 void Buffer::GetAllWordsWithPrefixFromCurrentLine(
 	const std::string& prefix,
-	std::vector<std::string>* results)
+	std::set<std::string>* results)
 {
 	auto iter = current_line_words_.lower_bound(prefix);
 	while (iter != current_line_words_.end() && boost::starts_with(*iter, prefix))
 	{
-		results->emplace_back(*iter);
+		results->insert(*iter);
 		++iter;
 	}
 }
 
 // translated from Python code provided by
 // http://stevehanov.ca/blog/index.php?id=114
-Buffer::LevenshteinSearchResults Buffer::levenshteinSearch(
+void Buffer::levenshteinSearch(
 	const std::string& word,
-	int max_cost)
+	int max_cost,
+	LevenshteinSearchResults& results)
 {
 	// generate sequence from [0, len(word)]
 	size_t current_row_end = word.length() + 1;
 	std::vector<int> current_row;
 	for (size_t ii = 0; ii < current_row_end; ++ii) current_row.push_back(ii);
-
-	LevenshteinSearchResults results;
 
 	for (auto& child : trie_.Children)
 	{
@@ -273,8 +272,6 @@ Buffer::LevenshteinSearchResults Buffer::levenshteinSearch(
 			results,
 			max_cost);
 	}
-
-	return results;
 }
 
 // translated from Python code provided by
@@ -315,9 +312,7 @@ void Buffer::levenshteinSearchRecursive(
 	if ( (current_row[last_index] <= max_cost) &&
 	     (node->Word.length() > 0) )
 	{
-		results.push_back( make_pair(
-			node->Word,
-			current_row[last_index]) );
+		results[ current_row[last_index] ].insert(node->Word);
 	}
 
 	// if any entries in the row are less than the maximum cost, then 
@@ -341,7 +336,7 @@ void Buffer::levenshteinSearchRecursive(
 
 void Buffer::GetLevenshteinCompletions(
 	const std::string& prefix,
-	std::vector<std::string>* results)
+	LevenshteinSearchResults& results)
 {
 	if ((words_.size()) > 0 && trie_.Empty())
 	{
@@ -351,27 +346,5 @@ void Buffer::GetLevenshteinCompletions(
 		}
 	}
 
-	LevenshteinSearchResults candidates = levenshteinSearch(
-		prefix,
-		kLevenshteinMaxCost);
-
-	typedef std::pair<std::string, int> StringIntPair;
-	std::sort(candidates.begin(), candidates.end(),
-		[](StringIntPair x, StringIntPair y)
-		{
-			if (x.second < y.second)
-				return true;
-			else if (x.second > y.second)
-				return false;
-			else
-			{
-				return std::less<std::string>()(x.first, y.first);
-			}
-		});
-
-	for (auto& match : candidates)
-	{
-		//std::cout << match.second << ": " << match.first << "\n";
-		results->push_back(match.first);
-	}
+	levenshteinSearch(prefix, kLevenshteinMaxCost, results);
 }

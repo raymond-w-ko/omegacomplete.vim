@@ -7,6 +7,8 @@ class Session;
 class Buffer
 {
 public:
+	typedef std::map< int, std::set<std::string> > LevenshteinSearchResults;
+
     Buffer();
     ~Buffer();
     bool Init(Session* parent, std::string buffer_id);
@@ -24,24 +26,24 @@ public:
 		std::pair<int, int> cursor_pos);
 	void GetAllWordsWithPrefixFromCurrentLine(
 		const std::string& prefix,
-		std::vector<std::string>* results);
+		std::set<std::string>* results);
 	void GetAllWordsWithPrefix(
 		const std::string& prefix,
-		std::vector<std::string>* results);
+		std::set<std::string>* results);
 
 	void GetLevenshteinCompletions(
 		const std::string& prefix,
-		std::vector<std::string>* results);
+		LevenshteinSearchResults& results);
 
 private:
     void tokenizeKeywords();
     void tokenizeKeywordsOfLine(const std::string& line);
 	void tokenizeKeywordsUsingRegex();
 
-	typedef std::vector< std::pair<std::string, int> > LevenshteinSearchResults;
-	LevenshteinSearchResults levenshteinSearch(
+	void levenshteinSearch(
 		const std::string& word,
-		int max_cost);
+		int max_cost,
+		LevenshteinSearchResults& results);
 
 	void levenshteinSearchRecursive(
 		TrieNode* node,

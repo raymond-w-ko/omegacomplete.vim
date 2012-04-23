@@ -28,10 +28,10 @@ private:
 	std::string getWordToComplete(const std::string& line);
 	void calculatePrefixCompletions(
 		const std::string& word_to_complete,
-		std::vector<std::string>* completions);
+		std::set<std::string>* completions);
 	void calculateLevenshteinCompletions(
 		const std::string& word_to_complete,
-		std::vector<std::string>* completions);
+		Buffer::LevenshteinSearchResults& completions);
 
     // connection related variables
     static unsigned int connection_ticket_;
