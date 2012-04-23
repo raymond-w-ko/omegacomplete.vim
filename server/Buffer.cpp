@@ -248,6 +248,8 @@ void Buffer::GetAllWordsWithPrefixFromCurrentLine(
 	}
 }
 
+// translated from Python code provided by
+// http://stevehanov.ca/blog/index.php?id=114
 Buffer::LevenshteinSearchResults Buffer::levenshteinSearch(
 	const std::string& word,
 	int max_cost)
@@ -275,6 +277,8 @@ Buffer::LevenshteinSearchResults Buffer::levenshteinSearch(
 	return results;
 }
 
+// translated from Python code provided by
+// http://stevehanov.ca/blog/index.php?id=114
 void Buffer::levenshteinSearchRecursive(
 	TrieNode* node,
 	char letter,
