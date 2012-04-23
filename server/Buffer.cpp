@@ -47,7 +47,6 @@ void Buffer::ParseInsertMode(
 		// since we are using a  set dupicates can't happen
 		need_total_reparse = false;
 
-		current_line_words_.clear();
 		tokenizeKeywordsOfLine(cur_line);
 		//std::cout << "no need to do total reparse, just re-adding line\n";
 	}
@@ -75,13 +74,8 @@ void Buffer::ParseInsertMode(
 	{
 		if (contents_ != new_contents)
 		{
-			std::cout << "doing total reparse\n";
+			//std::cout << "doing total reparse\n";
 			contents_ = new_contents;
-
-			words_.clear();
-			trie_.Clear();
-			current_line_words_.clear();
-
 			tokenizeKeywords();
 		}
 
@@ -105,9 +99,7 @@ void Buffer::ParseNormalMode(
 	// using std::unique_ptr<T> this drops to around 45 ms
 	//watch.Start();
     //already_processed_words_.clear();
-    words_.clear();
-	trie_.Clear();
-	current_line_words_.clear();
+	//current_line_words_.clear();
 	//watch.Stop(); watch.PrintResultMilliseconds();
 
 	// around 375 ms, this is the bottleneck
@@ -136,6 +128,13 @@ void Buffer::SetPathname(std::string pathname)
 
 void Buffer::tokenizeKeywords()
 {
+	// re-tokenizing means clearing existing wordlist
+	//Stopwatch watch;
+	//watch.Start();
+	current_line_words_.clear();
+	words_.clear();
+	//watch.Stop(); watch.PrintResultMilliseconds();
+
 	size_t contents_size = contents_.size();
 
 	for (size_t ii = 0; ii < contents_size; ++ii)
@@ -168,7 +167,19 @@ void Buffer::tokenizeKeywords()
 	// since we have recreated the set of words, invalidate
 	// the trie structure, next time we complete, it will be
 	// regenerated again
+	// same thing with TitleCase structure and userscores structure
+
+	//watch.Start();
 	trie_.Clear();
+	//watch.Stop(); watch.PrintResultMilliseconds();
+
+	//watch.Start();
+	title_cases_.clear();
+	//watch.Stop(); watch.PrintResultMilliseconds();
+
+	//watch.Start();
+	underscores_.clear();
+	//watch.Stop(); watch.PrintResultMilliseconds();
 
 	// build trie of all the unique words in the buffer
 	//for (const std::string& word : words_)
@@ -183,6 +194,8 @@ void Buffer::tokenizeKeywords()
 
 void Buffer::tokenizeKeywordsOfLine(const std::string& line)
 {
+	current_line_words_.clear();
+
 	size_t contents_size = line.size();
 
 	for (size_t ii = 0; ii < contents_size; ++ii)

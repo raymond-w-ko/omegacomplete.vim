@@ -190,8 +190,13 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
 	calculatePrefixCompletions(word_to_complete, &prefix_completions);
 
 	Buffer::LevenshteinSearchResults levenshtein_completions;
-	// try to get completions which correct misspellings
-	calculateLevenshteinCompletions(word_to_complete, levenshtein_completions);
+	// only if we have no completions do we try to Levenshtein distance completion
+	if (prefix_completions.size() <= 2)
+	{
+		calculateLevenshteinCompletions(
+			word_to_complete,
+			levenshtein_completions);
+	}
 
 	// compile results and send
 	unsigned int num_completions_added;

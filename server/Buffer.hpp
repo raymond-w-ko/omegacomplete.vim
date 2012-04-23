@@ -63,11 +63,12 @@ private:
 	std::string prev_cur_line_;
 	std::pair<int, int> cursor_pos_;
 	
-	TrieNode trie_;
+	char is_part_of_word_[256];
 	boost::unordered_set<std::string> words_;
 	std::set<std::string> current_line_words_;
-	
-	char is_part_of_word_[256];
+	TrieNode trie_;
+	boost::unordered_map<std::string, std::string> title_cases_;
+	boost::unordered_map<std::string, std::string> underscores_;
 };
 
 namespace std
