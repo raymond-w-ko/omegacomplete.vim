@@ -7,7 +7,7 @@ To accomplish this it talks to a server component coded in C++ for maximum
 speed, and uses python glue code to send the contents of the current buffer to the
 server component for synchronization.
 
-## Current Completion Types
+## Completion Types
 
 ### Prefix Completion (Implemented)
 Standard completion provided by VIM when you press Ctrl-N / Ctrl-P
