@@ -7,6 +7,7 @@
 const unsigned int kTrieDepth = 2;
 const unsigned int kNumThreads = 8;
 const int kLevenshteinMaxCost = 2;
+const size_t kMinLengthForLevenshteinCompletion = 4;
 
 Buffer::Buffer()
 :
@@ -345,6 +346,10 @@ void Buffer::GetLevenshteinCompletions(
 			trie_.Insert(word);
 		}
 	}
+
+	// only try fancier matching if we have a sufficiently long enough
+	// word to make it worthwhile
+	if (prefix.length() >= kMinLengthForLevenshteinCompletion) return;
 
 	levenshteinSearch(prefix, kLevenshteinMaxCost, results);
 }

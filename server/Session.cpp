@@ -3,8 +3,6 @@
 #include "Session.hpp"
 #include "Stopwatch.hpp"
 
-const size_t kMinLengthForLevenshteinCompletion = 4;
-
 unsigned int Session::connection_ticket_ = 0;
 
 Session::Session(io_service& io_service, Room& room)
@@ -299,10 +297,6 @@ void Session::calculateLevenshteinCompletions(
 	const std::string& word_to_complete,
 	Buffer::LevenshteinSearchResults& completions)
 {
-	// only try fancier matching if we have a sufficiently long enough
-	// word to make it worthwhile
-	if (word_to_complete.length() >= kMinLengthForLevenshteinCompletion) return;
-
 	buffers_[current_buffer_].GetLevenshteinCompletions(
 		word_to_complete,
 		completions);
