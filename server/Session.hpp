@@ -29,6 +29,9 @@ private:
 	void calculatePrefixCompletions(
 		const std::string& word_to_complete,
 		std::vector<std::string>* completions);
+	void calculateLevenshteinCompletions(
+		const std::string& word_to_complete,
+		std::vector<std::string>* completions);
 
     // connection related variables
     static unsigned int connection_ticket_;

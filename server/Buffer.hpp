@@ -29,15 +29,30 @@ public:
 		const std::string& prefix,
 		std::vector<std::string>* results);
 
+	void GetLevenshteinCompletions(
+		const std::string& prefix,
+		std::vector<std::string>* results);
+
 private:
     void tokenizeKeywords();
     void tokenizeKeywordsOfLine(const std::string& line);
 	void tokenizeKeywordsUsingRegex();
-	
-	void dummy2();
-    
+
+	typedef std::vector< std::pair<std::string, int> > LevenshteinSearchResults;
+	LevenshteinSearchResults levenshteinSearch(
+		const std::string& word,
+		int max_cost);
+
+	void levenshteinSearchRecursive(
+		TrieNode* node,
+		char letter,
+		const std::string& word,
+		const std::vector<int>& previous_row,
+		LevenshteinSearchResults& results,
+		int max_cost);
+
     Session* parent_;
-    boost::xpressive::sregex word_split_regex_;
+    //boost::xpressive::sregex word_split_regex_;
 
     std::string buffer_id_;
     std::string pathname_;
@@ -46,11 +61,8 @@ private:
 	std::string prev_cur_line_;
 	std::pair<int, int> cursor_pos_;
 	
-	//std::mutex lock_;
-    //KeywordTrie words_;
-	//KeywordTrie current_line_words_;
-    //boost::unordered_set<std::string> already_processed_words_;
-	std::set<std::string> words_;
+	TrieNode trie_;
+	boost::unordered_set<std::string> words_;
 	std::set<std::string> current_line_words_;
 	
 	char is_part_of_word_[256];

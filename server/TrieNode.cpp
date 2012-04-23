@@ -17,15 +17,26 @@ void TrieNode::Insert(const std::string& word)
 	TrieNode* node = this;
 	for (char letter : word)
 	{
-		if (Children.find(letter) == Children.end())
+		if (node->Children.find(letter) == node->Children.end())
 		{
-			node->Children.emplace(
+			node->Children.insert( make_pair(
 				letter,
-				std::unique_ptr<TrieNode>(new TrieNode()));
+				make_unique<TrieNode>() ));
 		}
 
 		node = node->Children[letter].get();
 	}
-	
+
 	node->Word = word;
+}
+
+void TrieNode::Clear()
+{
+	Word = "";
+	Children.clear();
+}
+
+bool TrieNode::Empty()
+{
+	return Children.empty();
 }

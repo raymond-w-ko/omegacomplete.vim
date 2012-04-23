@@ -6,12 +6,13 @@
 
 const unsigned int kTrieDepth = 2;
 const unsigned int kNumThreads = 8;
+const int kLevenshteinMaxCost = 3;
 
 Buffer::Buffer()
 :
 cursor_pos_(0, 0)
 {
-    word_split_regex_ = boost::xpressive::sregex::compile("\\W+");
+    //word_split_regex_ = boost::xpressive::sregex::compile("\\W+");
 	
 	for (size_t index = 0; index <= 255; ++index)
 	{
@@ -76,6 +77,7 @@ void Buffer::ParseInsertMode(
 			contents_ = new_contents;
 
 			words_.clear();
+			trie_.Clear();
 			current_line_words_.clear();
 
 			tokenizeKeywords();
@@ -102,14 +104,14 @@ void Buffer::ParseNormalMode(
 	//watch.Start();
     //already_processed_words_.clear();
     words_.clear();
+	trie_.Clear();
 	current_line_words_.clear();
 	//watch.Stop(); watch.PrintResultMilliseconds();
 
 	// around 375 ms, this is the bottleneck
-	//watch.Start();
+	watch.Start();
     tokenizeKeywords();
-	//watch.Stop(); watch.PrintResultMilliseconds();
-	//std::cout << "\n";
+	watch.Stop(); watch.PrintResultMilliseconds();
 }
 
 bool Buffer::Init(Session* parent, std::string buffer_id)
@@ -155,11 +157,23 @@ void Buffer::tokenizeKeywords()
 		
 		// construct word based off of pointer
 		std::string word(&contents_[ii], &contents_[jj]);
-		words_.insert(word);
+		words_.insert(std::move(word));
 		
 		// for loop will autoincrement
 		ii = jj;
 	}
+
+	// since we have recreated the set of words, invalidate
+	// the trie structure, next time we complete, it will be
+	// regenerated again
+	trie_.Clear();
+
+	// build trie of all the unique words in the buffer
+	//for (const std::string& word : words_)
+	//{
+		//trie_.Insert(word);
+	//}
+	
 	
     //std::cout << boost::str(boost::format(
         //"stored %u words\n") % already_processed_words_.size());
@@ -195,7 +209,7 @@ void Buffer::tokenizeKeywordsOfLine(const std::string& line)
 		// for loop will autoincrement
 		ii = jj;
 	}
-	
+
     //std::cout << boost::str(boost::format(
         //"stored %u words\n") % already_processed_words_.size());
 }
@@ -204,11 +218,21 @@ void Buffer::GetAllWordsWithPrefix(
 	const std::string& prefix,
 	std::vector<std::string>* results)
 {
-	auto iter = words_.lower_bound(prefix);
-	while (iter != words_.end() && boost::starts_with(*iter, prefix))
+	// with std::set
+	//auto iter = words_.lower_bound(prefix);
+	//while (iter != words_.end() && boost::starts_with(*iter, prefix))
+	//{
+		//results->emplace_back(*iter);
+		//++iter;
+	//}
+	
+	// with boost::unordered_set
+	for (const std::string& word : words_)
 	{
-		results->emplace_back(*iter);
-		++iter;
+		if (boost::starts_with(word, prefix))
+		{
+			results->emplace_back(word);
+		}
 	}
 }
 
@@ -221,5 +245,129 @@ void Buffer::GetAllWordsWithPrefixFromCurrentLine(
 	{
 		results->emplace_back(*iter);
 		++iter;
+	}
+}
+
+Buffer::LevenshteinSearchResults Buffer::levenshteinSearch(
+	const std::string& word,
+	int max_cost)
+{
+	// generate sequence from [0, len(word)]
+	size_t current_row_end = word.length() + 1;
+	std::vector<int> current_row;
+	for (size_t ii = 0; ii < current_row_end; ++ii) current_row.push_back(ii);
+
+	LevenshteinSearchResults results;
+
+	for (auto& child : trie_.Children)
+	{
+		char letter = child.first;
+		TrieNode* next_node = child.second.get();
+		levenshteinSearchRecursive(
+			next_node,
+			letter,
+			word,
+			current_row,
+			results,
+			max_cost);
+	}
+
+	return results;
+}
+
+void Buffer::levenshteinSearchRecursive(
+	TrieNode* node,
+	char letter,
+	const std::string& word,
+	const std::vector<int>& previous_row,
+	LevenshteinSearchResults& results,
+	int max_cost)
+{
+	size_t columns = word.length() + 1;
+	std::vector<int> current_row;
+	current_row.push_back( previous_row[0] + 1 );
+
+	// Build one row for the letter, with a column for each letter in the target
+	// word, plus one for the empty string at column 0
+	for (int column = 1; column < columns; ++column)
+	{
+		int insert_cost = current_row[column - 1] + 1;
+		int delete_cost = previous_row[column] + 1;
+
+		int replace_cost;
+		if (word[column - 1] != letter)
+			replace_cost = previous_row[column - 1] + 1;
+		else
+			replace_cost = previous_row[column - 1];
+
+		current_row.push_back( std::min(
+			insert_cost,
+			std::min(delete_cost, replace_cost)) );
+	}
+
+	// if the last entry in the row indicates the optimal cost is less than the
+	// maximum cost, and there is a word in this trie node, then add it.
+	size_t last_index = current_row.size() - 1; 
+	if ( (current_row[last_index] <= max_cost) &&
+	     (node->Word.length() > 0) )
+	{
+		results.push_back( make_pair(
+			node->Word,
+			current_row[last_index]) );
+	}
+
+	// if any entries in the row are less than the maximum cost, then 
+	// recursively search each branch of the trie
+	if (*std::min_element(current_row.begin(), current_row.end()) <= max_cost)
+	{
+		for (auto& child : node->Children)
+		{
+			char letter = child.first;
+			TrieNode* next_node = child.second.get();
+			levenshteinSearchRecursive(
+				next_node,
+				letter,
+				word,
+				current_row,
+				results,
+				max_cost);
+		}
+	}
+}
+
+void Buffer::GetLevenshteinCompletions(
+	const std::string& prefix,
+	std::vector<std::string>* results)
+{
+	if ((words_.size()) > 0 && trie_.Empty())
+	{
+		for (const std::string& word : words_)
+		{
+			trie_.Insert(word);
+		}
+	}
+
+	LevenshteinSearchResults candidates = levenshteinSearch(
+		prefix,
+		kLevenshteinMaxCost);
+
+	typedef std::pair<std::string, int> StringIntPair;
+	std::sort(candidates.begin(), candidates.end(),
+		[](StringIntPair x, StringIntPair y)
+		{
+			if (x.second < y.second)
+				return true;
+			else if (x.second > y.second)
+				return false;
+			else
+			{
+				return std::less<std::string>()(x.first, y.first);
+			}
+		});
+
+	for (auto& match : candidates)
+	{
+		//std::cout << match.second << ": " << match.first << "\n";
+		results->push_back(match.first);
 	}
 }

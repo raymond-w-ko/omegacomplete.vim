@@ -140,9 +140,10 @@ void Session::handleReadRequest(const boost::system::error_code& error)
 	}
 	else if (command == "complete")
 	{
-		//Stopwatch watch; watch.Start();
-		response = calculateCompletionCandidates(std::string(argument.begin(), argument.end() - 1));
-		//watch.Stop(); watch.PrintResultMilliseconds();
+		Stopwatch watch; watch.Start();
+		response = calculateCompletionCandidates(
+			std::string(argument.begin(), argument.end() - 1));
+		watch.Stop(); watch.PrintResultMilliseconds();
 	}
 	else if (command == "free_buffer")
 	{
@@ -188,21 +189,22 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
 	std::vector<std::string> completions;
 	
 	calculatePrefixCompletions(word_to_complete, &completions);
-
 	// sort to enforce conformity
 	std::sort(completions.begin(), completions.end());
+
+	// try to get completions which correct misspellings
+	calculateLevenshteinCompletions(word_to_complete, &completions);
 
 	// compile results and send
 	std::stringstream results;
 	results << "[";
 	size_t upper_bound = std::min(
 		completions.size(),
-		static_cast<size_t>(10));
+		static_cast<size_t>(32));
 	for (size_t ii = 0; ii < upper_bound; ++ii)
 	{
 		const std::string& word = completions[ii];
 		if (word == word_to_complete) continue;
-		if (boost::starts_with(word, word_to_complete) == false) continue;
 
 		//std::cout << word << "\n";
 		
@@ -215,6 +217,7 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
 	results << "]";
 	
 	//std::cout << "--- END COMPLETIONS ---\n";
+	std::cout << results.str() << std::endl;
 	
 	return results.str();
 }
@@ -263,5 +266,24 @@ void Session::calculatePrefixCompletions(
 		if (buffer.first == current_buffer_) continue;
 		
 		buffer.second.GetAllWordsWithPrefix(word_to_complete, completions);
+	}
+}
+
+void Session::calculateLevenshteinCompletions(
+	const std::string& word_to_complete,
+	std::vector<std::string>* completions)
+{
+	// TODO decide when to actually add levenshtein completions
+
+	buffers_[current_buffer_].GetLevenshteinCompletions(
+		word_to_complete,
+		completions);
+
+	return;
+	for (auto& buffer : buffers_)
+	{
+		if (buffer.first == current_buffer_) continue;
+		
+		buffer.second.GetLevenshteinCompletions(word_to_complete, completions);
 	}
 }
