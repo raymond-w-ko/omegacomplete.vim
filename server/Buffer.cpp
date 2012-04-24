@@ -11,6 +11,8 @@ const size_t kMinLengthForLevenshteinCompletion = 4;
 
 Buffer::Buffer()
 :
+words_(nullptr),
+trie_(nullptr),
 cursor_pos_(0, 0)
 {
     //word_split_regex_ = boost::xpressive::sregex::compile("\\W+");
@@ -105,7 +107,8 @@ void Buffer::ParseNormalMode(
 	// around 375 ms, this is the bottleneck
 	watch.Start();
     tokenizeKeywords();
-	watch.Stop(); watch.PrintResultMilliseconds();
+	watch.Stop();
+	std::cout << "tokenizeKeywords(): "; watch.PrintResultMilliseconds();
 }
 
 bool Buffer::Init(Session* parent, std::string buffer_id)
@@ -132,7 +135,9 @@ void Buffer::tokenizeKeywords()
 	//Stopwatch watch;
 	//watch.Start();
 	current_line_words_.clear();
-	words_.clear();
+	//words_.clear();
+	parent_->GD.QueueForDeletion(words_);
+	words_ = new boost::unordered_set<std::string>;
 	//watch.Stop(); watch.PrintResultMilliseconds();
 
 	size_t contents_size = contents_.size();
@@ -158,7 +163,7 @@ void Buffer::tokenizeKeywords()
 		
 		// construct word based off of pointer
 		std::string word(&contents_[ii], &contents_[jj]);
-		words_.insert(std::move(word));
+		words_->insert(std::move(word));
 		
 		// for loop will autoincrement
 		ii = jj;
@@ -170,7 +175,9 @@ void Buffer::tokenizeKeywords()
 	// same thing with TitleCase structure and userscores structure
 
 	//watch.Start();
-	trie_.Clear();
+	//trie_.Clear();
+	parent_->GD.QueueForDeletion(trie_);
+	trie_ = new TrieNode();
 	//watch.Stop(); watch.PrintResultMilliseconds();
 
 	//watch.Start();
@@ -184,7 +191,7 @@ void Buffer::tokenizeKeywords()
 	// build trie of all the unique words in the buffer
 	//for (const std::string& word : words_)
 	//{
-		//trie_.Insert(word);
+		//trie_->Insert(word);
 	//}
 	
 	
@@ -233,16 +240,7 @@ void Buffer::GetAllWordsWithPrefix(
 	const std::string& prefix,
 	std::set<std::string>* results)
 {
-	// with std::set
-	//auto iter = words_.lower_bound(prefix);
-	//while (iter != words_.end() && boost::starts_with(*iter, prefix))
-	//{
-		//results->emplace_back(*iter);
-		//++iter;
-	//}
-	
-	// with boost::unordered_set
-	for (const std::string& word : words_)
+	for (const std::string& word : *words_)
 	{
 		if (boost::starts_with(word, prefix))
 		{
@@ -275,7 +273,7 @@ void Buffer::levenshteinSearch(
 	std::vector<int> current_row;
 	for (size_t ii = 0; ii < current_row_end; ++ii) current_row.push_back(ii);
 
-	for (auto& child : trie_.Children)
+	for (auto& child : trie_->Children)
 	{
 		char letter = child.first;
 		TrieNode* next_node = child.second.get();
@@ -353,11 +351,11 @@ void Buffer::GetLevenshteinCompletions(
 	const std::string& prefix,
 	LevenshteinSearchResults& results)
 {
-	if ((words_.size()) > 0 && trie_.Empty())
+	if ((words_->size()) > 0 && trie_->Empty())
 	{
-		for (const std::string& word : words_)
+		for (const std::string& word : *words_)
 		{
-			trie_.Insert(word);
+			trie_->Insert(word);
 		}
 	}
 

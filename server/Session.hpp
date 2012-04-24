@@ -2,6 +2,7 @@
 
 #include "Room.hpp"
 #include "Buffer.hpp"
+#include "GarbageDeleter.hpp"
 
 class Session
 :
@@ -18,6 +19,9 @@ public:
     }
     
     void Start();
+
+	// memory management
+	GarbageDeleter GD;
     
 private:
     void handleReadRequest(const boost::system::error_code& error);
@@ -31,7 +35,7 @@ private:
 		std::set<std::string>* completions);
 	void calculateLevenshteinCompletions(
 		const std::string& word_to_complete,
-		Buffer::LevenshteinSearchResults& completions);
+		LevenshteinSearchResults& completions);
 
     // connection related variables
     static unsigned int connection_ticket_;

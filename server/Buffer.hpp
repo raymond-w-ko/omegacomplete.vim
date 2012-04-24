@@ -4,10 +4,11 @@
 
 class Session;
 
+typedef std::map< int, std::set<std::string> > LevenshteinSearchResults;
+
 class Buffer
 {
 public:
-	typedef std::map< int, std::set<std::string> > LevenshteinSearchResults;
 
     Buffer();
     ~Buffer();
@@ -64,9 +65,9 @@ private:
 	std::pair<int, int> cursor_pos_;
 	
 	char is_part_of_word_[256];
-	boost::unordered_set<std::string> words_;
+	boost::unordered_set<std::string>* words_;
 	std::set<std::string> current_line_words_;
-	TrieNode trie_;
+	TrieNode* trie_;
 	boost::unordered_map<std::string, std::string> title_cases_;
 	boost::unordered_map<std::string, std::string> underscores_;
 };

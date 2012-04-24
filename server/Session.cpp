@@ -143,7 +143,8 @@ void Session::handleReadRequest(const boost::system::error_code& error)
 		Stopwatch watch; watch.Start();
 		response = calculateCompletionCandidates(
 			std::string(argument.begin(), argument.end() - 1));
-		watch.Stop(); watch.PrintResultMilliseconds();
+		watch.Stop();
+		std::cout << "complete: "; watch.PrintResultMilliseconds();
 	}
 	else if (command == "free_buffer")
 	{
@@ -189,7 +190,7 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
 	std::set<std::string> prefix_completions;
 	calculatePrefixCompletions(word_to_complete, &prefix_completions);
 
-	Buffer::LevenshteinSearchResults levenshtein_completions;
+	LevenshteinSearchResults levenshtein_completions;
 	// only if we have no completions do we try to Levenshtein distance completion
 	if (prefix_completions.size() <= 2)
 	{
@@ -300,7 +301,7 @@ void Session::calculatePrefixCompletions(
 
 void Session::calculateLevenshteinCompletions(
 	const std::string& word_to_complete,
-	Buffer::LevenshteinSearchResults& completions)
+	LevenshteinSearchResults& completions)
 {
 	buffers_[current_buffer_].GetLevenshteinCompletions(
 		word_to_complete,
