@@ -8,7 +8,7 @@ speed, and uses python glue code to send the contents of the current buffer to t
 server component for synchronization.
 
 Since this uses C++11, you need a recent compiler and also the compiled portion
-of the Boost C++ libraries.
+of the Boost C++ libraries. Your version of VIM also needs to have Python 2.X bindings.
 
 ## Completion Types
 
