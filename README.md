@@ -16,19 +16,20 @@ bindings.
 ### Prefix Completion
 Standard completion provided by VIM when you press Ctrl-N / Ctrl-P
 
-### Levenshtein Distance <= X
-Completion Calculates the levenshtein distance of
-the current word against all known words in all buffers.  If the distance is
-less than or equal to X then, offers it as completions.  Right now this only
-triggers if words are longer than 3 characters and the distance <= 2.
 
 ### Title Case Completion
 If have a word like "MyAwesomeVariable", then typing "mav" would offer this
 completion first before prefix completion.
 
 ### Underscore Completion
-Similar to the above, if you have "foo_bar_fizz_buzz", the typeing "fbfb" would
+Similar to the above, if you have "foo\_bar\_fizz\_buzz", the typeing "fbfb" would
 offer this completion first before prefix completion.
+
+### Levenshtein Distance <= X
+Completion Calculates the levenshtein distance of
+the current word against all known words in all buffers.  If the distance is
+less than or equal to X then, offers it as completions.  Right now this only
+triggers if words are longer than 3 characters and the distance <= 2.
 
 ## Random Ramblings
 Apparently freeing structures (such as the TrieNode) is so expensive (taking
