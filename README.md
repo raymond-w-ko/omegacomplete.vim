@@ -36,7 +36,7 @@ Apparently freeing structures (such as the TrieNode) is so expensive (taking
 100 ms out of 300ms blocking operation on my machine) that I have to have
 a separate thread acting as a "garbage collector" and free there. I guess Herb
 Sutter was right when he said that you sometimes need a real garbage collector
-for absolute performant code.
+for absolute performant C++ code.
 
 Building a trie of all words in a buffer can get expensive. Similarly, building
 all abbreviations for all words is also expensive. It can probably be less
