@@ -3,6 +3,7 @@
 class TrieNode;
 
 typedef boost::unordered_set<std::string> StringSet;
+typedef boost::unordered_multimap<std::string, std::string> StringStringMultiMap;
 class GarbageDeleter
 {
 public:
@@ -11,6 +12,7 @@ public:
 
 	void QueueForDeletion(TrieNode* pointer);
 	void QueueForDeletion(StringSet* pointer);
+	void QueueForDeletion(StringStringMultiMap* pointer);
 
 private:
 	void deletionLoop();
@@ -21,4 +23,5 @@ private:
 	std::mutex mutex_;
 	std::vector<TrieNode*> trie_node_pointers_;
 	std::vector<StringSet*> words_pointers_;
+	std::vector<StringStringMultiMap*> multimap_pointers_;
 };

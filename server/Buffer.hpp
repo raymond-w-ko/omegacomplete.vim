@@ -36,10 +36,15 @@ public:
 		const std::string& prefix,
 		LevenshteinSearchResults& results);
 
+	void GetAbbrCompletions(
+		const std::string& prefix,
+		std::set<std::string>* results);
+
 private:
     void tokenizeKeywords();
     void tokenizeKeywordsOfLine(const std::string& line);
 	void tokenizeKeywordsUsingRegex();
+	void generateTitleCasesAndUnderscores();
 
 	void levenshteinSearch(
 		const std::string& word,
@@ -68,8 +73,10 @@ private:
 	boost::unordered_set<std::string>* words_;
 	std::set<std::string> current_line_words_;
 	TrieNode* trie_;
-	boost::unordered_map<std::string, std::string> title_cases_;
-	boost::unordered_map<std::string, std::string> underscores_;
+
+	bool abbreviations_dirty_;
+	boost::unordered_multimap<std::string, std::string>* title_cases_;
+	boost::unordered_multimap<std::string, std::string>* underscores_;
 };
 
 namespace std

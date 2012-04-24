@@ -32,6 +32,13 @@ void GarbageDeleter::QueueForDeletion(StringSet* pointer)
 	mutex_.unlock();
 }
 
+void GarbageDeleter::QueueForDeletion(StringStringMultiMap* pointer)
+{
+	mutex_.lock();
+	multimap_pointers_.push_back(pointer);
+	mutex_.unlock();
+}
+
 void GarbageDeleter::deletionLoop()
 {
 	while (true)
@@ -51,6 +58,13 @@ void GarbageDeleter::deletionLoop()
 		words_pointers_.clear();
 		mutex_.unlock();
 		for (StringSet* wordset : wordsets) delete wordset;
+
+		std::vector<StringStringMultiMap*> multimaps;
+		mutex_.lock();
+		multimaps = multimap_pointers_;
+		multimap_pointers_.clear();
+		mutex_.unlock();
+		for (StringStringMultiMap* multimap : multimaps) delete multimap;
 
 #ifdef WIN32
 		Sleep(100);

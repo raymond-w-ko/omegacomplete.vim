@@ -3,6 +3,8 @@
 #include "TrieNode.hpp"
 
 TrieNode::TrieNode()
+:
+Word(nullptr)
 {
     ;
 }
@@ -12,10 +14,10 @@ TrieNode::~TrieNode()
     ;
 }
 
-void TrieNode::Insert(const std::string& word)
+void TrieNode::Insert(const std::string* word)
 {
 	TrieNode* node = this;
-	for (char letter : word)
+	for (char letter : *word)
 	{
 		auto& children = node->Children;
 		if (children.find(letter) == children.end())
@@ -33,7 +35,7 @@ void TrieNode::Insert(const std::string& word)
 
 void TrieNode::Clear()
 {
-	Word = "";
+	Word = nullptr;
 	Children.clear();
 }
 

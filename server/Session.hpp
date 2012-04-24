@@ -36,6 +36,9 @@ private:
 	void calculateLevenshteinCompletions(
 		const std::string& word_to_complete,
 		LevenshteinSearchResults& completions);
+	void calculateAbbrCompletions(
+		const std::string& word_to_complete,
+		std::set<std::string>* completions);
 
     // connection related variables
     static unsigned int connection_ticket_;

@@ -182,10 +182,14 @@ void Session::handleWriteResponse(const boost::system::error_code& error)
 
 std::string Session::calculateCompletionCandidates(const std::string& line)
 {
+
 	std::string word_to_complete = getWordToComplete(line);
 	if (word_to_complete.empty()) return "";
 
 	//std::cout << "--- BEGIN COMPLETIONS ---\n";
+	
+	std::set<std::string> abbr_completions;
+	calculateAbbrCompletions(word_to_complete, &abbr_completions);	
 	
 	std::set<std::string> prefix_completions;
 	calculatePrefixCompletions(word_to_complete, &prefix_completions);
@@ -205,7 +209,22 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
 	num_completions_added = 0;
 	std::stringstream results;
 	results << "[";
+	num_completions_added = 0;
+	// append abbreviations first
+	for (const std::string& word : abbr_completions)
+	{
+		if (word == word_to_complete) continue;
+
+		results << boost::str(boost::format(
+			"{'word':'%s'},")
+			% word);
+
+		num_completions_added++;
+		if (num_completions_added >= 10) break;
+	}
+
 	// append prefix completions
+	num_completions_added = 0;
 	for (const std::string& word : prefix_completions)
 	{
 		if (word == word_to_complete) continue;
@@ -303,14 +322,18 @@ void Session::calculateLevenshteinCompletions(
 	const std::string& word_to_complete,
 	LevenshteinSearchResults& completions)
 {
-	buffers_[current_buffer_].GetLevenshteinCompletions(
-		word_to_complete,
-		completions);
-
 	for (auto& buffer : buffers_)
 	{
-		if (buffer.first == current_buffer_) continue;
-		
 		buffer.second.GetLevenshteinCompletions(word_to_complete, completions);
+	}
+}
+
+void Session::calculateAbbrCompletions(
+	const std::string& word_to_complete,
+	std::set<std::string>* completions)
+{
+	for (auto& buffer : buffers_)
+	{
+		buffer.second.GetAbbrCompletions(word_to_complete, completions);
 	}
 }

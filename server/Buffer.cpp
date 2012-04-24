@@ -13,6 +13,9 @@ Buffer::Buffer()
 :
 words_(nullptr),
 trie_(nullptr),
+title_cases_(nullptr),
+underscores_(nullptr),
+abbreviations_dirty_(true),
 cursor_pos_(0, 0)
 {
     //word_split_regex_ = boost::xpressive::sregex::compile("\\W+");
@@ -181,12 +184,16 @@ void Buffer::tokenizeKeywords()
 	//watch.Stop(); watch.PrintResultMilliseconds();
 
 	//watch.Start();
-	title_cases_.clear();
+	//title_cases_.clear();
 	//watch.Stop(); watch.PrintResultMilliseconds();
 
 	//watch.Start();
-	underscores_.clear();
+	//underscores_.clear();
 	//watch.Stop(); watch.PrintResultMilliseconds();
+	
+	//generateTitleCasesAndUnderscores();
+	// defer abbrevation generation until we are in insert mode
+	abbreviations_dirty_ = true;
 
 	// build trie of all the unique words in the buffer
 	//for (const std::string& word : words_)
@@ -323,9 +330,10 @@ void Buffer::levenshteinSearchRecursive(
 	// maximum cost, and there is a word in this trie node, then add it.
 	size_t last_index = current_row.size() - 1; 
 	if ( (current_row[last_index] <= max_cost) &&
-	     (node->Word.length() > 0) )
+	     (node->Word != nullptr) &&
+	     (node->Word->length() > 0) )
 	{
-		results[ current_row[last_index] ].insert(node->Word);
+		results[ current_row[last_index] ].insert(*node->Word);
 	}
 
 	// if any entries in the row are less than the maximum cost, then 
@@ -355,7 +363,7 @@ void Buffer::GetLevenshteinCompletions(
 	{
 		for (const std::string& word : *words_)
 		{
-			trie_->Insert(word);
+			trie_->Insert(&word);
 		}
 	}
 
@@ -364,4 +372,84 @@ void Buffer::GetLevenshteinCompletions(
 	if (prefix.length() < kMinLengthForLevenshteinCompletion) return;
 
 	levenshteinSearch(prefix, kLevenshteinMaxCost, results);
+}
+
+void Buffer::generateTitleCasesAndUnderscores()
+{
+	if (abbreviations_dirty_ == false) return;
+	abbreviations_dirty_ = false;
+
+	//title_cases_.clear();
+	parent_->GD.QueueForDeletion(title_cases_);
+	title_cases_ = new boost::unordered_multimap<std::string, std::string>;
+
+	//underscores_.clear();
+	parent_->GD.QueueForDeletion(underscores_);
+	underscores_ = new boost::unordered_multimap<std::string, std::string>;
+
+	for (const std::string& word : *words_)
+	{
+		if (word.length() <= 2) continue;
+
+		std::string title_case;
+		std::string underscore;
+
+		for (size_t ii = 0; ii < word.length(); ++ii)
+		{
+			char c = word[ii];
+			
+			if (ii == 0)
+			{
+				title_case += c;
+				underscore += c;
+
+				continue;
+			}
+
+			if (IsUpper(c))
+			{
+				title_case += c;
+			}
+
+			if (word[ii] == '_')
+			{
+				if (ii < (word.length() - 1) && word[ii + 1] != '_')
+					underscore += word[ii + 1];
+			}
+		}
+
+		if (title_case.length() >= 2)
+		{
+			boost::algorithm::to_lower(title_case);
+			title_cases_->insert(std::make_pair(title_case, word));
+			//std::cout << word << " -> " << title_case << "\n";
+		}
+
+		if (underscore.length() >= 2)
+		{
+			underscores_->insert(std::make_pair(underscore, word));
+			//std::cout << word << " -> " << underscore << "\n";
+		}
+	}
+}
+
+void Buffer::GetAbbrCompletions(
+	const std::string& prefix,
+	std::set<std::string>* results)
+{
+	// generate abbreviations if they already haven't
+	generateTitleCasesAndUnderscores();
+	if (prefix.length() < 2) return;
+
+	auto bounds1 = title_cases_->equal_range(prefix);
+	for (auto& ii = bounds1.first; ii != bounds1.second; ++ii)
+	{
+		results->insert(ii->second);
+	}
+
+	auto bounds2 = underscores_->equal_range(prefix);
+	for (auto& ii = bounds2.first; ii != bounds2.second; ++ii)
+	{
+		results->insert(ii->second);
+	}
 }

@@ -19,6 +19,8 @@
 #include <utility>
 #include <mutex>
 #include <thread>
+#include <unordered_map>
+#include <unordered_set>
 
 #include <boost/bind.hpp>
 #include <boost/enable_shared_from_this.hpp>
@@ -60,6 +62,12 @@ inline bool IsPartOfWord(char c)
 		return true;
 	}
 
+	return false;
+}
+
+inline bool IsUpper(char c)
+{
+	if (('A' <= c) && (c <= 'Z')) return true;
 	return false;
 }
 
