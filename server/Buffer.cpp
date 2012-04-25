@@ -40,54 +40,31 @@ void Buffer::ParseInsertMode(
 	const std::string& cur_line,
 	std::pair<int, int> cursor_pos)
 {
+	//std::cout << "prev: " << cursor_pos_.first << "\n";
+	//std::cout << "cur: " << cursor_pos.first << "\n";
 	// if our cursor row has changed, then capture the contents of the original
 	// current line before any changes have occurred
 	if (cursor_pos.first != cursor_pos_.first)
 	{
+		//std::cout << "reparse all\n";
 		initial_current_line_ = cur_line;
-	}
+		tokenizeKeywordsOfOriginalCurrentLine(initial_current_line_);
 
-	// the only time we should have to totally reparse is if we change lines,
-	// that is if cursor_pos.first changes
-
-	bool need_total_reparse = false;
-	if (boost::starts_with(cur_line, prev_cur_line_))
-	{
-		// since the old current line is a prefix of the new current
-		// line (the common case), we can only have new words to add
-		// just parse the current line and re-add all the words,
-		// since we are using a  set dupicates can't happen
-		need_total_reparse = false;
-
-		tokenizeKeywordsOfLine(cur_line);
-	}
-	else
-	{
-		// if the old current_line is no longer the prefix of
-		// current line, then something is deleted, or has changed
-		// we have to trigger a reparse since we don't maintain original
-		// unchanged words on the line
-		need_total_reparse = true;
-	}
-	// NUL byte at the end
-	prev_cur_line_ = std::string(cur_line.begin(), cur_line.end() - 1);
-
-	// if we have somehow changed rows in insert mode
-	// (are you really using arrow keys?) then we should reparse just to be sure
-	if (need_total_reparse ||
-	    (cursor_pos_.first != cursor_pos.first) &&
-		(cursor_pos_.first != 0 && cursor_pos_.second != 0)
-		)
-	{
+		// by changing lines in insert mode, we have to reparse buffer
+		// to keep it current
 		if (contents_ != new_contents)
 		{
-			//std::cout << "doing total reparse\n";
 			contents_ = new_contents;
 			tokenizeKeywords();
 		}
-
 	}
 
+	// calling the function implies that the current line has changed,
+	// so parse the current line
+	tokenizeKeywordsOfCurrentLine(cur_line);
+
+	// end() - 1 because of extra byte at the end?
+	prev_cur_line_ = std::string(cur_line.begin(), cur_line.end() - 1);
 	cursor_pos_ = cursor_pos;
 }
 
@@ -96,21 +73,9 @@ void Buffer::ParseNormalMode(
 {
 	if (contents_ == new_contents) return;
 	
-	Stopwatch watch;
-	
-	// around 0.02 ms, not a problem
-	//watch.Start();
 	contents_ = new_contents;
-	//watch.Stop(); watch.PrintResultMilliseconds();
 
-	// around 60 ms, could be a problem
-	// using std::unique_ptr<T> this drops to around 45 ms
-	//watch.Start();
-    //already_processed_words_.clear();
-	//current_line_words_.clear();
-	//watch.Stop(); watch.PrintResultMilliseconds();
-
-	// around 375 ms, this is the bottleneck
+	Stopwatch watch;
 	watch.Start();
     tokenizeKeywords();
 	watch.Stop();
@@ -141,9 +106,8 @@ void Buffer::tokenizeKeywords()
 	//Stopwatch watch;
 	//watch.Start();
 	current_line_words_.clear();
-	//words_.clear();
 	parent_->GD.QueueForDeletion(words_);
-	words_ = new boost::unordered_set<std::string>;
+	words_ = new boost::unordered_map<std::string, unsigned>;
 	//watch.Stop(); watch.PrintResultMilliseconds();
 
 	size_t contents_size = contents_.size();
@@ -169,7 +133,7 @@ void Buffer::tokenizeKeywords()
 		
 		// construct word based off of pointer
 		std::string word(&contents_[ii], &contents_[jj]);
-		words_->insert(std::move(word));
+		(*words_)[std::move(word)]++;
 		
 		// for loop will autoincrement
 		ii = jj;
@@ -181,7 +145,6 @@ void Buffer::tokenizeKeywords()
 	// same thing with TitleCase structure and userscores structure
 
 	//watch.Start();
-	//trie_.Clear();
 	parent_->GD.QueueForDeletion(trie_);
 	trie_ = new TrieNode();
 	//watch.Stop(); watch.PrintResultMilliseconds();
@@ -197,30 +160,20 @@ void Buffer::tokenizeKeywords()
 	//generateTitleCasesAndUnderscores();
 	// defer abbrevation generation until we are in insert mode
 	abbreviations_dirty_ = true;
-
-	// build trie of all the unique words in the buffer
-	//for (const std::string& word : words_)
-	//{
-		//trie_->Insert(word);
-	//}
-	
-	
-    //std::cout << boost::str(boost::format(
-        //"stored %u words\n") % already_processed_words_.size());
 }
 
-void Buffer::tokenizeKeywordsOfLine(const std::string& line)
+void Buffer::tokenizeKeywordsHelper(
+	const std::string& content, 
+	boost::unordered_set<std::string>& container)
 {
-	current_line_words_.clear();
-
-	size_t contents_size = line.size();
+	size_t contents_size = content.size();
 
 	for (size_t ii = 0; ii < contents_size; ++ii)
 	{
 		// initial case, find character in the set of ([a-z][A-Z][0-9]_)
 		// this will be what is considered a word
 		// I guess we have unicode stuff we are screwed :(
-		char c = line[ii];
+		char c = content[ii];
 		if (!is_part_of_word_[c]) continue;
 		
 		// we have found the beginning of the word, loop until
@@ -228,32 +181,56 @@ void Buffer::tokenizeKeywordsOfLine(const std::string& line)
 		size_t jj = ii + 1;
 		for (; jj < contents_size; ++jj)
 		{
-			if (is_part_of_word_[line[jj]])
+			if (is_part_of_word_[content[jj]])
 				continue;
 			break;
 		}
 		if (jj == contents_size) break;
 		
 		// construct word based off of pointer
-		std::string word(&line[ii], &line[jj]);
-		current_line_words_.insert(word);
+		std::string word(&content[ii], &content[jj]);
+		container.insert(word);
 		
 		// for loop will autoincrement
 		ii = jj;
 	}
+}
 
-    //std::cout << boost::str(boost::format(
-        //"stored %u words\n") % already_processed_words_.size());
+void Buffer::tokenizeKeywordsOfCurrentLine(const std::string& line)
+{
+	current_line_words_.clear();
+	tokenizeKeywordsHelper(line, current_line_words_);
+}
+
+void Buffer::tokenizeKeywordsOfOriginalCurrentLine(const std::string& line)
+{
+	orig_cur_line_words_.clear();
+	tokenizeKeywordsHelper(line, orig_cur_line_words_);
 }
 
 void Buffer::GetAllWordsWithPrefix(
 	const std::string& prefix,
 	std::set<std::string>* results)
 {
-	for (const std::string& word : *words_)
+	for (auto& word_count_pair : *words_)
 	{
+		const std::string& word = word_count_pair.first;
 		if (boost::starts_with(word, prefix))
 		{
+			// check to make sure really exists
+			unsigned count = word_count_pair.second;
+			if (count == 1 &&
+				// there is only one instance in the buffer and this line
+				// originally has it
+				orig_cur_line_words_.find(word) != orig_cur_line_words_.end() &&
+				// but the current line doesn't have it
+				current_line_words_.find(word) == current_line_words_.end())
+			{
+				// then the word doesn't anymore, it's just that the buffer
+				// hasn't been reparsed (most likely triggered by backspace)
+				continue;
+			}
+
 			results->insert(word);
 		}
 	}
@@ -263,11 +240,12 @@ void Buffer::GetAllWordsWithPrefixFromCurrentLine(
 	const std::string& prefix,
 	std::set<std::string>* results)
 {
-	auto iter = current_line_words_.lower_bound(prefix);
-	while (iter != current_line_words_.end() && boost::starts_with(*iter, prefix))
+	for (const std::string& word : current_line_words_)
 	{
-		results->insert(*iter);
-		++iter;
+		if (boost::starts_with(word, prefix))
+		{
+			results->insert(word);
+		}
 	}
 }
 
@@ -364,9 +342,9 @@ void Buffer::GetLevenshteinCompletions(
 {
 	if ((words_->size()) > 0 && trie_->Empty())
 	{
-		for (const std::string& word : *words_)
+		for (auto& word_count_pair : *words_)
 		{
-			trie_->Insert(&word);
+			trie_->Insert(&word_count_pair.first);
 		}
 	}
 
@@ -379,16 +357,15 @@ void Buffer::GetLevenshteinCompletions(
 
 void Buffer::generateTitleCasesAndUnderscores()
 {
-	//title_cases_.clear();
 	parent_->GD.QueueForDeletion(title_cases_);
 	title_cases_ = new boost::unordered_multimap<std::string, std::string>;
 
-	//underscores_.clear();
 	parent_->GD.QueueForDeletion(underscores_);
 	underscores_ = new boost::unordered_multimap<std::string, std::string>;
 
-	for (const std::string& word : *words_)
+	for (auto& word_count_pair : *words_)
 	{
+		const std::string& word = word_count_pair.first;
 		if (word.length() <= 2) continue;
 
 		std::string title_case;

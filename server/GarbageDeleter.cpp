@@ -21,14 +21,21 @@ GarbageDeleter::~GarbageDeleter()
 void GarbageDeleter::QueueForDeletion(TrieNode* pointer)
 {
 	mutex_.lock();
-	trie_node_pointers_.push_back(pointer);
+	trie_node_vector_pointers_.push_back(pointer);
 	mutex_.unlock();
 }
 
 void GarbageDeleter::QueueForDeletion(StringSet* pointer)
 {
 	mutex_.lock();
-	words_pointers_.push_back(pointer);
+	string_set_pointers_.push_back(pointer);
+	mutex_.unlock();
+}
+
+void GarbageDeleter::QueueForDeletion(StringUnsignedMap* pointer)
+{
+	mutex_.lock();
+	string_unsigned_map_pointers_.push_back(pointer);
 	mutex_.unlock();
 }
 
@@ -47,17 +54,24 @@ void GarbageDeleter::deletionLoop()
 
 		std::vector<TrieNode*> trie_nodes;
 		mutex_.lock();
-		trie_nodes = trie_node_pointers_;
-		trie_node_pointers_.clear();
+		trie_nodes = trie_node_vector_pointers_;
+		trie_node_vector_pointers_.clear();
 		mutex_.unlock();
 		for (TrieNode* node : trie_nodes) delete node;
 
 		std::vector<StringSet*> wordsets;
 		mutex_.lock();
-		wordsets = words_pointers_;
-		words_pointers_.clear();
+		wordsets = string_set_pointers_;
+		string_set_pointers_.clear();
 		mutex_.unlock();
 		for (StringSet* wordset : wordsets) delete wordset;
+
+		std::vector<StringUnsignedMap*> sums;
+		mutex_.lock();
+		sums = string_unsigned_map_pointers_;
+		string_unsigned_map_pointers_.clear();
+		mutex_.unlock();
+		for (StringUnsignedMap* sum : sums) delete sum;
 
 		std::vector<StringStringMultiMap*> multimaps;
 		mutex_.lock();

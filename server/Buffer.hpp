@@ -42,8 +42,13 @@ public:
 
 private:
     void tokenizeKeywords();
-    void tokenizeKeywordsOfLine(const std::string& line);
-	void tokenizeKeywordsUsingRegex();
+
+	void tokenizeKeywordsHelper(
+		const std::string& content,
+		boost::unordered_set<std::string>& container);
+    void tokenizeKeywordsOfCurrentLine(const std::string& line);
+	void tokenizeKeywordsOfOriginalCurrentLine(const std::string& line);
+
 	void generateTitleCasesAndUnderscores();
 
 	void levenshteinSearch(
@@ -65,13 +70,15 @@ private:
     std::string pathname_;
     std::string contents_;
 	
+	std::pair<int, int> cursor_pos_;
 	std::string initial_current_line_;
 	std::string prev_cur_line_;
-	std::pair<int, int> cursor_pos_;
 	
 	char is_part_of_word_[256];
-	boost::unordered_set<std::string>* words_;
-	std::set<std::string> current_line_words_;
+	//boost::unordered_set<std::string>* words_;
+	boost::unordered_map<std::string, unsigned>* words_;
+	boost::unordered_set<std::string> current_line_words_;
+	boost::unordered_set<std::string> orig_cur_line_words_;
 	TrieNode* trie_;
 
 	bool abbreviations_dirty_;

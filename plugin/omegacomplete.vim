@@ -58,8 +58,7 @@ function <SID>FeedPopup()
     execute 'py oc_send_command("current_buffer ' . current_buffer_number . '")'
     execute 'py oc_send_command("current_pathname ' . current_pathname . '")'
     execute 'py oc_send_command("current_line " + oc_get_current_line())'
-    execute 'py oc_send_command("buffer_contents_insert_mode " + oc_get_current_buffer_contents())'
-	
+
 	" check if plugin has disabled itself because of connection problems
 	let is_oc_disabled=""
 	execute 'py vim.command("let is_oc_disabled=" + oc_disable_check())'
@@ -71,6 +70,8 @@ function <SID>FeedPopup()
 	let cursor_row = line('.')
 	let cursor_col = col('.') - 1
 	execute 'py oc_send_command("cursor_position " + str(' . cursor_row . ') + " " + str(' . cursor_col . '))'
+
+    execute 'py oc_send_command("buffer_contents_insert_mode " + oc_get_current_buffer_contents())'
 
     let partial_line = strpart(getline('.'), 0, col('.') - 1)
 	execute 'py oc_server_result = oc_send_command("complete " + vim.eval("partial_line"))'
@@ -175,6 +176,9 @@ endfunction
 " init
 set completefunc=OmegaCompleteFunc
 call s:mapForMappingDriven()
+nnoremap <silent> i i<C-r>=<SID>FeedPopup()<CR>
+nnoremap <silent> a a<C-r>=<SID>FeedPopup()<CR>
+nnoremap <silent> R R<C-r>=<SID>FeedPopup()<CR>
 
 python << EOF
 import vim
