@@ -77,10 +77,6 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     std::string response = "ACK";
     
     if (false) { }
-    //else if (command == "open_file")
-    //{
-		//std::cout << boost::str(boost::format("%s: %s\n") % command % argument);
-    //}
     else if (command == "current_buffer")
     {
 		//std::cout << boost::str(boost::format("%s: %s\n") % command % argument);

@@ -18,7 +18,6 @@ underscores_(nullptr),
 abbreviations_dirty_(true),
 cursor_pos_(0, 0)
 {
-    //word_split_regex_ = boost::xpressive::sregex::compile("\\W+");
 	
 	for (size_t index = 0; index <= 255; ++index)
 	{
@@ -41,9 +40,17 @@ void Buffer::ParseInsertMode(
 	const std::string& cur_line,
 	std::pair<int, int> cursor_pos)
 {
+	// if our cursor row has changed, then capture the contents of the original
+	// current line before any changes have occurred
+	if (cursor_pos.first != cursor_pos_.first)
+	{
+		initial_current_line_ = cur_line;
+	}
+
+	// the only time we should have to totally reparse is if we change lines,
+	// that is if cursor_pos.first changes
+
 	bool need_total_reparse = false;
-	//std::cout << "cur_line: " << cur_line << "#" <<std::endl;
-	//std::cout << "prev_cur_line_: " << prev_cur_line_ << "#" << std::endl;
 	if (boost::starts_with(cur_line, prev_cur_line_))
 	{
 		// since the old current line is a prefix of the new current
@@ -53,7 +60,6 @@ void Buffer::ParseInsertMode(
 		need_total_reparse = false;
 
 		tokenizeKeywordsOfLine(cur_line);
-		//std::cout << "no need to do total reparse, just re-adding line\n";
 	}
 	else
 	{
@@ -61,7 +67,6 @@ void Buffer::ParseInsertMode(
 		// current line, then something is deleted, or has changed
 		// we have to trigger a reparse since we don't maintain original
 		// unchanged words on the line
-		//std::cout << "need to do total reparse\n";
 		need_total_reparse = true;
 	}
 	// NUL byte at the end
@@ -69,9 +74,6 @@ void Buffer::ParseInsertMode(
 
 	// if we have somehow changed rows in insert mode
 	// (are you really using arrow keys?) then we should reparse just to be sure
-    //std::cout << boost::str(boost::format("%d %d ? %d %d\n")
-		//% cursor_pos_.first % cursor_pos_.second
-		//% cursor_pos.first % cursor_pos.second);
 	if (need_total_reparse ||
 	    (cursor_pos_.first != cursor_pos.first) &&
 		(cursor_pos_.first != 0 && cursor_pos_.second != 0)
@@ -85,6 +87,7 @@ void Buffer::ParseInsertMode(
 		}
 
 	}
+
 	cursor_pos_ = cursor_pos;
 }
 
@@ -376,9 +379,6 @@ void Buffer::GetLevenshteinCompletions(
 
 void Buffer::generateTitleCasesAndUnderscores()
 {
-	if (abbreviations_dirty_ == false) return;
-	abbreviations_dirty_ = false;
-
 	//title_cases_.clear();
 	parent_->GD.QueueForDeletion(title_cases_);
 	title_cases_ = new boost::unordered_multimap<std::string, std::string>;
@@ -422,15 +422,15 @@ void Buffer::generateTitleCasesAndUnderscores()
 		{
 			boost::algorithm::to_lower(title_case);
 			title_cases_->insert(std::make_pair(title_case, word));
-			//std::cout << word << " -> " << title_case << "\n";
 		}
 
 		if (underscore.length() >= 2)
 		{
 			underscores_->insert(std::make_pair(underscore, word));
-			//std::cout << word << " -> " << underscore << "\n";
 		}
 	}
+
+	abbreviations_dirty_ = false;
 }
 
 void Buffer::GetAbbrCompletions(
@@ -438,7 +438,11 @@ void Buffer::GetAbbrCompletions(
 	std::set<std::string>* results)
 {
 	// generate abbreviations if they already haven't
-	generateTitleCasesAndUnderscores();
+	if (abbreviations_dirty_)
+	{
+		generateTitleCasesAndUnderscores();	
+	}
+	
 	if (prefix.length() < 2) return;
 
 	auto bounds1 = title_cases_->equal_range(prefix);

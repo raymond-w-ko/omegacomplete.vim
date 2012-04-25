@@ -60,12 +60,12 @@ private:
 		int max_cost);
 
     Session* parent_;
-    //boost::xpressive::sregex word_split_regex_;
 
     std::string buffer_id_;
     std::string pathname_;
     std::string contents_;
 	
+	std::string initial_current_line_;
 	std::string prev_cur_line_;
 	std::pair<int, int> cursor_pos_;
 	

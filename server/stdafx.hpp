@@ -28,7 +28,6 @@
 #include <boost/make_shared.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/asio.hpp>
-#include <boost/xpressive/xpressive.hpp>
 #include <boost/thread.hpp>
 #include <boost/format.hpp>
 #include <boost/utility/result_of.hpp>
@@ -37,8 +36,6 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/container/flat_set.hpp>
-#include <boost/container/flat_map.hpp>
 
 using namespace boost::asio;
 
