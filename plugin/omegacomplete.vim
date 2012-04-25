@@ -177,7 +177,9 @@ endfunction
 set completefunc=OmegaCompleteFunc
 call s:mapForMappingDriven()
 nnoremap <silent> i i<C-r>=<SID>FeedPopup()<CR>
+nnoremap <silent> I I<C-r>=<SID>FeedPopup()<CR>
 nnoremap <silent> a a<C-r>=<SID>FeedPopup()<CR>
+nnoremap <silent> A A<C-r>=<SID>FeedPopup()<CR>
 nnoremap <silent> R R<C-r>=<SID>FeedPopup()<CR>
 
 python << EOF
