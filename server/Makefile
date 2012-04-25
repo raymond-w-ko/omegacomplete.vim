@@ -1,8 +1,8 @@
 CC = g++
 
 CFLAGS = -std=c++11
-CFLAGS += -O3 -march=native
-#CFLAGS += -flto -fwhole-program
+CFLAGS += -Ofast -march=native
+CFLAGS += -flto -fwhole-program
 #CFLAGS += -O0
 CFLAGS += -I"C:\Boost"
 

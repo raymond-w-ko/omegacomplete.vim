@@ -403,6 +403,7 @@ void Buffer::generateTitleCasesAndUnderscores()
 
 		if (underscore.length() >= 2)
 		{
+			boost::algorithm::to_lower(underscore);
 			underscores_->insert(std::make_pair(underscore, word));
 		}
 	}
