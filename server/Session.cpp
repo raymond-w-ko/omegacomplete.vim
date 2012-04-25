@@ -190,7 +190,7 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
 	
 	std::set<std::string> prefix_completions;
 	calculatePrefixCompletions(word_to_complete, &prefix_completions);
-	abbr_completions.erase(word_to_complete);
+	prefix_completions.erase(word_to_complete);
 
 	LevenshteinSearchResults levenshtein_completions;
 	// only if we have no completions do we try to Levenshtein distance completion
@@ -209,8 +209,6 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
 	// append abbreviations first
 	for (const std::string& word : abbr_completions)
 	{
-		if (word == word_to_complete) continue;
-
 		results << boost::str(boost::format(
 			"{'word':'%s'},")
 			% word);
@@ -220,8 +218,6 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
 	num_completions_added = 0;
 	for (const std::string& word : prefix_completions)
 	{
-		if (word == word_to_complete) continue;
-
 		results << boost::str(boost::format(
 			"{'word':'%s'},")
 			% word);
