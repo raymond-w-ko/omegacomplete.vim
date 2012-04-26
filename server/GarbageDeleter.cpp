@@ -4,9 +4,8 @@
 #include "TrieNode.hpp"
 
 GarbageDeleter::GarbageDeleter()
-:
-is_quitting_(0)
 {
+    is_quitting_ = 0;
     thread_ = std::thread(
         &GarbageDeleter::deletionLoop,
         this);
@@ -20,6 +19,8 @@ GarbageDeleter::~GarbageDeleter()
 
 void GarbageDeleter::QueueForDeletion(TrieNode* pointer)
 {
+    if (pointer == nullptr) return;
+
     mutex_.lock();
     trie_node_vector_pointers_.push_back(pointer);
     mutex_.unlock();
@@ -27,6 +28,8 @@ void GarbageDeleter::QueueForDeletion(TrieNode* pointer)
 
 void GarbageDeleter::QueueForDeletion(StringSet* pointer)
 {
+    if (pointer == nullptr) return;
+
     mutex_.lock();
     string_set_pointers_.push_back(pointer);
     mutex_.unlock();
@@ -34,6 +37,8 @@ void GarbageDeleter::QueueForDeletion(StringSet* pointer)
 
 void GarbageDeleter::QueueForDeletion(StringUnsignedMap* pointer)
 {
+    if (pointer == nullptr) return;
+
     mutex_.lock();
     string_unsigned_map_pointers_.push_back(pointer);
     mutex_.unlock();
@@ -41,6 +46,8 @@ void GarbageDeleter::QueueForDeletion(StringUnsignedMap* pointer)
 
 void GarbageDeleter::QueueForDeletion(StringStringMultiMap* pointer)
 {
+    if (pointer == nullptr) return;
+
     mutex_.lock();
     multimap_pointers_.push_back(pointer);
     mutex_.unlock();
@@ -48,6 +55,8 @@ void GarbageDeleter::QueueForDeletion(StringStringMultiMap* pointer)
 
 void GarbageDeleter::QueueForDeletion(StringConstStringPointerMultiMap* pointer)
 {
+    if (pointer == nullptr) return;
+
     mutex_.lock();
     ssp_multimap_pointers_.push_back(pointer);
     mutex_.unlock();
@@ -57,6 +66,12 @@ void GarbageDeleter::deletionLoop()
 {
     while (true)
     {
+#ifdef WIN32
+        Sleep(100);
+#else
+        sleep(100);
+#endif
+
         if (is_quitting_ == 1) break;
 
         std::vector<TrieNode*> trie_nodes;
@@ -94,11 +109,5 @@ void GarbageDeleter::deletionLoop()
         mutex_.unlock();
         for (StringConstStringPointerMultiMap* scspmultimap : scspmultimaps)
             delete scspmultimap;
-
-#ifdef WIN32
-        Sleep(100);
-#else
-        sleep(100);
-#endif
     }
 }

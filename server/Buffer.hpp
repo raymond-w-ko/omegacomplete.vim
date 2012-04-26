@@ -85,6 +85,8 @@ private:
     bool abbreviations_dirty_;
     boost::unordered_multimap<std::string, const std::string*>* title_cases_;
     boost::unordered_multimap<std::string, const std::string*>* underscores_;
+    boost::unordered_map<std::string, std::string> title_case_cache_;
+    boost::unordered_map<std::string, std::string> underscore_cache_;
 };
 
 namespace std

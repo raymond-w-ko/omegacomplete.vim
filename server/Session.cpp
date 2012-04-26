@@ -24,7 +24,7 @@ void Session::Start()
 {
     std::cout << "session started, connection number: " << connection_number_ << "\n";
     room_.Join(shared_from_this());
-    
+
     asyncReadUntilNullChar();
 }
 
@@ -47,7 +47,7 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     if (error)
     {
         room_.Leave(shared_from_this());
-        
+
         LogAsioError(error, "failed to handleReadRequest()");
         return;
     }
@@ -56,7 +56,7 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     std::ostringstream ss;
     ss << &request_;
     std::string request = ss.str();
-    
+
     // find first space
     int index = -1;
     for (int ii = 0; ii < request.size(); ++ii)
@@ -67,24 +67,24 @@ void Session::handleReadRequest(const boost::system::error_code& error)
             break;
         }
     }
-    
+
     if (index == -1) throw std::exception();
-    
+
     // break it up into a "request" string and a "argument"
     std::string command(request.begin(), request.begin() + index);
     std::string argument(request.begin() + index + 1, request.end());
-    
+
     std::string response = "ACK";
-    
+
     if (false) { }
     else if (command == "current_buffer")
     {
         //std::cout << boost::str(boost::format("%s: %s\n") % command % argument);
-        
+
         current_buffer_ = argument;
 
         // create and initialize buffer object if it doesn't exist
-        if (buffers_.find(current_buffer_) == buffers_.end())
+        if (Contains(buffers_, current_buffer_))
         {
             buffers_[current_buffer_].Init(this, argument);
         }
@@ -103,26 +103,26 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     }
     else if (command == "buffer_contents_insert_mode")
     {
-        Stopwatch watch; watch.Start();
-        
+        //Stopwatch watch; watch.Start();
+
         auto& buffer = buffers_[current_buffer_];
         buffer.ParseInsertMode(argument, current_line_, cursor_pos_);
 
-        watch.Stop();
-        std::cout << "insert mode parse: ";watch.PrintResultMilliseconds();
+        //watch.Stop();
+        //std::cout << "insert mode parse: ";watch.PrintResultMilliseconds();
 
         //std::cout << boost::str(boost::format(
             //"%s: length = %u\n") % command % argument.length());
     }
     else if (command == "buffer_contents")
     {
-        Stopwatch watch; watch.Start();
+        //Stopwatch watch; watch.Start();
 
         auto& buffer = buffers_[current_buffer_];
         buffer.ParseNormalMode(argument);
 
-        watch.Stop();
-        std::cout << "normal mode parse: "; watch.PrintResultMilliseconds();
+        //watch.Stop();
+        //std::cout << "normal mode parse: "; watch.PrintResultMilliseconds();
 
         //std::cout << boost::str(boost::format(
             //"%s: length = %u\n") % command % argument.length());
@@ -144,11 +144,13 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     }
     else if (command == "complete")
     {
-        Stopwatch watch; watch.Start();
+        //Stopwatch watch; watch.Start();
+
         response = calculateCompletionCandidates(
             std::string(argument.begin(), argument.end() - 1));
-        watch.Stop();
-        std::cout << "complete: "; watch.PrintResultMilliseconds();
+
+        //watch.Stop();
+        //std::cout << "complete: "; watch.PrintResultMilliseconds();
     }
     else if (command == "free_buffer")
     {
@@ -159,8 +161,8 @@ void Session::handleReadRequest(const boost::system::error_code& error)
         std::cout << boost::str(boost::format(
             "unknown command %s %s") % command % argument);
     }
-    
-    // write response    
+
+    // write response
     response.resize(response.size() + 1, '\0');
     async_write(
         socket_,
@@ -169,7 +171,7 @@ void Session::handleReadRequest(const boost::system::error_code& error)
             &Session::handleWriteResponse,
             this,
             placeholders::error));
-            
+
     asyncReadUntilNullChar();
 }
 
@@ -178,7 +180,7 @@ void Session::handleWriteResponse(const boost::system::error_code& error)
     if (error)
     {
         room_.Leave(shared_from_this());
-        
+
         LogAsioError(error, "failed in handleWriteResponse()");
         return;
     }
@@ -191,9 +193,9 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
     if (word_to_complete.empty()) return "";
 
     std::set<std::string> abbr_completions;
-    calculateAbbrCompletions(word_to_complete, &abbr_completions);  
+    calculateAbbrCompletions(word_to_complete, &abbr_completions);
     abbr_completions.erase(word_to_complete);
-    
+
     std::set<std::string> prefix_completions;
     calculatePrefixCompletions(word_to_complete, &prefix_completions);
     prefix_completions.erase(word_to_complete);
@@ -233,7 +235,7 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
         num_completions_added++;
         if (num_completions_added >= 10) break;
     }
-    
+
     // append levenshtein completions
     num_completions_added = 0;
     bool done = false;
@@ -261,14 +263,14 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
     }
 
     results << "]";
-    
+
     return results.str();
 }
 
 std::string Session::getWordToComplete(const std::string& line)
 {
     if (line.length() == 0) return "";
-    
+
     int partial_end = line.length();
     int partial_begin = partial_end - 1;
     for (; partial_begin >= 0; --partial_begin)
@@ -278,10 +280,10 @@ std::string Session::getWordToComplete(const std::string& line)
         {
             continue;
         }
-            
+
         break;
     }
-    
+
     if ((partial_begin + 1) == partial_end) return "";
 
     std::string partial( &line[partial_begin + 1], &line[partial_end] );
@@ -296,7 +298,7 @@ void Session::calculatePrefixCompletions(
     buffers_[current_buffer_].GetAllWordsWithPrefixFromCurrentLine(
         word_to_complete,
         completions);
-    
+
     for (auto& buffer : buffers_)
     {
         buffer.second.GetAllWordsWithPrefix(word_to_complete, completions);

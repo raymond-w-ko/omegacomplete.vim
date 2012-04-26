@@ -9,22 +9,16 @@ int main(int argc, char* argv[])
 #ifdef WIN32
     SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 #endif
-    try
-    {
-        io_service io_service;
-        
-        std::vector<ServerPtr> servers;
 
-        ip::tcp::endpoint endpoint(ip::tcp::v4(), PORT);
-        ServerPtr server(new Server(io_service, endpoint));
-        servers.push_back(server);
-        
-        io_service.run();
-    }
-    catch(std::exception& e)
-    {
-        std::cerr << "Exception: " << e.what() << "\n";
-    }
+    io_service io_service;
+
+    std::vector<ServerPtr> servers;
+
+    ip::tcp::endpoint endpoint(ip::tcp::v4(), PORT);
+    ServerPtr server(new Server(io_service, endpoint));
+    servers.push_back(server);
+
+    io_service.run();
 
     return 0;
 }

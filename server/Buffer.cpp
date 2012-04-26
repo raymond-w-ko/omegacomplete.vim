@@ -221,11 +221,11 @@ void Buffer::GetAllWordsWithPrefix(
             // check to make sure really exists
             unsigned count = word_count_pair.second;
             if (count == 1 &&
-                // there is only one instance in the buffer and this line
-                // originally has it
-                orig_cur_line_words_.find(word) != orig_cur_line_words_.end() &&
+                // there is only one instance in the buffer
+                // and this line originally has it
+                Contains(orig_cur_line_words_, word) == true &&
                 // but the current line doesn't have it
-                current_line_words_.find(word) == current_line_words_.end())
+                Contains(current_line_words_, word) == false)
             {
                 // then the word doesn't anymore, it's just that the buffer
                 // hasn't been reparsed (most likely triggered by backspace)
@@ -372,8 +372,24 @@ void Buffer::generateTitleCasesAndUnderscores()
         const std::string& word = word_count_pair.first;
         if (word.length() <= 2) continue;
 
-        std::string title_case;
-        std::string underscore;
+        // check if we have cached the result of the word
+        // finding the word in title_case_cache_ implies that we will also
+        // find the same word in underscore_cache_ because of how it is
+        // done below
+        if (Contains(title_case_cache_, word))
+        {
+            if (title_case_cache_[word].empty() == false)
+            {
+                title_cases_->insert(make_pair(title_case_cache_[word], &word));
+            }
+            if (underscore_cache_[word].empty() == false)
+            {
+                underscores_->insert(make_pair(underscore_cache_[word], &word));
+            }
+            continue;
+        }
+
+        std::string title_case, underscore;
 
         const size_t word_length = word.length();
         for (size_t ii = 0; ii < word_length; ++ii)
@@ -403,13 +419,25 @@ void Buffer::generateTitleCasesAndUnderscores()
         if (title_case.length() >= 2)
         {
             title_cases_->insert(std::make_pair(title_case, &word));
-            //std::cout << title_case << ": " << word << "\n";
+            // cache abbreviation calculation
+            title_case_cache_[word] = title_case;
+        }
+        else
+        {
+            // mark as not valid calculation
+            title_case_cache_[word] = "";
         }
 
         if (underscore.length() >= 2)
         {
             underscores_->insert(std::make_pair(underscore, &word));
-            //std::cout << underscore << ": " << word << "\n";
+            // cache abbreviation calculation
+            underscore_cache_[word] = underscore;
+        }
+        else
+        {
+            // mark as not valid calculation
+            underscore_cache_[word] = "";
         }
     }
 
@@ -423,7 +451,10 @@ void Buffer::GetAbbrCompletions(
     // generate abbreviations if they already haven't
     if (abbreviations_dirty_)
     {
+        //Stopwatch watch; watch.Start();
         generateTitleCasesAndUnderscores();
+        //watch.Stop();
+        //std::cout << "generate abbr: "; watch.PrintResultMilliseconds();
     }
 
     if (prefix.length() < 2) return;

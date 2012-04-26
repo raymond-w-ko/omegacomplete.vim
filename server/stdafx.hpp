@@ -73,3 +73,9 @@ std::unique_ptr<T> make_unique(Args&&... args)
 {
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
+
+template <typename Container, typename Item>
+bool Contains(const Container& container, const Item& item)
+{
+    return container.find(item) != container.end();
+}
