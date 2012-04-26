@@ -28,7 +28,7 @@ HEADERS = $(SOURCES:.cpp=.hpp)
 OBJECTS = $(SOURCES:.cpp=.o)
 EXECUTABLE = omegacomplete_server.exe
 
-all: stdafx.hpp.gch $(SOURCES) $(EXECUTABLE)
+all: $(SOURCES) $(EXECUTABLE)
 
 $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) -o $@ $(LDFLAGS) 
