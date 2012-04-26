@@ -46,6 +46,13 @@ void GarbageDeleter::QueueForDeletion(StringStringMultiMap* pointer)
 	mutex_.unlock();
 }
 
+void GarbageDeleter::QueueForDeletion(StringConstStringPointerMultiMap* pointer)
+{
+	mutex_.lock();
+	ssp_multimap_pointers_.push_back(pointer);
+	mutex_.unlock();
+}
+
 void GarbageDeleter::deletionLoop()
 {
 	while (true)
@@ -79,6 +86,14 @@ void GarbageDeleter::deletionLoop()
 		multimap_pointers_.clear();
 		mutex_.unlock();
 		for (StringStringMultiMap* multimap : multimaps) delete multimap;
+
+		std::vector<StringConstStringPointerMultiMap*> scspmultimaps;
+		mutex_.lock();
+		scspmultimaps = ssp_multimap_pointers_;
+		ssp_multimap_pointers_.clear();
+		mutex_.unlock();
+		for (StringConstStringPointerMultiMap* scspmultimap : scspmultimaps)
+			delete scspmultimap;
 
 #ifdef WIN32
 		Sleep(100);

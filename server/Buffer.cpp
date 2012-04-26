@@ -18,10 +18,15 @@ underscores_(nullptr),
 abbreviations_dirty_(true),
 cursor_pos_(0, 0)
 {
-	
+	std::string temp(1, ' ');
+
 	for (size_t index = 0; index <= 255; ++index)
 	{
 		is_part_of_word_[index] = IsPartOfWord(index) ? 1 : 0;
+		temp.resize(1, ' ');
+		temp[0] = (char)index;
+		boost::algorithm::to_lower(temp);
+		to_lower_[index] = temp[0];
 	}
 }
 
@@ -75,8 +80,7 @@ void Buffer::ParseNormalMode(
 	
 	contents_ = new_contents;
 
-	Stopwatch watch;
-	watch.Start();
+	Stopwatch watch; watch.Start();
     tokenizeKeywords();
 	watch.Stop();
 	std::cout << "tokenizeKeywords(): "; watch.PrintResultMilliseconds();
@@ -342,10 +346,13 @@ void Buffer::GetLevenshteinCompletions(
 {
 	if ((words_->size()) > 0 && trie_->Empty())
 	{
+		//Stopwatch watch; watch.Start();
 		for (auto& word_count_pair : *words_)
 		{
 			trie_->Insert(&word_count_pair.first);
 		}
+		//watch.Stop();
+		//std::cout << "trie_ creation time: "; watch.PrintResultMilliseconds();
 	}
 
 	// only try fancier matching if we have a sufficiently long enough
@@ -358,10 +365,10 @@ void Buffer::GetLevenshteinCompletions(
 void Buffer::generateTitleCasesAndUnderscores()
 {
 	parent_->GD.QueueForDeletion(title_cases_);
-	title_cases_ = new boost::unordered_multimap<std::string, std::string>;
+	title_cases_ = new boost::unordered_multimap<std::string, const std::string*>;
 
 	parent_->GD.QueueForDeletion(underscores_);
-	underscores_ = new boost::unordered_multimap<std::string, std::string>;
+	underscores_ = new boost::unordered_multimap<std::string, const std::string*>;
 
 	for (auto& word_count_pair : *words_)
 	{
@@ -371,40 +378,41 @@ void Buffer::generateTitleCasesAndUnderscores()
 		std::string title_case;
 		std::string underscore;
 
-		for (size_t ii = 0; ii < word.length(); ++ii)
+		const size_t word_length = word.length();
+		for (size_t ii = 0; ii < word_length; ++ii)
 		{
 			char c = word[ii];
 			
 			if (ii == 0)
 			{
-				title_case += c;
-				underscore += c;
+				title_case += to_lower_[c];
+				underscore += to_lower_[c];
 
 				continue;
 			}
 
 			if (IsUpper(c))
 			{
-				title_case += c;
+				title_case += to_lower_[c];
 			}
 
 			if (word[ii] == '_')
 			{
-				if (ii < (word.length() - 1) && word[ii + 1] != '_')
-					underscore += word[ii + 1];
+				if (ii < (word_length - 1) && word[ii + 1] != '_')
+					underscore += to_lower_[word[ii + 1]];
 			}
 		}
 
 		if (title_case.length() >= 2)
 		{
-			boost::algorithm::to_lower(title_case);
-			title_cases_->insert(std::make_pair(title_case, word));
+			title_cases_->insert(std::make_pair(title_case, &word));
+			//std::cout << title_case << ": " << word << "\n";
 		}
 
 		if (underscore.length() >= 2)
 		{
-			boost::algorithm::to_lower(underscore);
-			underscores_->insert(std::make_pair(underscore, word));
+			underscores_->insert(std::make_pair(underscore, &word));
+			//std::cout << underscore << ": " << word << "\n";
 		}
 	}
 
@@ -426,12 +434,12 @@ void Buffer::GetAbbrCompletions(
 	auto bounds1 = title_cases_->equal_range(prefix);
 	for (auto& ii = bounds1.first; ii != bounds1.second; ++ii)
 	{
-		results->insert(ii->second);
+		results->insert(*ii->second);
 	}
 
 	auto bounds2 = underscores_->equal_range(prefix);
 	for (auto& ii = bounds2.first; ii != bounds2.second; ++ii)
 	{
-		results->insert(ii->second);
+		results->insert(*ii->second);
 	}
 }

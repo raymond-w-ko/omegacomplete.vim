@@ -182,8 +182,6 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
 	std::string word_to_complete = getWordToComplete(line);
 	if (word_to_complete.empty()) return "";
 
-	//std::cout << "--- BEGIN COMPLETIONS ---\n";
-	
 	std::set<std::string> abbr_completions;
 	calculateAbbrCompletions(word_to_complete, &abbr_completions);	
 	abbr_completions.erase(word_to_complete);
@@ -193,13 +191,15 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
 	prefix_completions.erase(word_to_complete);
 
 	LevenshteinSearchResults levenshtein_completions;
+	// I type so fast and value the popup not appearing if it doesn't
+	// recognize the word, so I have disabled this for now
 	// only if we have no completions do we try to Levenshtein distance completion
-	if ((abbr_completions.size() + prefix_completions.size()) == 0)
-	{
-		calculateLevenshteinCompletions(
-			word_to_complete,
-			levenshtein_completions);
-	}
+	//if ((abbr_completions.size() + prefix_completions.size()) == 0)
+	//{
+		//calculateLevenshteinCompletions(
+			//word_to_complete,
+			//levenshtein_completions);
+	//}
 
 	// compile results and send
 	unsigned int num_completions_added;
@@ -254,9 +254,6 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
 
 	results << "]";
 	
-	//std::cout << "--- END COMPLETIONS ---\n";
-	//std::cout << results.str() << std::endl;
-	
 	return results.str();
 }
 
@@ -288,21 +285,12 @@ void Session::calculatePrefixCompletions(
 	const std::string& word_to_complete,
 	std::set<std::string>* completions)
 {
-	// consider completions from the current buffer first
-	// because of spatial locality
 	buffers_[current_buffer_].GetAllWordsWithPrefixFromCurrentLine(
 		word_to_complete,
 		completions);
-	buffers_[current_buffer_].GetAllWordsWithPrefix(
-		word_to_complete,
-		completions);
 	
-	// then look at other buffers
 	for (auto& buffer : buffers_)
 	{
-		//if (completions->size() >= 10) break;
-		if (buffer.first == current_buffer_) continue;
-		
 		buffer.second.GetAllWordsWithPrefix(word_to_complete, completions);
 	}
 }

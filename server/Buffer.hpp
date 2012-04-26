@@ -75,6 +75,7 @@ private:
 	std::string prev_cur_line_;
 	
 	char is_part_of_word_[256];
+	char to_lower_[256];
 	//boost::unordered_set<std::string>* words_;
 	boost::unordered_map<std::string, unsigned>* words_;
 	boost::unordered_set<std::string> current_line_words_;
@@ -82,8 +83,8 @@ private:
 	TrieNode* trie_;
 
 	bool abbreviations_dirty_;
-	boost::unordered_multimap<std::string, std::string>* title_cases_;
-	boost::unordered_multimap<std::string, std::string>* underscores_;
+	boost::unordered_multimap<std::string, const std::string*>* title_cases_;
+	boost::unordered_multimap<std::string, const std::string*>* underscores_;
 };
 
 namespace std
