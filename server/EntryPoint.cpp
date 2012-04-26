@@ -7,7 +7,7 @@ const unsigned short PORT = 31337;
 int main(int argc, char* argv[])
 {
 #ifdef WIN32
-	SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
+    SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 #endif
     try
     {
