@@ -103,18 +103,26 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     }
     else if (command == "buffer_contents_insert_mode")
     {
-		//Stopwatch watch; watch.Start();
+		Stopwatch watch; watch.Start();
+		
 		auto& buffer = buffers_[current_buffer_];
         buffer.ParseInsertMode(argument, current_line_, cursor_pos_);
-		//watch.Stop(); watch.PrintResultMilliseconds();
+
+		watch.Stop();
+		std::cout << "insert mode parse: ";watch.PrintResultMilliseconds();
 
 		//std::cout << boost::str(boost::format(
 			//"%s: length = %u\n") % command % argument.length());
     }
     else if (command == "buffer_contents")
     {
+		Stopwatch watch; watch.Start();
+
 		auto& buffer = buffers_[current_buffer_];
 		buffer.ParseNormalMode(argument);
+
+		watch.Stop();
+		std::cout << "normal mode parse: "; watch.PrintResultMilliseconds();
 
 		//std::cout << boost::str(boost::format(
 			//"%s: length = %u\n") % command % argument.length());

@@ -80,10 +80,7 @@ void Buffer::ParseNormalMode(
 	
 	contents_ = new_contents;
 
-	Stopwatch watch; watch.Start();
     tokenizeKeywords();
-	watch.Stop();
-	std::cout << "tokenizeKeywords(): "; watch.PrintResultMilliseconds();
 }
 
 bool Buffer::Init(Session* parent, std::string buffer_id)
