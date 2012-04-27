@@ -48,6 +48,9 @@ private:
         boost::unordered_set<std::string>& container);
     void tokenizeKeywordsOfCurrentLine(const std::string& line);
     void tokenizeKeywordsOfOriginalCurrentLine(const std::string& line);
+    void calculateCurrentWordOfCursor(
+        const std::string& line,
+        const std::pair<int, int> pos);
 
     void generateTitleCasesAndUnderscores();
 
@@ -73,6 +76,7 @@ private:
     std::pair<int, int> cursor_pos_;
     std::string initial_current_line_;
     std::string prev_cur_line_;
+    std::string current_cursor_word_;
 
     char is_part_of_word_[256];
     char to_lower_[256];

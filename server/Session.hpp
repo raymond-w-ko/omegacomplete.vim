@@ -54,6 +54,9 @@ private:
 
     std::string current_line_;
     std::pair<int, int> cursor_pos_;
+
+    // quick match keys
+    std::vector<char> quick_match_key_;
 };
 
 typedef boost::shared_ptr<Session> SessionPtr;

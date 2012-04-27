@@ -9,9 +9,30 @@ Session::Session(io_service& io_service, Room& room)
 :
 socket_(io_service),
 room_(room),
-connection_number_(connection_ticket_++)
+connection_number_(connection_ticket_++),
+quick_match_key_(32, ' ')
 {
-    ;
+    quick_match_key_[0] = 'a';
+    quick_match_key_[1] = 's';
+    quick_match_key_[2] = 'd';
+    quick_match_key_[3] = 'f';
+    quick_match_key_[4] = 'g';
+    quick_match_key_[5] = 'h';
+    quick_match_key_[6] = 'j';
+    quick_match_key_[7] = 'k';
+    quick_match_key_[8] = 'l';
+    quick_match_key_[9] = ';';
+
+    quick_match_key_[10] = 'q';
+    quick_match_key_[11] = 'w';
+    quick_match_key_[12] = 'e';
+    quick_match_key_[13] = 'r';
+    quick_match_key_[14] = 't';
+    quick_match_key_[15] = 'y';
+    quick_match_key_[16] = 'u';
+    quick_match_key_[17] = 'i';
+    quick_match_key_[18] = 'o';
+    quick_match_key_[19] = 'p';
 }
 
 Session::~Session()
@@ -212,7 +233,7 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
     //}
 
     // compile results and send
-    unsigned int num_completions_added;
+    unsigned int num_completions_added = 0;
 
     std::stringstream results;
     results << "[";
@@ -220,24 +241,21 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
     for (const std::string& word : abbr_completions)
     {
         results << boost::str(boost::format(
-            "{'word':'%s'},")
-            % word);
+            "{'word':'%s','abbr':'%c: %s'},")
+            % word % quick_match_key_[num_completions_added++] % word);
     }
 
     // append prefix completions
-    num_completions_added = 0;
     for (const std::string& word : prefix_completions)
     {
         results << boost::str(boost::format(
-            "{'word':'%s'},")
-            % word);
+            "{'word':'%s','abbr':'%c: %s'},")
+            % word % quick_match_key_[num_completions_added++] % word);
 
-        num_completions_added++;
-        if (num_completions_added >= 10) break;
+        if (num_completions_added >= 16) break;
     }
 
     // append levenshtein completions
-    num_completions_added = 0;
     bool done = false;
     for (auto& completion : levenshtein_completions)
     {
@@ -250,13 +268,6 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
             results << boost::str(boost::format(
                 "{'word':'%s','menu':'[%d]'},")
                 % word % cost);
-
-            num_completions_added++;
-            if (num_completions_added >= 10)
-            {
-                done = true;
-                break;
-            }
         }
 
         if (done) break;

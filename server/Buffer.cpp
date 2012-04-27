@@ -67,6 +67,7 @@ void Buffer::ParseInsertMode(
     // calling the function implies that the current line has changed,
     // so parse the current line
     tokenizeKeywordsOfCurrentLine(cur_line);
+    calculateCurrentWordOfCursor(cur_line, cursor_pos);
 
     // end() - 1 because of extra byte at the end?
     prev_cur_line_ = std::string(cur_line.begin(), cur_line.end() - 1);
@@ -209,6 +210,30 @@ void Buffer::tokenizeKeywordsOfOriginalCurrentLine(const std::string& line)
     tokenizeKeywordsHelper(line, orig_cur_line_words_);
 }
 
+void Buffer::calculateCurrentWordOfCursor(
+    const std::string& line,
+    const std::pair<int, int> pos)
+{
+    int end_bound = pos.second;
+    while ( is_part_of_word_[line[end_bound]] && end_bound < line.size())
+    {
+        end_bound++;
+    }
+
+    int begin_bound = pos.second - 1;
+    while ( is_part_of_word_[line[begin_bound]] && begin_bound >= 0 )
+    {
+        begin_bound--;
+    }
+
+    // increment by one to start on the actual word
+    begin_bound++;
+
+    current_cursor_word_ = std::string(
+        line.begin() + begin_bound,
+        line.begin() + end_bound);
+}
+
 void Buffer::GetAllWordsWithPrefix(
     const std::string& prefix,
     std::set<std::string>* results)
@@ -243,7 +268,8 @@ void Buffer::GetAllWordsWithPrefixFromCurrentLine(
 {
     for (const std::string& word : current_line_words_)
     {
-        if (boost::starts_with(word, prefix))
+        if (boost::starts_with(word, prefix) &&
+            word != current_cursor_word_)
         {
             results->insert(word);
         }
