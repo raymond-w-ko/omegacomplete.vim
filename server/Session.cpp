@@ -241,16 +241,16 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
     for (const std::string& word : abbr_completions)
     {
         results << boost::str(boost::format(
-            "{'word':'%s','abbr':'%c: %s'},")
-            % word % quick_match_key_[num_completions_added++] % word);
+            "{'word':'%s','menu':'[%c]'},")
+            % word % quick_match_key_[num_completions_added++]);
     }
 
     // append prefix completions
     for (const std::string& word : prefix_completions)
     {
         results << boost::str(boost::format(
-            "{'word':'%s','abbr':'%c: %s'},")
-            % word % quick_match_key_[num_completions_added++] % word);
+            "{'word':'%s','menu':'[%c]'},")
+            % word % quick_match_key_[num_completions_added++]);
 
         if (num_completions_added >= 16) break;
     }
