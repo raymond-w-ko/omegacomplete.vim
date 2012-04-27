@@ -19,76 +19,77 @@ endfunction
 " interface to the server
 
 function s:mapForMappingDriven()
-	call s:unmapForMappingDriven()
-	let s:keysMappingDriven = [
-		\ 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-		\ 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-		\ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-		\ 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-		\ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-		\ '_', '<Space>', '<C-h>', '<BS>', ]
+    call s:unmapForMappingDriven()
+    let s:keysMappingDriven = [
+        \ 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+        \ 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+        \ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+        \ 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+        \ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+        \ '_', '<Space>', '<C-h>', '<BS>', ]
 
-		"\ '-', '_', '~', '^', '.', ',', ':', '!', '#', '=', '%', '$', '@',
-		"\ '<', '>', '/', '\'
-	for key in s:keysMappingDriven
-		execute printf('inoremap <silent> %s %s<C-r>=<SID>FeedPopup()<CR>',
-			\          key, key)
-	endfor
+        "\ '-', '_', '~', '^', '.', ',', ':', '!', '#', '=', '%', '$', '@',
+        "\ '<', '>', '/', '\'
+ 
+    for key in s:keysMappingDriven
+        execute printf('inoremap <silent> %s %s<C-r>=<SID>FeedPopup()<CR>',
+                     \ key, key)
+    endfor
 endfunction
 
 function s:unmapForMappingDriven()
-	if !exists('s:keysMappingDriven')
-		return
-	endif
-	for key in s:keysMappingDriven
-		execute 'iunmap ' . key
-	endfor
-	let s:keysMappingDriven = []
+    if !exists('s:keysMappingDriven')
+        return
+    endif
+    for key in s:keysMappingDriven
+        execute 'iunmap ' . key
+    endfor
+    let s:keysMappingDriven = []
 endfunction
 
 function <SID>FeedPopup()
-	if &paste
-		return ''
-	endif
-	
+    if &paste
+        return ''
+    endif
+    
     let current_buffer_number = <SID>GetCurrentBufferNumber()
     let current_pathname = <SID>GetCurrentBufferPathname()
 
-	" synchronize current buffer
+    " synchronize current buffer
     execute 'py oc_send_command("current_buffer ' . current_buffer_number . '")'
     execute 'py oc_send_command("current_pathname ' . current_pathname . '")'
     execute 'py oc_send_command("current_line " + oc_get_current_line())'
 
-	" check if plugin has disabled itself because of connection problems
-	let is_oc_disabled=""
-	execute 'py vim.command("let is_oc_disabled=" + oc_disable_check())'
-	if (is_oc_disabled == "1")
-		return ''
-	endif
-	
-	" request completion
-	let cursor_row = line('.')
-	let cursor_col = col('.') - 1
-	execute 'py oc_send_command("cursor_position " + str(' . cursor_row . ') + " " + str(' . cursor_col . '))'
+    " check if plugin has disabled itself because of connection problems
+    let is_oc_disabled=""
+    execute 'py vim.command("let is_oc_disabled=" + oc_disable_check())'
+    if (is_oc_disabled == "1")
+        return ''
+    endif
+    
+    " request completion
+    let cursor_row = line('.')
+    let cursor_col = col('.') - 1
+    execute 'py oc_send_command("cursor_position " + str(' . cursor_row . ') + " " + str(' . cursor_col . '))'
 
     execute 'py oc_send_command("buffer_contents_insert_mode " + oc_get_current_buffer_contents())'
 
     let partial_line = strpart(getline('.'), 0, col('.') - 1)
-	execute 'py oc_server_result = oc_send_command("complete " + vim.eval("partial_line"))'
+    execute 'py oc_server_result = oc_send_command("complete " + vim.eval("partial_line"))'
 
 python << EOF
 if len(oc_server_result) == 0:
-	vim.command("return ''")
+    vim.command("return ''")
 EOF
 
-	execute 'py vim.command("let server_result=" + oc_server_result)'
-	if (len(server_result) == 0)
-		return ''
-	endif
-	let g:omegacomplete_server_results = server_result
-	call feedkeys("\<C-X>\<C-U>\<C-P>", 'n')
-	
-	return ''
+    execute 'py vim.command("let server_result=" + oc_server_result)'
+    if (len(server_result) == 0)
+        return ''
+    endif
+    let g:omegacomplete_server_results = server_result
+    call feedkeys("\<C-X>\<C-U>\<C-P>", 't')
+    
+    return ''
 endfunction
 
 function <SID>NormalModeSyncBuffer()
@@ -113,67 +114,72 @@ endfunction
 " of the buffer to the server since we could have changed the contents of the
 " buffer while in normal though commands like 'dd'
 function <SID>OnBufLeave()
-	call <SID>NormalModeSyncBuffer()
+    call <SID>NormalModeSyncBuffer()
 endfunction
 
 function <SID>OnInsertEnter()
-	call <SID>NormalModeSyncBuffer()
+    call <SID>NormalModeSyncBuffer()
 endfunction
 
 augroup OmegaComplete
     autocmd!
-	
-	" whenever you delete a buffer, remove it so that it doesn't introduce
-	" any false positive completions
-	autocmd BufDelete
-	\ *
-	\ call <SID>OnBufDelete()
-	
-	" whenever we leave a current buffer, send it to the server to it can
-	" decide if we have to update it. I'm going to to try going this route
-	" so we can defer buffer processing until we leave or enter into insert mode
-	autocmd BufLeave
-	\ *
-	\ call <SID>OnBufLeave()
+    
+    " whenever you delete a buffer, remove it so that it doesn't introduce
+    " any false positive completions
+    autocmd BufDelete
+    \ *
+    \ call <SID>OnBufDelete()
+    
+    " whenever we leave a current buffer, send it to the server to it can
+    " decide if we have to update it. I'm going to to try going this route
+    " so we can defer buffer processing until we leave or enter into insert mode
+    autocmd BufLeave
+    \ *
+    \ call <SID>OnBufLeave()
 
-	" just before you enter insert mode send the contents of the buffer so
-	" that the server has a chance to synchronize before popping up the
-	" insertion completion menu
-	autocmd InsertEnter
-	\ *
-	\ call <SID>OnInsertEnter()
-	
+    " just before you enter insert mode send the contents of the buffer so
+    " that the server has a chance to synchronize before popping up the
+    " insertion completion menu
+    autocmd InsertEnter
+    \ *
+    \ call <SID>OnInsertEnter()
 augroup END
 
 function <SID>IsPartOfWord(character)
-	if (match(a:character, '[a-zA-Z0-9_]') == 0)
-		return 1
-	else
-		return 0
-	endif
+    if (match(a:character, '[a-zA-Z0-9_]') == 0)
+        return 1
+    else
+        return 0
+    endif
 endfunction
 
 function OmegaCompleteFunc(findstart, base)
     if a:findstart
-		let index = col('.') - 2
-		let line = getline('.')
-		while 1
-			if (index == -1)
-				break
-			endif
-			if ( <SID>IsPartOfWord( line[index] ) == 0 )
-				break
-			endif
+        let index = col('.') - 2
+        let line = getline('.')
+        while 1
+            if (index == -1)
+                break
+            endif
+            if ( <SID>IsPartOfWord( line[index] ) == 0 )
+                break
+            endif
 
-			let index = index - 1
-		endwhile
+            let index = index - 1
+        endwhile
         return index + 1
     else
-        return { 'words' : g:omegacomplete_server_results, 'refresh' : 'always' }
+        return { 'words' : g:omegacomplete_server_results }
     endif
 endfunction
 
+function omegacomplete#CompleteWithFirstWord()
+    return "\<C-n>\<C-y>"
+endfunction
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " init
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 set completefunc=OmegaCompleteFunc
 call s:mapForMappingDriven()
 nnoremap <silent> i i<C-r>=<SID>FeedPopup()<CR>
