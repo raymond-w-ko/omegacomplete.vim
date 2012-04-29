@@ -173,7 +173,10 @@ function OmegaCompleteFunc(findstart, base)
     endif
 endfunction
 
-function omegacomplete#CompleteWithFirstWord()
+function omegacomplete#UseFirstWordOfPmenu()
+    if pumvisible() == 0
+        return ''
+    endif
     return "\<C-n>\<C-y>"
 endfunction
 
