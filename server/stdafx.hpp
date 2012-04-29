@@ -21,6 +21,7 @@
 #include <thread>
 #include <unordered_map>
 #include <unordered_set>
+#include <fstream>
 
 #include <boost/bind.hpp>
 #include <boost/enable_shared_from_this.hpp>
@@ -78,4 +79,35 @@ template <typename Container, typename Item>
 bool Contains(const Container& container, const Item& item)
 {
     return container.find(item) != container.end();
+}
+
+inline void CalculateTitlecaseAndUnderscore(
+    const std::string& word,
+    const char* to_lower,
+    std::string& title_case, std::string& underscore)
+{
+    const size_t word_length = word.length();
+    for (size_t ii = 0; ii < word_length; ++ii)
+    {
+        char c = word[ii];
+
+        if (ii == 0)
+        {
+            title_case += to_lower[c];
+            underscore += to_lower[c];
+
+            continue;
+        }
+
+        if (IsUpper(c))
+        {
+            title_case += to_lower[c];
+        }
+
+        if (word[ii] == '_')
+        {
+            if (ii < (word_length - 1) && word[ii + 1] != '_')
+                underscore += to_lower[word[ii + 1]];
+        }
+    }
 }

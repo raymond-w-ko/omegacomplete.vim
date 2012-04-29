@@ -416,31 +416,7 @@ void Buffer::generateTitleCasesAndUnderscores()
         }
 
         std::string title_case, underscore;
-
-        const size_t word_length = word.length();
-        for (size_t ii = 0; ii < word_length; ++ii)
-        {
-            char c = word[ii];
-
-            if (ii == 0)
-            {
-                title_case += to_lower_[c];
-                underscore += to_lower_[c];
-
-                continue;
-            }
-
-            if (IsUpper(c))
-            {
-                title_case += to_lower_[c];
-            }
-
-            if (word[ii] == '_')
-            {
-                if (ii < (word_length - 1) && word[ii + 1] != '_')
-                    underscore += to_lower_[word[ii + 1]];
-            }
-        }
+        CalculateTitlecaseAndUnderscore(word, to_lower_, title_case, underscore);
 
         if (title_case.length() >= 2)
         {
