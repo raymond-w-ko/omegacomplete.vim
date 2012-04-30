@@ -77,16 +77,16 @@ function <SID>FeedPopup()
     let partial_line = strpart(getline('.'), 0, col('.') - 1)
     execute 'py oc_server_result = oc_send_command("complete " + vim.eval("partial_line"))'
 
-python << EOF
+python << PYTHON
 if len(oc_server_result) == 0:
     vim.command("return ''")
-EOF
+PYTHON
 
-    execute 'py vim.command("let server_result=" + oc_server_result)'
-    if (len(server_result) == 0)
+    execute 'py vim.command("let g:omegacomplete_server_results=" + oc_server_result)'
+    if (len(g:omegacomplete_server_results) == 0)
+        call feedkeys("\<C-X>\<C-U>", 't')
         return ''
     endif
-    let g:omegacomplete_server_results = server_result
     call feedkeys("\<C-X>\<C-U>\<C-P>", 't')
     
     return ''
@@ -191,7 +191,7 @@ nnoremap <silent> a a<C-r>=<SID>FeedPopup()<CR>
 nnoremap <silent> A A<C-r>=<SID>FeedPopup()<CR>
 nnoremap <silent> R R<C-r>=<SID>FeedPopup()<CR>
 
-python << EOF
+python << PYTHON
 import vim
 import os
 
@@ -211,4 +211,4 @@ exec(compile(open(client_path).read(), client_path, "exec"))
 
 oc_init_connection()
 
-EOF
+PYTHON
