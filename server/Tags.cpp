@@ -2,12 +2,16 @@
 
 #include "Tags.hpp"
 
-Tags::Tags(const std::string pathname)
-:
-pathname_(pathname)
+Tags::Tags()
 {
-    std::string temp(1, ' ');
+    ;
+}
 
+bool Tags::Init(const std::string& pathname)
+{
+    pathname_ = pathname;
+
+    std::string temp(1, ' ');
     for (size_t index = 0; index <= 255; ++index)
     {
         is_part_of_word_[index] = IsPartOfWord(index) ? 1 : 0;
@@ -17,7 +21,7 @@ pathname_(pathname)
         to_lower_[index] = temp[0];
     }
 
-    reparse();
+    thread_ = std::thread(&Tags::reparse, this);
 }
 
 Tags::~Tags()
@@ -136,4 +140,9 @@ void Tags::GetAbbrCompletions(
         results->insert(*ii->second);
     }
     mutex_.unlock();
+}
+
+void Tags::Update()
+{
+    // TODO(rko): check if tags modification date has changed, and if so reparse
 }

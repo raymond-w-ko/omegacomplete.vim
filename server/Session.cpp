@@ -2,6 +2,7 @@
 
 #include "Session.hpp"
 #include "Stopwatch.hpp"
+#include "TagsSet.hpp"
 
 unsigned int Session::connection_ticket_ = 0;
 
@@ -76,7 +77,7 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     // convert to a string
     std::ostringstream ss;
     ss << &request_;
-    std::string request = ss.str();
+    const std::string& request = ss.str();
 
     // find first space
     int index = -1;
@@ -174,6 +175,18 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     }
     else if (command == "current_tags")
     {
+        current_tags_.clear();
+
+        std::vector<std::string> tags_list;
+        boost::split(tags_list, argument, boost::is_any_of(","), boost::token_compress_on);
+        for (const std::string& tags : tags_list)
+        {
+            if (tags.size() == 0) continue;
+
+            TagsSet::Instance()->CreateOrUpdate(tags);
+            current_tags_.emplace_back(tags);
+        }
+
         //std::cout << boost::str(boost::format("%s: \"%s\"\n") % command % argument);
     }
     else
@@ -216,11 +229,24 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
     calculateAbbrCompletions(word_to_complete, &abbr_completions);
     abbr_completions.erase(word_to_complete);
 
+    std::set<std::string> tags_abbr_completions;
+    TagsSet::Instance()->GetAbbrCompletions(
+        word_to_complete, current_tags_,
+        &tags_abbr_completions);
+    tags_abbr_completions.erase(word_to_complete);
+
     std::set<std::string> prefix_completions;
     calculatePrefixCompletions(word_to_complete, &prefix_completions);
     prefix_completions.erase(word_to_complete);
 
-    LevenshteinSearchResults levenshtein_completions;
+    std::set<std::string> tags_prefix_completions;
+    TagsSet::Instance()->GetAllWordsWithPrefix(
+        word_to_complete, current_tags_,
+        &tags_prefix_completions);
+    tags_prefix_completions.erase(word_to_complete);
+
+
+    //LevenshteinSearchResults levenshtein_completions;
     // I type so fast and value the popup not appearing if it doesn't
     // recognize the word, so I have disabled this for now
     // only if we have no completions do we try to Levenshtein distance completion
@@ -243,6 +269,16 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
             "{'word':'%s','menu':'[%c]'},")
             % word % quick_match_key_[num_completions_added++]);
     }
+    // append tags abbreviations, make sure it's not part of above
+    for (const std::string& word : tags_abbr_completions)
+    {
+        if (Contains(abbr_completions, word) == true) continue;
+        if (Contains(prefix_completions, word) == true) continue;
+
+        results << boost::str(boost::format(
+            "{'word':'%s','menu':'[%c]'},")
+            % word % quick_match_key_[num_completions_added++]);
+    }
 
     // append prefix completions
     for (const std::string& word : prefix_completions)
@@ -253,24 +289,35 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
 
         if (num_completions_added >= 16) break;
     }
+    for (const std::string& word : tags_prefix_completions)
+    {
+        if (Contains(abbr_completions, word) == true) continue;
+        if (Contains(prefix_completions, word) == true) continue;
+
+        results << boost::str(boost::format(
+            "{'word':'%s','menu':'[%c]'},")
+            % word % quick_match_key_[num_completions_added++]);
+
+        if (num_completions_added >= 16) break;
+    }
 
     // append levenshtein completions
-    bool done = false;
-    for (auto& completion : levenshtein_completions)
-    {
-        auto& cost = completion.first;
-        auto& word_set = completion.second;
-        for (const std::string& word : word_set)
-        {
-            if (word == word_to_complete) continue;
+    //bool done = false;
+    //for (auto& completion : levenshtein_completions)
+    //{
+        //auto& cost = completion.first;
+        //auto& word_set = completion.second;
+        //for (const std::string& word : word_set)
+        //{
+            //if (word == word_to_complete) continue;
 
-            results << boost::str(boost::format(
-                "{'word':'%s','menu':'[%d]'},")
-                % word % cost);
-        }
+            //results << boost::str(boost::format(
+                //"{'word':'%s','menu':'[%d]'},")
+                //% word % cost);
+        //}
 
-        if (done) break;
-    }
+        //if (done) break;
+    //}
 
     results << "]";
 

@@ -1,9 +1,10 @@
 CC = g++
 
 CFLAGS = -std=c++11
-CFLAGS += -Ofast -march=native
-CFLAGS += -flto -fwhole-program
+CFLAGS += -march=native -Ofast -flto -fuse-linker-plugin -fwhole-program
+#CFLAGS += -march=native -O2
 #CFLAGS += -O0 -ggdb
+
 CFLAGS += -I"C:\Boost"
 
 BOOST_COMPILER=-mgw47
@@ -23,7 +24,7 @@ LDFLAGS += -lwsock32 -lws2_32
 
 SOURCES = EntryPoint.cpp Server.cpp Session.cpp Participant.cpp Room.cpp
 SOURCES += Buffer.cpp TrieNode.cpp GarbageDeleter.cpp
-SOURCES += Tags.cpp
+SOURCES += Tags.cpp TagsSet.cpp
 
 HEADERS = $(SOURCES:.cpp=.hpp)
 OBJECTS = $(SOURCES:.cpp=.o)

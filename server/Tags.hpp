@@ -11,8 +11,11 @@ struct TagInfo
 class Tags
 {
 public:
-    Tags(const std::string pathname);
+    Tags();
+    bool Init(const std::string& pathname);
     ~Tags();
+
+    void Update();
 
     void GetAllWordsWithPrefix(
         const std::string& prefix,
@@ -28,7 +31,8 @@ private:
     char is_part_of_word_[256];
     char to_lower_[256];
 
-    const std::string pathname_;
+    std::string pathname_;
+    std::thread thread_;
     std::mutex mutex_;
 
     std::multimap<std::string, TagInfo> tags_;
