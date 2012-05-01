@@ -108,7 +108,7 @@ void Session::handleReadRequest(const boost::system::error_code& error)
         current_buffer_ = argument;
 
         // create and initialize buffer object if it doesn't exist
-        if (Contains(buffers_, current_buffer_))
+        if (Contains(buffers_, current_buffer_) == false)
         {
             buffers_[current_buffer_].Init(this, argument);
         }
