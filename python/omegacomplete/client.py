@@ -61,6 +61,11 @@ def oc_disable_check():
     global oc_is_disabled
 
     if oc_is_disabled:
-        return "1"
+        return '1'
     else:
-        return "0"
+        return '0'
+
+def oc_get_cursor_pos():
+    row = str(vim.current.window.cursor[0])
+    col = str(vim.current.window.cursor[1])
+    return row + ' ' + col

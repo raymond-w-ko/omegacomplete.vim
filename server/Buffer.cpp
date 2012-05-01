@@ -18,8 +18,8 @@ underscores_(nullptr),
 abbreviations_dirty_(true),
 cursor_pos_(0, 0)
 {
+    // generate lookup tables
     std::string temp(1, ' ');
-
     for (size_t index = 0; index <= 255; ++index)
     {
         is_part_of_word_[index] = IsPartOfWord(index) ? 1 : 0;
@@ -28,6 +28,9 @@ cursor_pos_(0, 0)
         boost::algorithm::to_lower(temp);
         to_lower_[index] = temp[0];
     }
+
+    // initialize words_ so it doesn't crash
+    tokenizeKeywords();
 }
 
 Buffer::~Buffer()
@@ -69,8 +72,7 @@ void Buffer::ParseInsertMode(
     tokenizeKeywordsOfCurrentLine(cur_line);
     calculateCurrentWordOfCursor(cur_line, cursor_pos);
 
-    // end() - 1 because of extra byte at the end?
-    prev_cur_line_ = std::string(cur_line.begin(), cur_line.end() - 1);
+    prev_cur_line_ = cur_line;
     cursor_pos_ = cursor_pos;
 }
 
@@ -95,11 +97,6 @@ bool Buffer::Init(Session* parent, std::string buffer_id)
 std::string Buffer::GetBufferId() const
 {
     return buffer_id_;
-}
-
-void Buffer::SetPathname(std::string pathname)
-{
-    pathname_ = pathname;
 }
 
 void Buffer::tokenizeKeywords()

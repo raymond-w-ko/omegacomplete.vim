@@ -3,7 +3,7 @@ CC = g++
 CFLAGS = -std=c++11
 CFLAGS += -Ofast -march=native
 CFLAGS += -flto -fwhole-program
-#CFLAGS += -O0
+#CFLAGS += -O0 -ggdb
 CFLAGS += -I"C:\Boost"
 
 BOOST_COMPILER=-mgw47

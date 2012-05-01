@@ -32,7 +32,7 @@ function s:mapForMappingDriven()
         "\ '<', '>', '/', '\'
  
     for key in s:keysMappingDriven
-        execute printf('inoremap <silent> %s %s<C-r>=<SID>FeedPopup()<CR>',
+        exe printf('inoremap <silent> %s %s<C-r>=<SID>FeedPopup()<CR>',
                      \ key, key)
     endfor
 endfunction
@@ -42,63 +42,70 @@ function s:unmapForMappingDriven()
         return
     endif
     for key in s:keysMappingDriven
-        execute 'iunmap ' . key
+        exe 'iunmap ' . key
     endfor
     let s:keysMappingDriven = []
 endfunction
 
 function <SID>FeedPopup()
+    " disable when paste mode is active
     if &paste
         return ''
     endif
     
+    " let server know what is the current buffer
     let current_buffer_number = <SID>GetCurrentBufferNumber()
-    let current_pathname = <SID>GetCurrentBufferPathname()
-
-    " synchronize current buffer
-    execute 'py oc_send_command("current_buffer ' . current_buffer_number . '")'
-    execute 'py oc_send_command("current_pathname ' . current_pathname . '")'
-    execute 'py oc_send_command("current_line " + oc_get_current_line())'
+    exe 'py oc_send_command("current_buffer ' . current_buffer_number . '")'
 
     " check if plugin has disabled itself because of connection problems
+    " we can only do this only after 1 oc_send_command() has occurred
     let is_oc_disabled=""
-    execute 'py vim.command("let is_oc_disabled=" + oc_disable_check())'
+    exe 'py vim.command("let is_oc_disabled = " + oc_disable_check())'
     if (is_oc_disabled == "1")
         return ''
     endif
-    
-    " request completion
-    let cursor_row = line('.')
-    let cursor_col = col('.') - 1
-    execute 'py oc_send_command("cursor_position " + str(' . cursor_row . ') + " " + str(' . cursor_col . '))'
 
-    execute 'py oc_send_command("buffer_contents_insert_mode " + oc_get_current_buffer_contents())'
+    " send server the contents of the current line the cursor is at
+    exe 'py oc_send_command("current_line " + oc_get_current_line())'
 
+    " tell server what the current cursor position is
+    exe 'py oc_send_command("cursor_position " + oc_get_cursor_pos())'
+
+    " send server contents of the entire buffer in case reparse is needed
+    exe 'py oc_send_command("buffer_contents_insert_mode " + oc_get_current_buffer_contents())'
+
+    " send tags we are using to the server
+    exe 'py current_tags = vim.eval("&tags")'
+    exe 'py oc_send_command("current_tags " + current_tags)'
+
+    " send current line up to the cursor
     let partial_line = strpart(getline('.'), 0, col('.') - 1)
-    execute 'py oc_server_result = oc_send_command("complete " + vim.eval("partial_line"))'
+    exe 'py oc_server_result = oc_send_command("complete " + vim.eval("partial_line"))'
 
+" check to make sure we get something
 python << PYTHON
 if len(oc_server_result) == 0:
     vim.command("return ''")
 PYTHON
 
-    execute 'py vim.command("let g:omegacomplete_server_results=" + oc_server_result)'
+    " try to show popup menu
+    exe 'py vim.command("let g:omegacomplete_server_results=" + oc_server_result)'
     if (len(g:omegacomplete_server_results) == 0)
+        " do a failed popup anyway to prevent double Enter bug
         call feedkeys("\<C-X>\<C-U>", 't')
         return ''
+    else
+        " show actual popup
+        call feedkeys("\<C-X>\<C-U>\<C-P>", 't')
+        return ''
     endif
-    call feedkeys("\<C-X>\<C-U>\<C-P>", 't')
-    
-    return ''
 endfunction
 
 function <SID>NormalModeSyncBuffer()
     let current_buffer_number = <SID>GetCurrentBufferNumber()
-    let current_pathname = <SID>GetCurrentBufferPathname()
 
-    execute 'py oc_send_command("current_buffer ' . current_buffer_number . '")'
-    execute 'py oc_send_command("current_pathname ' . current_pathname . '")'
-    execute 'py oc_send_command("buffer_contents " + oc_get_current_buffer_contents())'
+    exe 'py oc_send_command("current_buffer ' . current_buffer_number . '")'
+    exe 'py oc_send_command("buffer_contents " + oc_get_current_buffer_contents())'
 endfunction
 
 " When we don't want a buffer loaded in memory in VIM, we can 'delete' the
@@ -106,7 +113,7 @@ endfunction
 " that we no longer want.
 function <SID>OnBufDelete()
     let current_buffer_number = expand('<abuf>')
-    execute 'py oc_send_command("free_buffer ' . current_buffer_number . '")'
+    exe 'py oc_send_command("free_buffer ' . current_buffer_number . '")'
 endfunction
 
 " When we are leaving buffer (either by opening another buffer, switching

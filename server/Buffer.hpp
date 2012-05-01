@@ -17,8 +17,6 @@ public:
     bool operator==(const Buffer& other);
     std::string GetBufferId() const;
 
-    void SetPathname(std::string pathname);
-
     void ParseNormalMode(
         const std::string& new_contents);
     void ParseInsertMode(
@@ -70,7 +68,6 @@ private:
     Session* parent_;
 
     std::string buffer_id_;
-    std::string pathname_;
     std::string contents_;
 
     std::pair<int, int> cursor_pos_;

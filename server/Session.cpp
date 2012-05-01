@@ -93,7 +93,10 @@ void Session::handleReadRequest(const boost::system::error_code& error)
 
     // break it up into a "request" string and a "argument"
     std::string command(request.begin(), request.begin() + index);
-    std::string argument(request.begin() + index + 1, request.end());
+    std::string argument(request.begin() + index + 1, request.end() - 1);
+
+    //std::cout << "\"" << command << "\"" << std::endl;
+    //std::cout << "\"" << argument << "\"" << std::endl;
 
     std::string response = "ACK";
 
@@ -109,12 +112,6 @@ void Session::handleReadRequest(const boost::system::error_code& error)
         {
             buffers_[current_buffer_].Init(this, argument);
         }
-    }
-    else if (command == "current_pathname")
-    {
-        //std::cout << boost::str(boost::format("%s: %s\n") % command % argument);
-
-        buffers_[current_buffer_].SetPathname(argument);
     }
     else if (command == "current_line")
     {
@@ -151,10 +148,9 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     else if (command == "cursor_position")
     {
         std::vector<std::string> position;
-        std::string trimmed_argument = std::string(argument.begin(), argument.end() - 1);
         boost::split(
             position,
-            trimmed_argument,
+            argument,
             boost::is_any_of(" "),
             boost::token_compress_on);
         int x = boost::lexical_cast<int>(position[0]);
@@ -167,8 +163,7 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     {
         //Stopwatch watch; watch.Start();
 
-        response = calculateCompletionCandidates(
-            std::string(argument.begin(), argument.end() - 1));
+        response = calculateCompletionCandidates(argument);
 
         //watch.Stop();
         //std::cout << "complete: "; watch.PrintResultMilliseconds();
@@ -176,6 +171,10 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     else if (command == "free_buffer")
     {
         buffers_.erase(argument);
+    }
+    else if (command == "current_tags")
+    {
+        //std::cout << boost::str(boost::format("%s: \"%s\"\n") % command % argument);
     }
     else
     {
