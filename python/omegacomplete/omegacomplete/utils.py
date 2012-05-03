@@ -8,8 +8,9 @@ def safe_recv(conn):
     global receive_buffer
 
     # infinite loop until we find ourselves with a NULL character
-    data = ""
     while not "\x00" in receive_buffer:
+        data = ""
+
         try:
             data = conn.recv(4096)
         except:
