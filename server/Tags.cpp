@@ -106,6 +106,28 @@ void Tags::reparse()
     mutex_.unlock();
 }
 
+void Tags::VimTaglistFunction(
+    const std::string& expr,
+    const std::vector<std::string>& tags_list,
+    std::stringstream& ss)
+{
+    mutex_.lock();
+    for (const std::string& word : words_)
+    {
+        if (word != expr) continue;
+        if (Contains(tags_, expr) == false) continue;
+
+        auto bounds = tags_.equal_range(expr);
+        for (auto ii = bounds.first; ii != bounds.second; ++ii)
+        {
+            const TagInfo& ti = ii->second;
+            ss << "{";
+            ss << "},";
+        }
+    }
+    mutex_.unlock();
+}
+
 void Tags::GetAllWordsWithPrefix(
     const std::string& prefix,
     std::set<std::string>* results)

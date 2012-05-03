@@ -47,6 +47,23 @@ TagsSet::~TagsSet()
     ;
 }
 
+std::string TagsSet::VimTaglistFunction(
+    const std::string& word,
+    const std::vector<std::string>& tags_list)
+{
+    std::stringstream ss;
+
+    ss << "[";
+
+    for (const std::string& tags : tags_list)
+    {
+    }
+
+    ss << "]";
+
+    return ss.str();
+}
+
 void TagsSet::GetAllWordsWithPrefix(
     const std::string& prefix,
     const std::vector<std::string>& tags_list,

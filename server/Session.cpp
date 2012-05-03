@@ -11,7 +11,7 @@ Session::Session(io_service& io_service, Room& room)
 socket_(io_service),
 room_(room),
 connection_number_(connection_ticket_++),
-quick_match_key_(32, ' ')
+quick_match_key_(1024, ' ')
 {
     quick_match_key_[0] = 'a';
     quick_match_key_[1] = 's';
@@ -259,6 +259,7 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
 
     // compile results and send
     unsigned int num_completions_added = 0;
+    boost::unordered_set<std::string> added_words;
 
     std::stringstream results;
     results << "[";
@@ -268,37 +269,45 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
         results << boost::str(boost::format(
             "{'word':'%s','menu':'[%c]'},")
             % word % quick_match_key_[num_completions_added++]);
+
+        added_words.insert(word);
     }
     // append tags abbreviations, make sure it's not part of above
     for (const std::string& word : tags_abbr_completions)
     {
-        if (Contains(abbr_completions, word) == true) continue;
-        if (Contains(prefix_completions, word) == true) continue;
+        if (Contains(added_words, word) == true) continue;
 
         results << boost::str(boost::format(
             "{'word':'%s','menu':'[%c]'},")
             % word % quick_match_key_[num_completions_added++]);
+
+        added_words.insert(word);
     }
 
     // append prefix completions
     for (const std::string& word : prefix_completions)
     {
+        if (Contains(added_words, word) == true) continue;
+
         results << boost::str(boost::format(
             "{'word':'%s','menu':'[%c]'},")
             % word % quick_match_key_[num_completions_added++]);
 
-        if (num_completions_added >= 16) break;
+        added_words.insert(word);
+
+        if (num_completions_added >= 32) break;
     }
     for (const std::string& word : tags_prefix_completions)
     {
-        if (Contains(abbr_completions, word) == true) continue;
-        if (Contains(prefix_completions, word) == true) continue;
+        if (Contains(added_words, word) == true) continue;
 
         results << boost::str(boost::format(
             "{'word':'%s','menu':'[%c]'},")
             % word % quick_match_key_[num_completions_added++]);
 
-        if (num_completions_added >= 16) break;
+        added_words.insert(word);
+
+        if (num_completions_added >= 32) break;
     }
 
     // append levenshtein completions

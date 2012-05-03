@@ -17,6 +17,11 @@ public:
 
     void Update();
 
+    void VimTaglistFunction(
+        const std::string& expr,
+        const std::vector<std::string>& tags_list,
+        std::stringstream& ss);
+
     void GetAllWordsWithPrefix(
         const std::string& prefix,
         std::set<std::string>* results);

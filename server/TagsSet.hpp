@@ -22,6 +22,10 @@ public:
         const std::vector<std::string>& tags_list,
         std::set<std::string>* results);
 
+    std::string VimTaglistFunction(
+        const std::string& word,
+        const std::vector<std::string>& tags_list);
+
 private:
     TagsSet();
     static TagsSet* instance_;
