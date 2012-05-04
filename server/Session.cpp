@@ -47,7 +47,8 @@ void Session::Start()
     std::cout << "session started, connection number: " << connection_number_ << "\n";
     room_.Join(shared_from_this());
 
-    asyncReadUntilNullChar();
+    //asyncReadUntilNullChar();
+    asyncReadHeader();
 }
 
 void Session::asyncReadUntilNullChar()
@@ -58,6 +59,40 @@ void Session::asyncReadUntilNullChar()
         socket_,
         request_,
         null_delimiter,
+        boost::bind(
+            &Session::handleReadRequest,
+            this,
+            placeholders::error));
+}
+
+void Session::asyncReadHeader()
+{
+    async_read(
+        socket_,
+        buffer(request_header_, 4),
+        boost::bind(
+            &Session::handleReadHeader,
+            this,
+            placeholders::error));
+}
+
+void Session::handleReadHeader(const boost::system::error_code& error)
+{
+    if (error)
+    {
+        room_.Leave(shared_from_this());
+
+        LogAsioError(error, "failed to handleReadHeader()");
+        return;
+    }
+
+    unsigned body_size = *( reinterpret_cast<unsigned*>(request_header_) );
+    //std::cout << "body_size requested: " << body_size << std::endl;
+    request_body_.resize(body_size, '\0');
+
+    async_read(
+        socket_,
+        buffer(&request_body_[0], body_size),
         boost::bind(
             &Session::handleReadRequest,
             this,
@@ -75,9 +110,10 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     }
 
     // convert to a string
-    std::ostringstream ss;
-    ss << &request_;
-    const std::string& request = ss.str();
+    //std::ostringstream ss;
+    //ss << &request_;
+    //const std::string& request = ss.str();
+    const std::string& request = request_body_;
 
     // find first space
     int index = -1;
@@ -94,7 +130,8 @@ void Session::handleReadRequest(const boost::system::error_code& error)
 
     // break it up into a "request" string and a "argument"
     std::string command(request.begin(), request.begin() + index);
-    std::string argument(request.begin() + index + 1, request.end() - 1);
+    //std::string argument(request.begin() + index + 1, request.end() - 1);
+    std::string argument(request.begin() + index + 1, request.end());
 
     //std::cout << "\"" << command << "\"" << std::endl;
     //std::cout << "\"" << argument << "\"" << std::endl;
@@ -205,7 +242,8 @@ void Session::handleReadRequest(const boost::system::error_code& error)
             this,
             placeholders::error));
 
-    asyncReadUntilNullChar();
+    //asyncReadUntilNullChar();
+    asyncReadHeader();
 }
 
 void Session::handleWriteResponse(const boost::system::error_code& error)

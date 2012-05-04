@@ -28,6 +28,9 @@ private:
     void handleWriteResponse(const boost::system::error_code& error);
     void asyncReadUntilNullChar();
 
+    void asyncReadHeader();
+    void handleReadHeader(const boost::system::error_code& error);
+
     std::string calculateCompletionCandidates(const std::string& line);
     std::string getWordToComplete(const std::string& line);
     void calculatePrefixCompletions(
@@ -47,6 +50,8 @@ private:
     Room& room_;
     unsigned int connection_number_;
     streambuf request_;
+    unsigned char request_header_[4];
+    std::string request_body_;
 
     // actually useful variables
     boost::unordered_map<std::string, Buffer> buffers_;

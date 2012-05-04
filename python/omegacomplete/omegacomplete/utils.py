@@ -4,7 +4,7 @@ import string
 import time
 
 receive_buffer = ""
-def safe_recv(conn):
+def safe_recvall(conn):
     global receive_buffer
 
     # infinite loop until we find ourselves with a NULL character
@@ -26,13 +26,18 @@ def safe_recv(conn):
 
     return msg
 
-def safe_sendall(conn, msg):
+def safe_delim_sendall(conn, msg):
     # send the message, must NOT have a '\0' char in the msg
     conn.sendall(msg)
 
     # send a NULL char as a delimiter
-    delimiter = '\0'
-    conn.sendall(delimiter)
+    conn.sendall('\0')
+
+def safe_header_sendall(conn, msg):
+    data_length = struct.pack("=I", len(msg))
+    conn.sendall(data_length)
+
+    conn.sendall(msg)
 
 def normalize_path_separators(path):
     if (platform.system() == "Windows"):

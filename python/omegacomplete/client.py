@@ -1,6 +1,6 @@
 import socket
 import sys
-from omegacomplete.utils import safe_recv, safe_sendall
+from omegacomplete.utils import safe_recvall, safe_delim_sendall, safe_header_sendall
 
 # these are probably global to the VIM Python interpreter, so prefix with "oc_"
 # to prevent conflicts with any other Python plugins
@@ -32,9 +32,9 @@ def oc_send_command(cmd):
         return
 
     try:
-        safe_sendall(oc_conn, cmd)
+        safe_header_sendall(oc_conn, cmd)
 
-        reply = safe_recv(oc_conn)
+        reply = safe_recvall(oc_conn)
         return reply
 
     except:
