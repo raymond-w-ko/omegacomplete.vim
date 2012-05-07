@@ -21,14 +21,42 @@ bool Tags::Init(const std::string& pathname)
         to_lower_[index] = temp[0];
     }
 
-    calculateParentDirectory();
+    if (calculateParentDirectory() == false)
+    {
+        std::cout << "couldn't calculate parent directory for tags file, not parsing" << std::endl;
+        std::cout << pathname_ << std::endl;
+        return false;
+    }
 
     thread_ = std::thread(&Tags::reparse, this);
+
+    return true;
 }
 
-void Tags::calculateParentDirectory()
+bool Tags::calculateParentDirectory()
 {
-    ;
+    // normalize Windows pathnames to UNIX format
+    boost::replace_all(pathname_, "\\", "/");
+
+    size_t pos = pathname_.rfind('/');
+    // error out because we can't find the last '/'
+    if (pos == std::string::npos)
+    {
+        std::cout << "coulnd't find last directory separator" << std::endl;
+        std::cout << pathname_ << std::endl;
+        return false;
+    }
+    // there is nothing after the '/'
+    if (pos >= (pathname_.size() - 1))
+    {
+        std::cout << "there is nothing after the last '/'" << std::endl;
+        std::cout << pathname_ << std::endl;
+        return false;
+    }
+
+    parent_directory_ = std::string(pathname_.begin(), pathname_.begin() + pos);
+
+    return true;
 }
 
 Tags::~Tags()
@@ -65,6 +93,18 @@ void Tags::reparse()
         TagInfo tag_info;
         tag_info.Tag = tokens[0];
         tag_info.Location = tokens[1];
+        // normalize Windows pathnames to UNIX format
+        boost::replace_all(tag_info.Location, "\\", "/");
+        // if there is a dot slash in front, replace with location of tags
+        if (tag_info.Location.length() > 1 && tag_info.Location[0] == '.')
+        {
+            boost::replace_first(tag_info.Location, ".", parent_directory_);
+        }
+        // if there is no slash at all then it is in the current directory of the tags
+        if (tag_info.Location.find("/") == std::string::npos)
+        {
+            tag_info.Location = parent_directory_ + "/" + tag_info.Location;
+        }
 
         int index = 2;
         std::string ex;

@@ -35,13 +35,14 @@ public:
         std::stringstream& ss);
 
 private:
-    void calculateParentDirectory();
+    bool calculateParentDirectory();
     void reparse();
 
     char is_part_of_word_[256];
     char to_lower_[256];
 
     std::string pathname_;
+    std::string parent_directory_;
     std::thread thread_;
     std::mutex mutex_;
 
