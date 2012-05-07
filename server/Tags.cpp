@@ -49,7 +49,11 @@ void Tags::reparse()
         std::vector<std::string> tokens;
         boost::split(tokens, line, boost::is_any_of("\t"), boost::token_compress_off);
 
-        if (tokens.size() < 3) throw "invalid tag line detected!";
+        if (tokens.size() < 3)
+        {
+            std::cout << "invalid tag line detected!" << std::endl;
+            return;
+        }
 
         TagInfo tag_info;
         tag_info.Tag = tokens[0];
@@ -67,7 +71,11 @@ void Tags::reparse()
 
             if (boost::ends_with(token, "\"")) break;
         }
-        if (boost::ends_with(ex, "\"") == false) throw "Ex didn't end with \"";
+        if (boost::ends_with(ex, "\"") == false)
+        {
+            std::cout << "Ex didn't end with \"" << std::endl;
+            return;
+        }
 
         tag_info.Ex = ex;
 
@@ -78,6 +86,12 @@ void Tags::reparse()
         {
             std::string token = tokens[index];
             size_t colon = token.find(":");
+            if (colon == std::string::npos)
+            {
+                std::cout << "expected key value pair, but could not find ':'" << std::endl;
+                std::cout << line << std::endl;
+                return;
+            }
 
             std::string key = std::string(token.begin(), token.begin() + colon);
             std::string value = std::string(token.begin() + colon + 1, token.end());

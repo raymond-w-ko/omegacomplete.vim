@@ -1,8 +1,8 @@
 CC = g++
 
 CFLAGS = -std=c++11
-#CFLAGS += -march=native -Ofast -flto -fuse-linker-plugin -fwhole-program
-CFLAGS += -O2
+CFLAGS += -march=native -Ofast -flto -fuse-linker-plugin -fwhole-program
+#CFLAGS += -O2
 #CFLAGS += -O0 -ggdb
 
 CFLAGS += -I"C:\Boost"
@@ -34,7 +34,7 @@ all: $(SOURCES) $(EXECUTABLE)
 
 $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) -o $@ $(LDFLAGS) 
-#strip -s $(EXECUTABLE)
+	strip -s $(EXECUTABLE)
 
 %.o: %.cpp $(HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $@
