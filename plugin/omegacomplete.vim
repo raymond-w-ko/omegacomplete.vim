@@ -187,6 +187,25 @@ function omegacomplete#UseFirstWordOfPmenu()
     return "\<C-n>\<C-y>"
 endfunction
 
+function omegacomplete#taglist(expr)
+    " send current tags we are using to the server
+    exe 'py current_tags = vim.eval("&tags")'
+    exe 'py oc_send_command("taglist_tags " + current_tags)'
+
+    exe 'py oc_server_result = oc_send_command("vim_taglist_function " + "' . a:expr . '")'
+
+" check to make sure we get something
+python << PYTHON
+if len(oc_server_result) == 0:
+    vim.command("return []")
+PYTHON
+
+    " try to show popup menu
+    exe 'py vim.command("let taglist_results=" + oc_server_result)'
+
+    return taglist_results
+endfunction
+
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " init
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

@@ -141,6 +141,8 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     if (false) { }
     else if (command == "current_buffer")
     {
+        writeResponse(response);
+
         //std::cout << boost::str(boost::format("%s: %s\n") % command % argument);
 
         current_buffer_ = argument;
@@ -153,12 +155,16 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     }
     else if (command == "current_line")
     {
+        writeResponse(response);
+
         //std::cout << boost::str(boost::format("%s: \"%s\"\n") % command % argument);
 
         current_line_ = argument;
     }
     else if (command == "buffer_contents_insert_mode")
     {
+        writeResponse(response);
+
         //Stopwatch watch; watch.Start();
 
         auto& buffer = buffers_[current_buffer_];
@@ -172,6 +178,8 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     }
     else if (command == "buffer_contents")
     {
+        writeResponse(response);
+
         //Stopwatch watch; watch.Start();
 
         auto& buffer = buffers_[current_buffer_];
@@ -185,6 +193,8 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     }
     else if (command == "cursor_position")
     {
+        writeResponse(response);
+
         std::vector<std::string> position;
         boost::split(
             position,
@@ -202,16 +212,21 @@ void Session::handleReadRequest(const boost::system::error_code& error)
         //Stopwatch watch; watch.Start();
 
         response = calculateCompletionCandidates(argument);
+        writeResponse(response);
 
         //watch.Stop();
         //std::cout << "complete: "; watch.PrintResultMilliseconds();
     }
     else if (command == "free_buffer")
     {
+        writeResponse(response);
+
         buffers_.erase(argument);
     }
     else if (command == "current_tags")
     {
+        writeResponse(response);
+
         current_tags_.clear();
 
         std::vector<std::string> tags_list;
@@ -226,12 +241,38 @@ void Session::handleReadRequest(const boost::system::error_code& error)
 
         //std::cout << boost::str(boost::format("%s: \"%s\"\n") % command % argument);
     }
+    else if (command == "taglist_tags")
+    {
+        writeResponse(response);
+
+        taglist_tags_.clear();
+
+        std::vector<std::string> tags_list;
+        boost::split(tags_list, argument, boost::is_any_of(","), boost::token_compress_on);
+        for (const std::string& tags : tags_list)
+        {
+            if (tags.size() == 0) continue;
+
+            TagsSet::Instance()->CreateOrUpdate(tags);
+            taglist_tags_.emplace_back(tags);
+        }
+    }
+    else if (command == "vim_taglist_function")
+    {
+        response = TagsSet::Instance()->VimTaglistFunction(argument, taglist_tags_);
+        writeResponse(response);
+    }
     else
     {
         std::cout << boost::str(boost::format(
             "unknown command %s %s") % command % argument);
-    }
 
+        writeResponse(response);
+    }
+}
+
+void Session::writeResponse(std::string& response)
+{
     // write response
     response.resize(response.size() + 1, '\0');
     async_write(

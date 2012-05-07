@@ -21,7 +21,14 @@ bool Tags::Init(const std::string& pathname)
         to_lower_[index] = temp[0];
     }
 
+    calculateParentDirectory();
+
     thread_ = std::thread(&Tags::reparse, this);
+}
+
+void Tags::calculateParentDirectory()
+{
+    ;
 }
 
 Tags::~Tags()
@@ -140,6 +147,33 @@ void Tags::VimTaglistFunction(
         }
     }
     mutex_.unlock();
+}
+
+void Tags::VimTaglistFunction(
+    const std::string& word,
+    std::stringstream& ss)
+{
+    auto bounds = tags_.equal_range(word);
+
+    for (auto& iter = bounds.first; iter != bounds.second; ++iter)
+    {
+        const TagInfo& tag_info = iter->second;
+        ss << "{";
+
+        ss << boost::str(boost::format(
+            "'name':'%s','filename':'%s','cmd':'%s',")
+            % tag_info.Tag
+            % tag_info.Location
+            % tag_info.Ex);
+        for (const auto& pair : tag_info.Info)
+        {
+            ss << boost::str(boost::format(
+                "'%s':'%s',")
+                % pair.first % pair.second);
+        }
+
+        ss << "},";
+    }
 }
 
 void Tags::GetAllWordsWithPrefix(

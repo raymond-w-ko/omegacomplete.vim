@@ -55,8 +55,13 @@ std::string TagsSet::VimTaglistFunction(
 
     ss << "[";
 
-    for (const std::string& tags : tags_list)
+    for (const std::string& requested_tag : tags_list)
     {
+        if (Contains(tags_list_, requested_tag) == false) continue;
+
+        Tags& tags = tags_list_[requested_tag];
+
+        tags.VimTaglistFunction(word, ss);
     }
 
     ss << "]";

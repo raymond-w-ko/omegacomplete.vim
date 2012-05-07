@@ -30,6 +30,7 @@ private:
 
     void asyncReadHeader();
     void handleReadHeader(const boost::system::error_code& error);
+    void writeResponse(std::string& response);
 
     std::string calculateCompletionCandidates(const std::string& line);
     std::string getWordToComplete(const std::string& line);
@@ -60,6 +61,7 @@ private:
     std::string current_line_;
     std::pair<int, int> cursor_pos_;
     std::vector<std::string> current_tags_;
+    std::vector<std::string> taglist_tags_;
 
     // quick match keys
     std::vector<char> quick_match_key_;

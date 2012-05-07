@@ -30,7 +30,12 @@ public:
         const std::string& prefix,
         std::set<std::string>* results);
 
+    void VimTaglistFunction(
+        const std::string& word,
+        std::stringstream& ss);
+
 private:
+    void calculateParentDirectory();
     void reparse();
 
     char is_part_of_word_[256];
