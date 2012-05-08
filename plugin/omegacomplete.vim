@@ -192,6 +192,14 @@ function omegacomplete#taglist(expr)
     exe 'py current_tags = vim.eval("&tags")'
     exe 'py oc_send_command("taglist_tags " + current_tags)'
 
+    " check if plugin has disabled itself because of connection problems
+    " we can only do this only after 1 oc_send_command() has occurred
+    let is_oc_disabled=""
+    exe 'py vim.command("let is_oc_disabled = " + oc_disable_check())'
+    if (is_oc_disabled == "1")
+        return []
+    endif
+
     exe 'py oc_server_result = oc_send_command("vim_taglist_function " + "' . a:expr . '")'
 
 " check to make sure we get something
