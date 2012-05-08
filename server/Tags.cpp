@@ -3,6 +3,8 @@
 #include "Tags.hpp"
 
 Tags::Tags()
+:
+last_write_time_(0)
 {
     ;
 }
@@ -28,7 +30,7 @@ bool Tags::Init(const std::string& pathname)
         return false;
     }
 
-    thread_ = std::thread(&Tags::reparse, this);
+    thread_ = std::thread(&Tags::Update, this);
 
     return true;
 }
@@ -254,5 +256,44 @@ void Tags::GetAbbrCompletions(
 
 void Tags::Update()
 {
-    // TODO(rko): check if tags modification date has changed, and if so reparse
+    bool reparse_needed = false;
+
+#ifdef WIN32
+    HANDLE hFile = ::CreateFile(
+        pathname_.c_str(),
+        GENERIC_READ,
+        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+        NULL,
+        OPEN_EXISTING,
+        FILE_ATTRIBUTE_NORMAL,
+        NULL);
+    if (hFile == INVALID_HANDLE_VALUE)
+    {
+        std::cout << "could not open file to check last modified time" << std::endl;
+        return;
+    }
+
+    FILETIME ft_last_write_time;
+    ::GetFileTime(
+        hFile,
+        NULL,
+        NULL,
+        &ft_last_write_time);
+
+    __int64 last_write_time = to_int64(ft_last_write_time);
+    if (last_write_time > last_write_time_)
+    {
+        reparse_needed = true;
+
+        last_write_time_ = last_write_time;
+    }
+
+    CloseHandle(hFile); hFile = INVALID_HANDLE_VALUE;
+#else
+#endif
+
+    if (reparse_needed)
+    {
+        reparse();
+    }
 }

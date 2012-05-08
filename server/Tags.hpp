@@ -42,6 +42,7 @@ private:
     char to_lower_[256];
 
     std::string pathname_;
+    __int64 last_write_time_;
     std::string parent_directory_;
     std::thread thread_;
     std::mutex mutex_;
