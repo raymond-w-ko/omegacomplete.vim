@@ -4,6 +4,7 @@
 #include "Tags.hpp"
 #include "TagsSet.hpp"
 
+const char* ADDRESS = "127.0.0.1";
 const unsigned short PORT = 31337;
 
 int main(int argc, char* argv[])
@@ -17,7 +18,12 @@ int main(int argc, char* argv[])
 
     io_service io_service;
     std::vector<ServerPtr> servers;
-    ip::tcp::endpoint endpoint(ip::tcp::v4(), PORT);
+    ip::tcp::endpoint endpoint(
+        ip::address::from_string(ADDRESS),
+        PORT);
+    std::cout << boost::str(boost::format(
+        "listening on %s:%hu\n")
+        % ADDRESS % PORT);
     ServerPtr server(new Server(io_service, endpoint));
     servers.push_back(server);
 
