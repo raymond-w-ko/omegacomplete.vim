@@ -147,6 +147,27 @@ void Tags::reparse()
             tag_info.Info[key] = value;
         }
 
+        // calculate return type from Ex command by extracting prefix to the keyword
+        if (boost::starts_with(tag_info.Ex, "/^")) {
+            size_t index = tag_info.Ex.find(tag_info.Tag);
+            if (index != std::string::npos)
+            {
+                std::string returntype = tag_info.Ex.substr(2, index - 2);
+                // search back until we find a space to handle complex
+                // return types like
+                // std::map<int, int> FunctionName
+                // and
+                // void Class::FunctionName
+                index = returntype.rfind(" ");
+                if (index != std::string::npos)
+                {
+                    returntype = returntype.substr(0, index);
+                }
+                boost::trim(returntype);
+                tag_info.Info["returntype"] = returntype;
+            }
+        }
+
         tags_.insert( make_pair(tag_info.Tag, tag_info) );
         words_.insert(tag_info.Tag);
     }
