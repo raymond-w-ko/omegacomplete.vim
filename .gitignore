@@ -10,3 +10,4 @@ server/ipch
 *.gch
 server/omegacomplete_server.exe
 root.dir
+*.ncb
