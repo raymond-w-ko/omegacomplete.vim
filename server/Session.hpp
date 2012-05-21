@@ -55,11 +55,12 @@ private:
     std::string request_body_;
 
     // actually useful variables
+    typedef boost::unordered_map<std::string, Buffer>::value_type BuffersIterator;
     boost::unordered_map<std::string, Buffer> buffers_;
     std::string current_buffer_;
 
     std::string current_line_;
-    std::pair<int, int> cursor_pos_;
+    std::pair<unsigned, unsigned> cursor_pos_;
     std::vector<std::string> current_tags_;
     std::vector<std::string> taglist_tags_;
 

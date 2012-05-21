@@ -5,6 +5,7 @@ struct TagInfo
     std::string Tag;
     std::string Location;
     std::string Ex;
+    typedef std::map<std::string, std::string>::value_type InfoIterator;
     std::map<std::string, std::string> Info;
 };
 
@@ -44,8 +45,8 @@ private:
     std::string pathname_;
     __int64 last_write_time_;
     std::string parent_directory_;
-    std::thread thread_;
-    std::mutex mutex_;
+    boost::thread thread_;
+    boost::mutex mutex_;
 
     std::multimap<std::string, TagInfo> tags_;
     boost::unordered_set<std::string> words_;

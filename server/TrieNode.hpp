@@ -10,5 +10,6 @@ struct TrieNode
     bool Empty();
 
     const std::string* Word;
-    std::map<char, std::unique_ptr<TrieNode>> Children;
+    typedef std::map<char, TrieNode*>::value_type ChildrenIterator;
+    std::map<char, TrieNode*> Children;
 };

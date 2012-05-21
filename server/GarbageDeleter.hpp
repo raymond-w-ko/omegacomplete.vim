@@ -1,6 +1,6 @@
 #pragma once
 
-class TrieNode;
+struct TrieNode;
 
 typedef boost::unordered_set<std::string> StringSet;
 typedef boost::unordered_map<std::string, unsigned> StringUnsignedMap;
@@ -22,10 +22,16 @@ public:
 private:
     void deletionLoop();
 
-    std::thread thread_;
-    std::atomic<int> is_quitting_;
+    boost::thread thread_;
 
-    std::mutex mutex_;
+    // check your platform to make sure volatile does what the VC++ compiler
+    // does when you declare a volatile variable. C++03 and/or Boost does
+    // not have an atomic library to do this portably yet.
+    // http://msdn.microsoft.com/en-us/library/12a04hfd%28v=vs.90%29.aspx
+    //std::atomic<int> is_quitting_;
+    volatile int is_quitting_;
+
+    boost::mutex mutex_;
     std::vector<TrieNode*> trie_node_vector_pointers_;
     std::vector<StringSet*> string_set_pointers_;
     std::vector<StringUnsignedMap*> string_unsigned_map_pointers_;

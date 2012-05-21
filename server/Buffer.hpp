@@ -22,7 +22,7 @@ public:
     void ParseInsertMode(
         const std::string& new_contents,
         const std::string& cur_line,
-        std::pair<int, int> cursor_pos);
+        std::pair<unsigned, unsigned> cursor_pos);
     void GetAllWordsWithPrefixFromCurrentLine(
         const std::string& prefix,
         std::set<std::string>* results);
@@ -48,7 +48,7 @@ private:
     void tokenizeKeywordsOfOriginalCurrentLine(const std::string& line);
     void calculateCurrentWordOfCursor(
         const std::string& line,
-        const std::pair<int, int> pos);
+        const std::pair<unsigned, unsigned> pos);
 
     void generateTitleCasesAndUnderscores();
 
@@ -70,14 +70,16 @@ private:
     std::string buffer_id_;
     std::string contents_;
 
-    std::pair<int, int> cursor_pos_;
+    std::pair<unsigned, unsigned> cursor_pos_;
     std::string initial_current_line_;
     std::string prev_cur_line_;
     std::string current_cursor_word_;
 
     char is_part_of_word_[256];
     char to_lower_[256];
-    //boost::unordered_set<std::string>* words_;
+    typedef
+        boost::unordered_map<std::string, unsigned>::value_type
+        WordsIterator;
     boost::unordered_map<std::string, unsigned>* words_;
     boost::unordered_set<std::string> current_line_words_;
     boost::unordered_set<std::string> orig_cur_line_words_;
@@ -90,13 +92,13 @@ private:
     boost::unordered_map<std::string, std::string> underscore_cache_;
 };
 
-namespace std
+namespace boost
 {
 template<> struct hash<Buffer>
 {
     size_t operator()(const Buffer& buffer) const
     {
-        return std::hash<std::string>()(buffer.GetBufferId());
+        return boost::hash<std::string>()(buffer.GetBufferId());
     }
 };
 }

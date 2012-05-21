@@ -30,7 +30,7 @@ bool Tags::Init(const std::string& pathname)
         return false;
     }
 
-    thread_ = std::thread(&Tags::Update, this);
+    thread_ = boost::thread(&Tags::Update, this);
 
     return true;
 }
@@ -75,7 +75,7 @@ void Tags::reparse()
     title_cases_.clear();
     underscores_.clear();
 
-    std::ifstream file(pathname_);
+    std::ifstream file(pathname_.c_str());
     unsigned line_num = 0;
 
     for (std::string line; std::getline(file, line).good(); ++line_num)
@@ -108,7 +108,7 @@ void Tags::reparse()
             tag_info.Location = parent_directory_ + "/" + tag_info.Location;
         }
 
-        int index = 2;
+        size_t index = 2;
         std::string ex;
         for (; index < tokens.size(); ++index)
         {
@@ -172,7 +172,7 @@ void Tags::reparse()
         words_.insert(tag_info.Tag);
     }
 
-    for (const std::string& word : words_)
+    foreach (const std::string& word, words_)
     {
         std::string title_case, underscore;
         CalculateTitlecaseAndUnderscore(word, to_lower_, title_case, underscore);
@@ -196,13 +196,14 @@ void Tags::VimTaglistFunction(
     std::stringstream& ss)
 {
     mutex_.lock();
-    for (const std::string& word : words_)
+    foreach (const std::string& word, words_)
     {
         if (word != expr) continue;
         if (Contains(tags_, expr) == false) continue;
 
-        auto bounds = tags_.equal_range(expr);
-        for (auto ii = bounds.first; ii != bounds.second; ++ii)
+        auto(bounds, tags_.equal_range(expr));
+        auto(ii, bounds.first);
+        for (; ii != bounds.second; ++ii)
         {
             const TagInfo& ti = ii->second;
             ss << "{";
@@ -216,9 +217,9 @@ void Tags::VimTaglistFunction(
     const std::string& word,
     std::stringstream& ss)
 {
-    auto bounds = tags_.equal_range(word);
-
-    for (auto& iter = bounds.first; iter != bounds.second; ++iter)
+    auto(bounds, tags_.equal_range(word));
+    auto(&iter, bounds.first);
+    for (; iter != bounds.second; ++iter)
     {
         const TagInfo& tag_info = iter->second;
         ss << "{";
@@ -228,7 +229,7 @@ void Tags::VimTaglistFunction(
             % tag_info.Tag
             % tag_info.Location
             % tag_info.Ex);
-        for (const auto& pair : tag_info.Info)
+        foreach (const TagInfo::InfoIterator& pair, tag_info.Info)
         {
             ss << boost::str(boost::format(
                 "'%s':'%s',")
@@ -244,7 +245,7 @@ void Tags::GetAllWordsWithPrefix(
     std::set<std::string>* results)
 {
     mutex_.lock();
-    for (const std::string& word : words_)
+    foreach (const std::string& word, words_)
     {
         if (boost::starts_with(word, prefix))
         {
@@ -261,14 +262,15 @@ void Tags::GetAbbrCompletions(
     if (prefix.length() < 2) return;
 
     mutex_.lock();
-    auto bounds1 = title_cases_.equal_range(prefix);
-    for (auto& ii = bounds1.first; ii != bounds1.second; ++ii)
+    auto(bounds1, title_cases_.equal_range(prefix));
+    auto(ii, bounds1.first);
+    for (ii = bounds1.first; ii != bounds1.second; ++ii)
     {
         results->insert(*ii->second);
     }
 
-    auto bounds2 = underscores_.equal_range(prefix);
-    for (auto& ii = bounds2.first; ii != bounds2.second; ++ii)
+    auto(bounds2, underscores_.equal_range(prefix));
+    for (ii = bounds2.first; ii != bounds2.second; ++ii)
     {
         results->insert(*ii->second);
     }

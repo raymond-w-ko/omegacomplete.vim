@@ -117,11 +117,12 @@ void Session::handleReadRequest(const boost::system::error_code& error)
 
     // find first space
     int index = -1;
-    for (int ii = 0; ii < request.size(); ++ii)
+    if (request.size() > INT_MAX) throw std::exception();
+    for (size_t ii = 0; ii < request.size(); ++ii)
     {
         if (request[ii] == ' ')
         {
-            index = ii;
+            index = static_cast<int>(ii);
             break;
         }
     }
@@ -167,7 +168,7 @@ void Session::handleReadRequest(const boost::system::error_code& error)
 
         //Stopwatch watch; watch.Start();
 
-        auto& buffer = buffers_[current_buffer_];
+        auto(&buffer, buffers_[current_buffer_]);
         buffer.ParseInsertMode(argument, current_line_, cursor_pos_);
 
         //watch.Stop();
@@ -182,7 +183,7 @@ void Session::handleReadRequest(const boost::system::error_code& error)
 
         //Stopwatch watch; watch.Start();
 
-        auto& buffer = buffers_[current_buffer_];
+        auto(&buffer, buffers_[current_buffer_]);
         buffer.ParseNormalMode(argument);
 
         //watch.Stop();
@@ -201,8 +202,8 @@ void Session::handleReadRequest(const boost::system::error_code& error)
             argument,
             boost::is_any_of(" "),
             boost::token_compress_on);
-        int x = boost::lexical_cast<int>(position[0]);
-        int y = boost::lexical_cast<int>(position[1]);
+        unsigned x = boost::lexical_cast<unsigned>(position[0]);
+        unsigned y = boost::lexical_cast<unsigned>(position[1]);
         cursor_pos_.first = x; cursor_pos_.second = y;
 
         //std::cout << boost::str(boost::format("%s: %d %d\n") % command % x % y);
@@ -231,12 +232,12 @@ void Session::handleReadRequest(const boost::system::error_code& error)
 
         std::vector<std::string> tags_list;
         boost::split(tags_list, argument, boost::is_any_of(","), boost::token_compress_on);
-        for (const std::string& tags : tags_list)
+        foreach (const std::string& tags, tags_list)
         {
             if (tags.size() == 0) continue;
 
             TagsSet::Instance()->CreateOrUpdate(tags);
-            current_tags_.emplace_back(tags);
+            current_tags_.push_back(tags);
         }
 
         //std::cout << boost::str(boost::format("%s: \"%s\"\n") % command % argument);
@@ -249,12 +250,12 @@ void Session::handleReadRequest(const boost::system::error_code& error)
 
         std::vector<std::string> tags_list;
         boost::split(tags_list, argument, boost::is_any_of(","), boost::token_compress_on);
-        for (const std::string& tags : tags_list)
+        foreach (const std::string& tags, tags_list)
         {
             if (tags.size() == 0) continue;
 
             TagsSet::Instance()->CreateOrUpdate(tags);
-            taglist_tags_.emplace_back(tags);
+            taglist_tags_.push_back(tags);
         }
     }
     else if (command == "vim_taglist_function")
@@ -343,7 +344,7 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
     std::stringstream results;
     results << "[";
     // append abbreviations first
-    for (const std::string& word : abbr_completions)
+    foreach (const std::string& word, abbr_completions)
     {
         results << boost::str(boost::format(
             "{'word':'%s','menu':'[%c]'},")
@@ -352,7 +353,7 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
         added_words.insert(word);
     }
     // append tags abbreviations, make sure it's not part of above
-    for (const std::string& word : tags_abbr_completions)
+    foreach (const std::string& word, tags_abbr_completions)
     {
         if (Contains(added_words, word) == true) continue;
 
@@ -364,7 +365,7 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
     }
 
     // append prefix completions
-    for (const std::string& word : prefix_completions)
+    foreach (const std::string& word, prefix_completions)
     {
         if (Contains(added_words, word) == true) continue;
 
@@ -376,7 +377,7 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
 
         if (num_completions_added >= 32) break;
     }
-    for (const std::string& word : tags_prefix_completions)
+    foreach (const std::string& word, tags_prefix_completions)
     {
         if (Contains(added_words, word) == true) continue;
 
@@ -444,7 +445,7 @@ void Session::calculatePrefixCompletions(
         word_to_complete,
         completions);
 
-    for (auto& buffer : buffers_)
+    foreach (BuffersIterator& buffer, buffers_)
     {
         buffer.second.GetAllWordsWithPrefix(word_to_complete, completions);
     }
@@ -454,7 +455,7 @@ void Session::calculateLevenshteinCompletions(
     const std::string& word_to_complete,
     LevenshteinSearchResults& completions)
 {
-    for (auto& buffer : buffers_)
+    foreach (BuffersIterator& buffer, buffers_)
     {
         buffer.second.GetLevenshteinCompletions(word_to_complete, completions);
     }
@@ -464,7 +465,7 @@ void Session::calculateAbbrCompletions(
     const std::string& word_to_complete,
     std::set<std::string>* completions)
 {
-    for (auto& buffer : buffers_)
+    foreach (BuffersIterator& buffer, buffers_)
     {
         buffer.second.GetAbbrCompletions(word_to_complete, completions);
     }

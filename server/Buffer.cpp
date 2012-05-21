@@ -4,6 +4,8 @@
 #include "Session.hpp"
 #include "Stopwatch.hpp"
 
+using namespace std;
+
 const unsigned int kTrieDepth = 2;
 const unsigned int kNumThreads = 8;
 const int kLevenshteinMaxCost = 2;
@@ -11,10 +13,10 @@ const size_t kMinLengthForLevenshteinCompletion = 4;
 
 Buffer::Buffer()
 :
-words_(nullptr),
-trie_(nullptr),
-title_cases_(nullptr),
-underscores_(nullptr),
+words_(NULL),
+trie_(NULL),
+title_cases_(NULL),
+underscores_(NULL),
 abbreviations_dirty_(true),
 cursor_pos_(0, 0)
 {
@@ -46,7 +48,7 @@ bool Buffer::operator==(const Buffer& other)
 void Buffer::ParseInsertMode(
     const std::string& new_contents,
     const std::string& cur_line,
-    std::pair<int, int> cursor_pos)
+    std::pair<unsigned, unsigned> cursor_pos)
 {
     //std::cout << "prev: " << cursor_pos_.first << "\n";
     //std::cout << "cur: " << cursor_pos.first << "\n";
@@ -92,6 +94,8 @@ bool Buffer::Init(Session* parent, std::string buffer_id)
 
     if (buffer_id.size() == 0) throw std::exception();
     buffer_id_ = buffer_id;
+
+    return true;
 }
 
 std::string Buffer::GetBufferId() const
@@ -132,7 +136,7 @@ void Buffer::tokenizeKeywords()
 
         // construct word based off of pointer
         std::string word(&contents_[ii], &contents_[jj]);
-        (*words_)[std::move(word)]++;
+        (*words_)[word]++;
 
         // for loop will autoincrement
         ii = jj;
@@ -209,16 +213,18 @@ void Buffer::tokenizeKeywordsOfOriginalCurrentLine(const std::string& line)
 
 void Buffer::calculateCurrentWordOfCursor(
     const std::string& line,
-    const std::pair<int, int> pos)
+    const std::pair<unsigned, unsigned> pos)
 {
     int end_bound = pos.second;
-    while ( is_part_of_word_[line[end_bound]] && end_bound < line.size())
+    while ( is_part_of_word_[line[end_bound]] &&
+            end_bound < static_cast<int>(line.size()) )
     {
         end_bound++;
     }
 
     int begin_bound = pos.second - 1;
-    while ( is_part_of_word_[line[begin_bound]] && begin_bound >= 0 )
+    while ( begin_bound >= 0 &&
+            is_part_of_word_[line[begin_bound]] )
     {
         begin_bound--;
     }
@@ -235,7 +241,7 @@ void Buffer::GetAllWordsWithPrefix(
     const std::string& prefix,
     std::set<std::string>* results)
 {
-    for (auto& word_count_pair : *words_)
+    foreach (WordsIterator& word_count_pair, *words_)
     {
         const std::string& word = word_count_pair.first;
         if (boost::starts_with(word, prefix))
@@ -263,7 +269,7 @@ void Buffer::GetAllWordsWithPrefixFromCurrentLine(
     const std::string& prefix,
     std::set<std::string>* results)
 {
-    for (const std::string& word : current_line_words_)
+    foreach (const std::string& word, current_line_words_)
     {
         if (boost::starts_with(word, prefix) &&
             word != current_cursor_word_)
@@ -285,10 +291,10 @@ void Buffer::levenshteinSearch(
     std::vector<int> current_row;
     for (size_t ii = 0; ii < current_row_end; ++ii) current_row.push_back(ii);
 
-    for (auto& child : trie_->Children)
+    foreach (TrieNode::ChildrenIterator& child, trie_->Children)
     {
         char letter = child.first;
-        TrieNode* next_node = child.second.get();
+        TrieNode* next_node = child.second;
         levenshteinSearchRecursive(
             next_node,
             letter,
@@ -315,7 +321,7 @@ void Buffer::levenshteinSearchRecursive(
 
     // Build one row for the letter, with a column for each letter in the target
     // word, plus one for the empty string at column 0
-    for (int column = 1; column < columns; ++column)
+    for (unsigned column = 1; column < columns; ++column)
     {
         int insert_cost = current_row[column - 1] + 1;
         int delete_cost = previous_row[column] + 1;
@@ -326,16 +332,16 @@ void Buffer::levenshteinSearchRecursive(
         else
             replace_cost = previous_row[column - 1];
 
-        current_row.push_back( std::min(
+        current_row.push_back( (std::min)(
             insert_cost,
-            std::min(delete_cost, replace_cost)) );
+            (std::min)(delete_cost, replace_cost)) );
     }
 
     // if the last entry in the row indicates the optimal cost is less than the
     // maximum cost, and there is a word in this trie node, then add it.
     size_t last_index = current_row.size() - 1;
     if ( (current_row[last_index] <= max_cost) &&
-         (node->Word != nullptr) &&
+         (node->Word != NULL) &&
          (node->Word->length() > 0) )
     {
         results[ current_row[last_index] ].insert(*node->Word);
@@ -345,10 +351,10 @@ void Buffer::levenshteinSearchRecursive(
     // recursively search each branch of the trie
     if (*std::min_element(current_row.begin(), current_row.end()) <= max_cost)
     {
-        for (auto& child : node->Children)
+        foreach (TrieNode::ChildrenIterator& child, node->Children)
         {
             char letter = child.first;
-            TrieNode* next_node = child.second.get();
+            TrieNode* next_node = child.second;
             levenshteinSearchRecursive(
                 next_node,
                 letter,
@@ -367,7 +373,7 @@ void Buffer::GetLevenshteinCompletions(
     if ((words_->size()) > 0 && trie_->Empty())
     {
         //Stopwatch watch; watch.Start();
-        for (auto& word_count_pair : *words_)
+        foreach (WordsIterator& word_count_pair, *words_)
         {
             trie_->Insert(&word_count_pair.first);
         }
@@ -390,7 +396,7 @@ void Buffer::generateTitleCasesAndUnderscores()
     parent_->GD.QueueForDeletion(underscores_);
     underscores_ = new boost::unordered_multimap<std::string, const std::string*>;
 
-    for (auto& word_count_pair : *words_)
+    foreach (WordsIterator& word_count_pair, *words_)
     {
         const std::string& word = word_count_pair.first;
         if (word.length() <= 2) continue;
@@ -458,14 +464,15 @@ void Buffer::GetAbbrCompletions(
 
     if (prefix.length() < 2) return;
 
-    auto bounds1 = title_cases_->equal_range(prefix);
-    for (auto& ii = bounds1.first; ii != bounds1.second; ++ii)
+    auto(bounds1, title_cases_->equal_range(prefix));
+    auto(&ii, bounds1.first);
+    for (ii = bounds1.first; ii != bounds1.second; ++ii)
     {
         results->insert(*ii->second);
     }
 
-    auto bounds2 = underscores_->equal_range(prefix);
-    for (auto& ii = bounds2.first; ii != bounds2.second; ++ii)
+    auto(bounds2, underscores_->equal_range(prefix));
+    for (ii = bounds2.first; ii != bounds2.second; ++ii)
     {
         results->insert(*ii->second);
     }

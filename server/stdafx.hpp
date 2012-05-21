@@ -4,6 +4,12 @@
 #include <winsock2.h>
 #include <windows.h>
 
+#ifdef WIN32
+#ifndef _DEBUG
+#define _SECURE_SCL 0
+#endif
+#endif
+
 #include <cstdio>
 #include <cstdlib>
 
@@ -15,12 +21,7 @@
 #include <functional>
 #include <sstream>
 #include <memory>
-#include <future>
 #include <utility>
-#include <mutex>
-#include <thread>
-#include <unordered_map>
-#include <unordered_set>
 #include <fstream>
 
 #include <boost/bind.hpp>
@@ -37,6 +38,12 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/foreach.hpp>
+#include <boost/typeof/typeof.hpp>
+
+#define auto BOOST_AUTO
+#define foreach BOOST_FOREACH
+#define reverse_foreach BOOST_REVERSE_FOREACH
 
 using namespace boost::asio;
 
@@ -67,12 +74,6 @@ inline bool IsUpper(char c)
 {
     if (('A' <= c) && (c <= 'Z')) return true;
     return false;
-}
-
-template <typename T, typename... Args>
-std::unique_ptr<T> make_unique(Args&&... args)
-{
-    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
 template <typename Container, typename Item>

@@ -4,30 +4,31 @@
 
 TrieNode::TrieNode()
 :
-Word(nullptr)
+Word(NULL)
 {
     ;
 }
 
 TrieNode::~TrieNode()
 {
-    ;
+    foreach (ChildrenIterator& iter, Children) {
+        delete iter.second;
+    }
 }
 
 void TrieNode::Insert(const std::string* word)
 {
     TrieNode* node = this;
-    for (char letter : *word)
+    foreach (char letter, *word)
     {
-        auto& children = node->Children;
-        if (children.find(letter) == children.end())
+        auto(&children, node->Children);
+        if (Contains(children, letter) == false)
         {
-            children.insert( make_pair(
-                letter,
-                make_unique<TrieNode>() ));
+            TrieNode* new_node = new TrieNode;
+            children.insert(std::make_pair(letter, new_node));
         }
 
-        node = children[letter].get();
+        node = children[letter];
     }
 
     node->Word = word;
@@ -35,7 +36,7 @@ void TrieNode::Insert(const std::string* word)
 
 void TrieNode::Clear()
 {
-    Word = nullptr;
+    Word = NULL;
     Children.clear();
 }
 

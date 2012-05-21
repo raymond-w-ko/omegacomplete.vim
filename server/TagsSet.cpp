@@ -8,7 +8,7 @@ bool TagsSet::GlobalInit()
 {
     instance_ = new TagsSet;
 
-    if (instance_ == nullptr)
+    if (instance_ == NULL)
         return false;
     else
         return true;
@@ -21,7 +21,7 @@ TagsSet* TagsSet::Instance()
 
 void TagsSet::GlobalShutdown()
 {
-    delete instance_; instance_ = nullptr;
+    delete instance_; instance_ = NULL;
 }
 
 bool TagsSet::CreateOrUpdate(const std::string tags_path)
@@ -55,7 +55,7 @@ std::string TagsSet::VimTaglistFunction(
 
     ss << "[";
 
-    for (const std::string& requested_tag : tags_list)
+    foreach (const std::string& requested_tag, tags_list)
     {
         if (Contains(tags_list_, requested_tag) == false) continue;
 
@@ -74,7 +74,7 @@ void TagsSet::GetAllWordsWithPrefix(
     const std::vector<std::string>& tags_list,
     std::set<std::string>* results)
 {
-    for (const std::string& tags : tags_list)
+    foreach (const std::string& tags, tags_list)
     {
         if (Contains(tags_list_, tags) == false) continue;
         tags_list_[tags].GetAllWordsWithPrefix(prefix, results);
@@ -86,7 +86,7 @@ void TagsSet::GetAbbrCompletions(
     const std::vector<std::string>& tags_list,
     std::set<std::string>* results)
 {
-    for (const std::string& tags : tags_list)
+    foreach (const std::string& tags, tags_list)
     {
         if (Contains(tags_list_, tags) == false) continue;
         tags_list_[tags].GetAbbrCompletions(prefix, results);
