@@ -87,7 +87,6 @@ void Session::handleReadHeader(const boost::system::error_code& error)
     }
 
     unsigned body_size = *( reinterpret_cast<unsigned*>(request_header_) );
-    //std::cout << "body_size requested: " << body_size << std::endl;
     request_body_.resize(body_size, '\0');
 
     async_read(
@@ -134,17 +133,12 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     //std::string argument(request.begin() + index + 1, request.end() - 1);
     std::string argument(request.begin() + index + 1, request.end());
 
-    //std::cout << "\"" << command << "\"" << std::endl;
-    //std::cout << "\"" << argument << "\"" << std::endl;
-
     std::string response = "ACK";
 
     if (false) { }
     else if (command == "current_buffer")
     {
         writeResponse(response);
-
-        //std::cout << boost::str(boost::format("%s: %s\n") % command % argument);
 
         current_buffer_ = argument;
 
@@ -157,8 +151,6 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     else if (command == "current_line")
     {
         writeResponse(response);
-
-        //std::cout << boost::str(boost::format("%s: \"%s\"\n") % command % argument);
 
         current_line_ = argument;
     }
@@ -173,9 +165,6 @@ void Session::handleReadRequest(const boost::system::error_code& error)
 
         //watch.Stop();
         //std::cout << "insert mode parse: ";watch.PrintResultMilliseconds();
-
-        //std::cout << boost::str(boost::format(
-            //"%s: length = %u\n") % command % argument.length());
     }
     else if (command == "buffer_contents")
     {
@@ -188,9 +177,6 @@ void Session::handleReadRequest(const boost::system::error_code& error)
 
         //watch.Stop();
         //std::cout << "normal mode parse: "; watch.PrintResultMilliseconds();
-
-        //std::cout << boost::str(boost::format(
-            //"%s: length = %u\n") % command % argument.length());
     }
     else if (command == "cursor_position")
     {
@@ -205,8 +191,6 @@ void Session::handleReadRequest(const boost::system::error_code& error)
         unsigned x = boost::lexical_cast<unsigned>(position[0]);
         unsigned y = boost::lexical_cast<unsigned>(position[1]);
         cursor_pos_.first = x; cursor_pos_.second = y;
-
-        //std::cout << boost::str(boost::format("%s: %d %d\n") % command % x % y);
     }
     else if (command == "complete")
     {
@@ -239,8 +223,6 @@ void Session::handleReadRequest(const boost::system::error_code& error)
             TagsSet::Instance()->CreateOrUpdate(tags);
             current_tags_.push_back(tags);
         }
-
-        //std::cout << boost::str(boost::format("%s: \"%s\"\n") % command % argument);
     }
     else if (command == "taglist_tags")
     {
