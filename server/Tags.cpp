@@ -118,11 +118,11 @@ void Tags::reparse()
 
             ex += token;
 
-            if (boost::ends_with(token, "\"")) break;
+            if (boost::ends_with(token, ";\"")) break;
         }
         if (boost::ends_with(ex, "\"") == false)
         {
-            std::cout << "Ex didn't end with \"" << std::endl;
+            std::cout << "Ex didn't end with ;\"" << std::endl;
             return;
         }
 
