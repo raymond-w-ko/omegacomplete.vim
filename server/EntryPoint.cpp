@@ -13,8 +13,9 @@ int main(int argc, char* argv[])
     SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 #endif
 
-    // intialize the tags container
+    // static intializers
     if (TagsSet::GlobalInit() == false) return 1;
+    Buffer::GlobalInit();
 
     io_service io_service;
     std::vector<ServerPtr> servers;

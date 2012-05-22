@@ -170,6 +170,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine="copy $(TargetPath) $(ProjectDir)\$(TargetFileName)"
 			/>
 		</Configuration>
 	</Configurations>

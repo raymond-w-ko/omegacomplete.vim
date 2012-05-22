@@ -9,7 +9,7 @@ typedef std::map< int, std::set<std::string> > LevenshteinSearchResults;
 class Buffer
 {
 public:
-
+    static void GlobalInit();
     Buffer();
     ~Buffer();
     bool Init(Session* parent, std::string buffer_id);
@@ -65,24 +65,30 @@ private:
         LevenshteinSearchResults& results,
         int max_cost);
 
-    Session* parent_;
+    static char is_part_of_word_[256];
+    static char to_lower_[256];
 
+    Session* parent_;
     std::string buffer_id_;
-    std::string contents_;
 
     std::pair<unsigned, unsigned> cursor_pos_;
     std::string initial_current_line_;
     std::string prev_cur_line_;
     std::string current_cursor_word_;
 
-    char is_part_of_word_[256];
-    char to_lower_[256];
+    // mutex for queuing and dequeuing new buffer contents that gets pushed
+    boost::mutex contents_mutex_;
+    std::vector<std::string> new_contents_;
+    std::string contents_;
+
+    // mutex for accessing the below data structures
+    boost::mutex mutex_;
     typedef
         boost::unordered_map<std::string, unsigned>::value_type
         WordsIterator;
     boost::unordered_map<std::string, unsigned>* words_;
-    boost::unordered_set<std::string> current_line_words_;
     boost::unordered_set<std::string> orig_cur_line_words_;
+    boost::unordered_set<std::string> current_line_words_;
     TrieNode* trie_;
 
     bool abbreviations_dirty_;

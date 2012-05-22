@@ -11,14 +11,10 @@ const unsigned int kNumThreads = 8;
 const int kLevenshteinMaxCost = 2;
 const size_t kMinLengthForLevenshteinCompletion = 4;
 
-Buffer::Buffer()
-:
-words_(NULL),
-trie_(NULL),
-title_cases_(NULL),
-underscores_(NULL),
-abbreviations_dirty_(true),
-cursor_pos_(0, 0)
+char Buffer::is_part_of_word_[256];
+char Buffer::to_lower_[256];
+
+void Buffer::GlobalInit()
 {
     // generate lookup tables
     std::string temp(1, ' ');
@@ -30,7 +26,17 @@ cursor_pos_(0, 0)
         boost::algorithm::to_lower(temp);
         to_lower_[index] = temp[0];
     }
+}
 
+Buffer::Buffer()
+:
+words_(NULL),
+trie_(NULL),
+title_cases_(NULL),
+underscores_(NULL),
+abbreviations_dirty_(true),
+cursor_pos_(0, 0)
+{
     // initialize words_ so it doesn't crash
     tokenizeKeywords();
 }
@@ -105,6 +111,7 @@ void Buffer::tokenizeKeywords()
     // re-tokenizing means clearing existing wordlist
     //Stopwatch watch;
     //watch.Start();
+    orig_cur_line_words_.clear();
     current_line_words_.clear();
     parent_->GD.QueueForDeletion(words_);
     words_ = new boost::unordered_map<std::string, unsigned>;
@@ -252,7 +259,7 @@ void Buffer::GetAllWordsWithPrefix(
                 // but the current line doesn't have it
                 Contains(current_line_words_, word) == false)
             {
-                // then the word doesn't anymore, it's just that the buffer
+                // then the word doesn't exit anymore, it's just that the buffer
                 // hasn't been reparsed (most likely triggered by backspace)
                 continue;
             }

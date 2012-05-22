@@ -11,7 +11,8 @@ Session::Session(io_service& io_service, Room& room)
 socket_(io_service),
 room_(room),
 connection_number_(connection_ticket_++),
-quick_match_key_(1024, ' ')
+quick_match_key_(1024, ' '),
+is_quitting_(0)
 {
     quick_match_key_[0] = 'a';
     quick_match_key_[1] = 's';
@@ -34,10 +35,17 @@ quick_match_key_(1024, ' ')
     quick_match_key_[17] = 'i';
     quick_match_key_[18] = 'o';
     quick_match_key_[19] = 'p';
+
+    worker_thread_ = boost::thread(
+        &Session::workerThreadLoop,
+        this);
 }
 
 Session::~Session()
 {
+    is_quitting_ = 1;
+    worker_thread_.join();
+
     std::cout << boost::str(boost::format(
         "session %u destroyed\n") % connection_number_);
 }
@@ -86,6 +94,11 @@ void Session::handleReadHeader(const boost::system::error_code& error)
         return;
     }
 
+    processClientMessage();
+}
+
+void Session::processClientMessage()
+{
     unsigned body_size = *( reinterpret_cast<unsigned*>(request_header_) );
     request_body_.resize(body_size, '\0');
 
@@ -278,6 +291,21 @@ void Session::handleWriteResponse(const boost::system::error_code& error)
 
         LogAsioError(error, "failed in handleWriteResponse()");
         return;
+    }
+}
+
+void Session::workerThreadLoop()
+{
+    while (true)
+    {
+        const unsigned int sleep_time_ms = 10;
+#ifdef WIN32
+        Sleep(sleep_time_ms);
+#else
+        sleep(sleep_time_ms);
+#endif
+
+        if (is_quitting_ == 1) break;
     }
 }
 
