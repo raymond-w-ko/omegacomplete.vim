@@ -32,7 +32,9 @@ private:
     void handleReadHeader(const boost::system::error_code& error);
     void writeResponse(std::string& response);
 
-    std::string calculateCompletionCandidates(const std::string& line);
+    void calculateCompletionCandidates(
+        const std::string& line,
+        std::string& result);
     std::string getWordToComplete(const std::string& line);
     void calculatePrefixCompletions(
         const std::string& word_to_complete,

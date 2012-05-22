@@ -50,13 +50,10 @@ void Buffer::ParseInsertMode(
     const std::string& cur_line,
     std::pair<unsigned, unsigned> cursor_pos)
 {
-    //std::cout << "prev: " << cursor_pos_.first << "\n";
-    //std::cout << "cur: " << cursor_pos.first << "\n";
     // if our cursor row has changed, then capture the contents of the original
     // current line before any changes have occurred
     if (cursor_pos.first != cursor_pos_.first)
     {
-        //std::cout << "reparse all\n";
         initial_current_line_ = cur_line;
         tokenizeKeywordsOfOriginalCurrentLine(initial_current_line_);
 

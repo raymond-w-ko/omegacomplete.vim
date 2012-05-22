@@ -67,9 +67,9 @@ void GarbageDeleter::deletionLoop()
     while (true)
     {
 #ifdef WIN32
-        Sleep(100);
+        Sleep(1000);
 #else
-        sleep(100);
+        sleep(1000);
 #endif
 
         if (is_quitting_ == 1) break;
@@ -79,28 +79,32 @@ void GarbageDeleter::deletionLoop()
         trie_nodes = trie_node_vector_pointers_;
         trie_node_vector_pointers_.clear();
         mutex_.unlock();
-        foreach (TrieNode* node, trie_nodes) delete node;
+        foreach (TrieNode* node, trie_nodes)
+            delete node;
 
         std::vector<StringSet*> wordsets;
         mutex_.lock();
         wordsets = string_set_pointers_;
         string_set_pointers_.clear();
         mutex_.unlock();
-        foreach (StringSet* wordset, wordsets) delete wordset;
+        foreach (StringSet* wordset, wordsets)
+            delete wordset;
 
         std::vector<StringUnsignedMap*> sums;
         mutex_.lock();
         sums = string_unsigned_map_pointers_;
         string_unsigned_map_pointers_.clear();
         mutex_.unlock();
-        foreach (StringUnsignedMap* sum, sums) delete sum;
+        foreach (StringUnsignedMap* sum, sums)
+            delete sum;
 
         std::vector<StringStringMultiMap*> multimaps;
         mutex_.lock();
         multimaps = multimap_pointers_;
         multimap_pointers_.clear();
         mutex_.unlock();
-        foreach (StringStringMultiMap* multimap, multimaps) delete multimap;
+        foreach (StringStringMultiMap* multimap, multimaps)
+            delete multimap;
 
         std::vector<StringConstStringPointerMultiMap*> scspmultimaps;
         mutex_.lock();

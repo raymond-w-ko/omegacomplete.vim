@@ -212,7 +212,7 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     {
         //Stopwatch watch; watch.Start();
 
-        response = calculateCompletionCandidates(argument);
+        calculateCompletionCandidates(argument, response);
         writeResponse(response);
 
         //watch.Stop();
@@ -299,11 +299,15 @@ void Session::handleWriteResponse(const boost::system::error_code& error)
     }
 }
 
-std::string Session::calculateCompletionCandidates(const std::string& line)
+void Session::calculateCompletionCandidates(
+    const std::string& line,
+    std::string& result)
 {
-
     std::string word_to_complete = getWordToComplete(line);
-    if (word_to_complete.empty()) return "";
+    if (word_to_complete.empty()) {
+        result.clear();
+        return;
+    }
 
     std::set<std::string> abbr_completions;
     calculateAbbrCompletions(word_to_complete, &abbr_completions);
@@ -410,7 +414,7 @@ std::string Session::calculateCompletionCandidates(const std::string& line)
 
     results << "]";
 
-    return results.str();
+    result = results.str();
 }
 
 std::string Session::getWordToComplete(const std::string& line)
