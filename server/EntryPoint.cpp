@@ -13,7 +13,6 @@ int main(int argc, char* argv[])
 #ifdef WIN32
     //SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 #endif
-
     // static intializers
     if (TagsSet::GlobalInit() == false) return 1;
     GlobalWordSet::GlobalInit();

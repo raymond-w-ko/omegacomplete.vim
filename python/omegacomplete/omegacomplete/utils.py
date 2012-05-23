@@ -39,6 +39,9 @@ def safe_header_sendall(conn, msg):
 
     conn.sendall(msg)
 
+def raw_sendall(conn, msg):
+    conn.sendall(msg)
+
 def normalize_path_separators(path):
     if (platform.system() == "Windows"):
         return string.replace(path, "/", "\\")

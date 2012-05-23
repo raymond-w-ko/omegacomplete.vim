@@ -1,6 +1,9 @@
 import socket
 import sys
-from omegacomplete.utils import safe_recvall, safe_delim_sendall, safe_header_sendall
+import struct
+import timeit
+from omegacomplete.utils import safe_recvall, safe_delim_sendall
+from omegacomplete.utils import safe_header_sendall, raw_sendall
 
 # these are probably global to the VIM Python interpreter, so prefix with "oc_"
 # to prevent conflicts with any other Python plugins
@@ -20,6 +23,7 @@ def oc_init_connection():
         oc_conn.connect((oc_host, oc_port))
 
         oc_conn.setblocking(0)
+        oc_conn.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
     except:
         oc_is_disabled = True
 
@@ -69,3 +73,21 @@ def oc_get_cursor_pos():
     row = str(vim.current.window.cursor[0])
     col = str(vim.current.window.cursor[1])
     return row + ' ' + col
+
+def oc_send_current_buffer():
+    global oc_is_diabled
+    if oc_is_disabled:
+        return
+
+    global oc_conn
+
+    command = "buffer_contents "
+    buffer_contents = '\n'.join(vim.current.buffer)
+    data_length = struct.pack("=I", len(command) + len(buffer_contents))
+
+    raw_sendall(oc_conn, data_length)
+    raw_sendall(oc_conn, command)
+    raw_sendall(oc_conn, buffer_contents)
+
+    reply = safe_recvall(oc_conn)
+    return reply

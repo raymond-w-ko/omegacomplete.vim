@@ -53,24 +53,10 @@ Session::~Session()
 void Session::Start()
 {
     std::cout << "session started, connection number: " << connection_number_ << "\n";
+    socket_.set_option(ip::tcp::no_delay(true));
     room_.Join(shared_from_this());
 
-    //asyncReadUntilNullChar();
     asyncReadHeader();
-}
-
-void Session::asyncReadUntilNullChar()
-{
-    std::string null_delimiter(1, '\0');
-
-    async_read_until(
-        socket_,
-        request_,
-        null_delimiter,
-        boost::bind(
-            &Session::handleReadRequest,
-            this,
-            placeholders::error));
 }
 
 void Session::asyncReadHeader()
@@ -122,10 +108,6 @@ void Session::handleReadRequest(const boost::system::error_code& error)
 
 void Session::processClientMessage()
 {
-    // convert to a string
-    //std::ostringstream ss;
-    //ss << &request_;
-    //const std::string& request = ss.str();
     const std::string& request = request_body_;
 
     // find first space
@@ -144,8 +126,6 @@ void Session::processClientMessage()
 
     // break it up into a "request" string and a "argument"
     std::string command(request.begin(), request.begin() + index);
-    //std::string argument(request.begin() + index + 1, request.end() - 1);
-
     StringPtr argument = boost::make_shared<std::string>(
         request.begin() + index + 1, request.end());
 
@@ -218,7 +198,8 @@ void Session::processClientMessage()
         current_tags_.clear();
 
         std::vector<std::string> tags_list;
-        boost::split(tags_list, *argument, boost::is_any_of(","), boost::token_compress_on);
+        boost::split(tags_list, *argument,
+                     boost::is_any_of(","), boost::token_compress_on);
         foreach (const std::string& tags, tags_list)
         {
             if (tags.size() == 0) continue;
@@ -234,7 +215,8 @@ void Session::processClientMessage()
         taglist_tags_.clear();
 
         std::vector<std::string> tags_list;
-        boost::split(tags_list, *argument, boost::is_any_of(","), boost::token_compress_on);
+        boost::split(tags_list, *argument,
+                     boost::is_any_of(","), boost::token_compress_on);
         foreach (const std::string& tags, tags_list)
         {
             if (tags.size() == 0) continue;
@@ -295,13 +277,11 @@ void Session::workerThreadLoop()
 {
     while (true)
     {
-        const unsigned int sleep_time_ms = 1;
 #ifdef WIN32
-        Sleep(sleep_time_ms);
+        ::Sleep(1);
 #else
-        sleep(sleep_time_ms);
+        sleep(1);
 #endif
-
         if (is_quitting_ == 1) break;
 
         // pop off the next job

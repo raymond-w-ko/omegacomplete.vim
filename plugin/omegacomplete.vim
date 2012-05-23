@@ -72,7 +72,7 @@ function <SID>FeedPopup()
     exe 'py oc_send_command("cursor_position " + oc_get_cursor_pos())'
 
     " send server contents of the entire buffer in case reparse is needed
-    exe 'py oc_send_command("buffer_contents " + oc_get_current_buffer_contents())'
+    exe 'py oc_send_current_buffer()'
 
     " send tags we are using to the server
     exe 'py current_tags = vim.eval("&tags")'
@@ -105,7 +105,7 @@ function <SID>NormalModeSyncBuffer()
     let current_buffer_number = <SID>GetCurrentBufferNumber()
 
     exe 'py oc_send_command("current_buffer ' . current_buffer_number . '")'
-    exe 'py oc_send_command("buffer_contents " + oc_get_current_buffer_contents())'
+    exe 'py oc_send_current_buffer()'
 endfunction
 
 " When we don't want a buffer loaded in memory in VIM, we can 'delete' the

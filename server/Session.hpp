@@ -29,16 +29,12 @@ public:
 
     GlobalWordSet WordSet;
 
-    // memory management
-    //GarbageDeleter GD;
-
 private:
     ////////////////////////////////////////////////////////////////////////////
     // boost::asio
     ////////////////////////////////////////////////////////////////////////////
     void handleReadRequest(const boost::system::error_code& error);
     void handleWriteResponse(const boost::system::error_code& error);
-    void asyncReadUntilNullChar();
 
     void asyncReadHeader();
     void handleReadHeader(const boost::system::error_code& error);
