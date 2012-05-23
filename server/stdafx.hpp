@@ -120,3 +120,5 @@ __int64 to_int64(const FILETIME& ft)
 }
 
 typedef boost::shared_ptr<std::string> StringPtr;
+typedef boost::unordered_set<std::string> UnorderedStringSet;
+typedef boost::shared_ptr<UnorderedStringSet> UnorderedStringSetPtr;

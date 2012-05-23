@@ -3,6 +3,7 @@
 #include "Room.hpp"
 #include "Buffer.hpp"
 #include "GarbageDeleter.hpp"
+#include "GlobalWordSet.hpp"
 
 struct ParseJob
 {
@@ -26,8 +27,10 @@ public:
 
     void Start();
 
+    GlobalWordSet WordSet;
+
     // memory management
-    GarbageDeleter GD;
+    //GarbageDeleter GD;
 
 private:
     ////////////////////////////////////////////////////////////////////////////
@@ -46,21 +49,13 @@ private:
     ////////////////////////////////////////////////////////////////////////////
     void processClientMessage();
 
+    void queueParseJob(ParseJob job);
+    void workerThreadLoop();
+
     void calculateCompletionCandidates(
         const std::string& line,
         std::string& result);
     std::string getWordToComplete(const std::string& line);
-    void calculatePrefixCompletions(
-        const std::string& word_to_complete,
-        std::set<std::string>* completions);
-    void calculateLevenshteinCompletions(
-        const std::string& word_to_complete,
-        LevenshteinSearchResults& completions);
-    void calculateAbbrCompletions(
-        const std::string& word_to_complete,
-        std::set<std::string>* completions);
-
-    void workerThreadLoop();
 
     ////////////////////////////////////////////////////////////////////////////
     // boost::asio

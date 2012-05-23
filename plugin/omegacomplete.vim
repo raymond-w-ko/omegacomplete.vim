@@ -72,7 +72,7 @@ function <SID>FeedPopup()
     exe 'py oc_send_command("cursor_position " + oc_get_cursor_pos())'
 
     " send server contents of the entire buffer in case reparse is needed
-    exe 'py oc_send_command("buffer_contents_insert_mode " + oc_get_current_buffer_contents())'
+    exe 'py oc_send_command("buffer_contents " + oc_get_current_buffer_contents())'
 
     " send tags we are using to the server
     exe 'py current_tags = vim.eval("&tags")'

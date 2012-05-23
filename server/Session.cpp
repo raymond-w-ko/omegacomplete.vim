@@ -157,8 +157,6 @@ void Session::processClientMessage()
         writeResponse(response);
 
         current_buffer_ = boost::lexical_cast<unsigned>(*argument);
-
-        // create and initialize buffer object if it doesn't exist
         if (Contains(buffers_, current_buffer_) == false)
         {
             buffers_[current_buffer_].Init(this, current_buffer_);
@@ -170,30 +168,7 @@ void Session::processClientMessage()
 
         current_line_ = *argument;
     }
-    else if (command == "buffer_contents_insert_mode")
-    {
-        writeResponse(response);
-
-        //Stopwatch watch; watch.Start();
-
-        auto(&buffer, buffers_[current_buffer_]);
-        buffer.ParseInsertMode(*argument, current_line_, cursor_pos_);
-
-        //watch.Stop();
-        //std::cout << "insert mode parse: ";watch.PrintResultMilliseconds();
-    }
-    else if (command == "buffer_contents")
-    {
-        writeResponse(response);
-
-        //Stopwatch watch; watch.Start();
-
-        auto(&buffer, buffers_[current_buffer_]);
-        buffer.ParseNormalMode(*argument);
-
-        //watch.Stop();
-        //std::cout << "normal mode parse: "; watch.PrintResultMilliseconds();
-    }
+    // assumes that above is called immediately before
     else if (command == "cursor_position")
     {
         writeResponse(response);
@@ -207,16 +182,28 @@ void Session::processClientMessage()
         unsigned x = boost::lexical_cast<unsigned>(position[0]);
         unsigned y = boost::lexical_cast<unsigned>(position[1]);
         cursor_pos_.first = x; cursor_pos_.second = y;
+
+        buffers_[current_buffer_].CalculateCurrentWordOfCursor(
+            current_line_,
+            cursor_pos_);
+    }
+    else if (command == "buffer_contents")
+    {
+        writeResponse(response);
+
+        ParseJob job;
+        job.BufferNumber = current_buffer_;
+        job.Contents = argument;
+        queueParseJob(job);
     }
     else if (command == "complete")
     {
-        //Stopwatch watch; watch.Start();
+        Stopwatch watch; watch.Start();
 
         calculateCompletionCandidates(*argument, response);
         writeResponse(response);
 
-        //watch.Stop();
-        //std::cout << "complete: "; watch.PrintResultMilliseconds();
+        watch.Stop(); std::cout << "complete: "; watch.PrintResultMilliseconds();
     }
     else if (command == "free_buffer")
     {
@@ -297,6 +284,13 @@ void Session::handleWriteResponse(const boost::system::error_code& error)
     }
 }
 
+void Session::queueParseJob(ParseJob job)
+{
+    job_queue_mutex_.lock();
+    job_queue_.push_back(job);
+    job_queue_mutex_.unlock();
+}
+
 void Session::workerThreadLoop()
 {
     while (true)
@@ -321,6 +315,14 @@ void Session::workerThreadLoop()
 
         // the job queue is empty
         if (job.Contents == NULL) continue;
+
+        // do the job
+        if (Contains(buffers_, job.BufferNumber) == false) {
+            std::cout << "buffer " << job.BufferNumber << "no longer exists! "
+                      << "skipping this job" << std::endl;
+            continue;
+        }
+        buffers_[job.BufferNumber].ReplaceContents(job.Contents);
     }
 }
 
@@ -328,31 +330,31 @@ void Session::calculateCompletionCandidates(
     const std::string& line,
     std::string& result)
 {
-    std::string word_to_complete = getWordToComplete(line);
-    if (word_to_complete.empty()) {
+    std::string prefix_to_complete = getWordToComplete(line);
+    if (prefix_to_complete.empty()) {
         result.clear();
         return;
     }
 
     std::set<std::string> abbr_completions;
-    calculateAbbrCompletions(word_to_complete, &abbr_completions);
-    abbr_completions.erase(word_to_complete);
+    WordSet.GetAbbrCompletions(prefix_to_complete, &abbr_completions);
+    abbr_completions.erase(prefix_to_complete);
 
     std::set<std::string> tags_abbr_completions;
     TagsSet::Instance()->GetAbbrCompletions(
-        word_to_complete, current_tags_,
+        prefix_to_complete, current_tags_,
         &tags_abbr_completions);
-    tags_abbr_completions.erase(word_to_complete);
+    tags_abbr_completions.erase(prefix_to_complete);
 
     std::set<std::string> prefix_completions;
-    calculatePrefixCompletions(word_to_complete, &prefix_completions);
-    prefix_completions.erase(word_to_complete);
+    WordSet.GetPrefixCompletions(prefix_to_complete, &prefix_completions);
+    prefix_completions.erase(prefix_to_complete);
 
     std::set<std::string> tags_prefix_completions;
     TagsSet::Instance()->GetAllWordsWithPrefix(
-        word_to_complete, current_tags_,
+        prefix_to_complete, current_tags_,
         &tags_prefix_completions);
-    tags_prefix_completions.erase(word_to_complete);
+    tags_prefix_completions.erase(prefix_to_complete);
 
 
     //LevenshteinSearchResults levenshtein_completions;
@@ -362,7 +364,7 @@ void Session::calculateCompletionCandidates(
     //if ((abbr_completions.size() + prefix_completions.size()) == 0)
     //{
         //calculateLevenshteinCompletions(
-            //word_to_complete,
+            //prefix_to_complete,
             //levenshtein_completions);
     //}
 
@@ -418,25 +420,6 @@ void Session::calculateCompletionCandidates(
 
         if (num_completions_added >= 32) break;
     }
-
-    // append levenshtein completions
-    //bool done = false;
-    //for (auto& completion : levenshtein_completions)
-    //{
-        //auto& cost = completion.first;
-        //auto& word_set = completion.second;
-        //for (const std::string& word : word_set)
-        //{
-            //if (word == word_to_complete) continue;
-
-            //results << boost::str(boost::format(
-                //"{'word':'%s','menu':'[%d]'},")
-                //% word % cost);
-        //}
-
-        //if (done) break;
-    //}
-
     results << "]";
 
     result = results.str();
@@ -462,40 +445,5 @@ std::string Session::getWordToComplete(const std::string& line)
     if ((partial_begin + 1) == partial_end) return "";
 
     std::string partial( &line[partial_begin + 1], &line[partial_end] );
-    //std::cout << "complete word: " << partial << std::endl;
     return partial;
-}
-
-void Session::calculatePrefixCompletions(
-    const std::string& word_to_complete,
-    std::set<std::string>* completions)
-{
-    buffers_[current_buffer_].GetAllWordsWithPrefixFromCurrentLine(
-        word_to_complete,
-        completions);
-
-    foreach (BuffersIterator& buffer, buffers_)
-    {
-        buffer.second.GetAllWordsWithPrefix(word_to_complete, completions);
-    }
-}
-
-void Session::calculateLevenshteinCompletions(
-    const std::string& word_to_complete,
-    LevenshteinSearchResults& completions)
-{
-    foreach (BuffersIterator& buffer, buffers_)
-    {
-        buffer.second.GetLevenshteinCompletions(word_to_complete, completions);
-    }
-}
-
-void Session::calculateAbbrCompletions(
-    const std::string& word_to_complete,
-    std::set<std::string>* completions)
-{
-    foreach (BuffersIterator& buffer, buffers_)
-    {
-        buffer.second.GetAbbrCompletions(word_to_complete, completions);
-    }
 }

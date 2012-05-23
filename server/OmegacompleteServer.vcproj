@@ -195,6 +195,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\GlobalWordSet.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Participant.cpp"
 				>
 			</File>
@@ -258,6 +262,10 @@
 			</File>
 			<File
 				RelativePath=".\GarbageDeleter.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\GlobalWordSet.hpp"
 				>
 			</File>
 			<File

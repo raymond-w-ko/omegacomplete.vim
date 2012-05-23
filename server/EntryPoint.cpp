@@ -3,6 +3,7 @@
 #include "Server.hpp"
 #include "Tags.hpp"
 #include "TagsSet.hpp"
+#include "GlobalWordSet.hpp"
 
 const char* ADDRESS = "127.0.0.1";
 const unsigned short PORT = 31337;
@@ -10,11 +11,12 @@ const unsigned short PORT = 31337;
 int main(int argc, char* argv[])
 {
 #ifdef WIN32
-    SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
+    //SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 #endif
 
     // static intializers
     if (TagsSet::GlobalInit() == false) return 1;
+    GlobalWordSet::GlobalInit();
     Buffer::GlobalInit();
 
     io_service io_service;
