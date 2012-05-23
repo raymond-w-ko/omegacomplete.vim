@@ -12,10 +12,10 @@ public:
     static void GlobalInit();
     Buffer();
     ~Buffer();
-    bool Init(Session* parent, std::string buffer_id);
+    bool Init(Session* parent, unsigned buffer_id);
 
     bool operator==(const Buffer& other);
-    std::string GetBufferId() const;
+    unsigned GetBufferId() const;
 
     void ParseNormalMode(
         const std::string& new_contents);
@@ -69,7 +69,7 @@ private:
     static char to_lower_[256];
 
     Session* parent_;
-    std::string buffer_id_;
+    unsigned buffer_id_;
 
     std::pair<unsigned, unsigned> cursor_pos_;
     std::string initial_current_line_;
@@ -104,7 +104,7 @@ template<> struct hash<Buffer>
 {
     size_t operator()(const Buffer& buffer) const
     {
-        return boost::hash<std::string>()(buffer.GetBufferId());
+        return boost::hash<unsigned>()(buffer.GetBufferId());
     }
 };
 }

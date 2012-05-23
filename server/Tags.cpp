@@ -139,7 +139,7 @@ void Tags::reparse()
             {
                 std::cout << "expected key value pair, but could not find ':'" << std::endl;
                 std::cout << line << std::endl;
-                return;
+                continue;
             }
 
             std::string key = std::string(token.begin(), token.begin() + colon);

@@ -94,11 +94,7 @@ void Session::handleReadHeader(const boost::system::error_code& error)
         return;
     }
 
-    processClientMessage();
-}
-
-void Session::processClientMessage()
-{
+    // this probably isn't totally portable, but whatever
     unsigned body_size = *( reinterpret_cast<unsigned*>(request_header_) );
     request_body_.resize(body_size, '\0');
 
@@ -121,6 +117,11 @@ void Session::handleReadRequest(const boost::system::error_code& error)
         return;
     }
 
+    processClientMessage();
+}
+
+void Session::processClientMessage()
+{
     // convert to a string
     //std::ostringstream ss;
     //ss << &request_;
@@ -144,7 +145,9 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     // break it up into a "request" string and a "argument"
     std::string command(request.begin(), request.begin() + index);
     //std::string argument(request.begin() + index + 1, request.end() - 1);
-    std::string argument(request.begin() + index + 1, request.end());
+
+    StringPtr argument = boost::make_shared<std::string>(
+        request.begin() + index + 1, request.end());
 
     std::string response = "ACK";
 
@@ -153,19 +156,19 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     {
         writeResponse(response);
 
-        current_buffer_ = argument;
+        current_buffer_ = boost::lexical_cast<unsigned>(*argument);
 
         // create and initialize buffer object if it doesn't exist
         if (Contains(buffers_, current_buffer_) == false)
         {
-            buffers_[current_buffer_].Init(this, argument);
+            buffers_[current_buffer_].Init(this, current_buffer_);
         }
     }
     else if (command == "current_line")
     {
         writeResponse(response);
 
-        current_line_ = argument;
+        current_line_ = *argument;
     }
     else if (command == "buffer_contents_insert_mode")
     {
@@ -174,7 +177,7 @@ void Session::handleReadRequest(const boost::system::error_code& error)
         //Stopwatch watch; watch.Start();
 
         auto(&buffer, buffers_[current_buffer_]);
-        buffer.ParseInsertMode(argument, current_line_, cursor_pos_);
+        buffer.ParseInsertMode(*argument, current_line_, cursor_pos_);
 
         //watch.Stop();
         //std::cout << "insert mode parse: ";watch.PrintResultMilliseconds();
@@ -186,7 +189,7 @@ void Session::handleReadRequest(const boost::system::error_code& error)
         //Stopwatch watch; watch.Start();
 
         auto(&buffer, buffers_[current_buffer_]);
-        buffer.ParseNormalMode(argument);
+        buffer.ParseNormalMode(*argument);
 
         //watch.Stop();
         //std::cout << "normal mode parse: "; watch.PrintResultMilliseconds();
@@ -198,7 +201,7 @@ void Session::handleReadRequest(const boost::system::error_code& error)
         std::vector<std::string> position;
         boost::split(
             position,
-            argument,
+            *argument,
             boost::is_any_of(" "),
             boost::token_compress_on);
         unsigned x = boost::lexical_cast<unsigned>(position[0]);
@@ -209,7 +212,7 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     {
         //Stopwatch watch; watch.Start();
 
-        calculateCompletionCandidates(argument, response);
+        calculateCompletionCandidates(*argument, response);
         writeResponse(response);
 
         //watch.Stop();
@@ -219,7 +222,7 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     {
         writeResponse(response);
 
-        buffers_.erase(argument);
+        buffers_.erase(boost::lexical_cast<unsigned>(argument));
     }
     else if (command == "current_tags")
     {
@@ -228,7 +231,7 @@ void Session::handleReadRequest(const boost::system::error_code& error)
         current_tags_.clear();
 
         std::vector<std::string> tags_list;
-        boost::split(tags_list, argument, boost::is_any_of(","), boost::token_compress_on);
+        boost::split(tags_list, *argument, boost::is_any_of(","), boost::token_compress_on);
         foreach (const std::string& tags, tags_list)
         {
             if (tags.size() == 0) continue;
@@ -244,7 +247,7 @@ void Session::handleReadRequest(const boost::system::error_code& error)
         taglist_tags_.clear();
 
         std::vector<std::string> tags_list;
-        boost::split(tags_list, argument, boost::is_any_of(","), boost::token_compress_on);
+        boost::split(tags_list, *argument, boost::is_any_of(","), boost::token_compress_on);
         foreach (const std::string& tags, tags_list)
         {
             if (tags.size() == 0) continue;
@@ -255,13 +258,13 @@ void Session::handleReadRequest(const boost::system::error_code& error)
     }
     else if (command == "vim_taglist_function")
     {
-        response = TagsSet::Instance()->VimTaglistFunction(argument, taglist_tags_);
+        response = TagsSet::Instance()->VimTaglistFunction(*argument, taglist_tags_);
         writeResponse(response);
     }
     else
     {
         std::cout << boost::str(boost::format(
-            "unknown command %s %s") % command % argument);
+            "unknown command %s %s") % command % *argument);
 
         writeResponse(response);
     }
@@ -298,7 +301,7 @@ void Session::workerThreadLoop()
 {
     while (true)
     {
-        const unsigned int sleep_time_ms = 10;
+        const unsigned int sleep_time_ms = 1;
 #ifdef WIN32
         Sleep(sleep_time_ms);
 #else
@@ -306,6 +309,18 @@ void Session::workerThreadLoop()
 #endif
 
         if (is_quitting_ == 1) break;
+
+        // pop off the next job
+        ParseJob job;
+        job_queue_mutex_.lock();
+        if (job_queue_.size() > 0) {
+            job = job_queue_.front();
+            job_queue_.pop_front();
+        }
+        job_queue_mutex_.unlock();
+
+        // the job queue is empty
+        if (job.Contents == NULL) continue;
     }
 }
 

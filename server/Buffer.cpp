@@ -91,17 +91,15 @@ void Buffer::ParseNormalMode(
     tokenizeKeywords();
 }
 
-bool Buffer::Init(Session* parent, std::string buffer_id)
+bool Buffer::Init(Session* parent, unsigned buffer_id)
 {
     parent_ = parent;
-
-    if (buffer_id.size() == 0) throw std::exception();
     buffer_id_ = buffer_id;
 
     return true;
 }
 
-std::string Buffer::GetBufferId() const
+unsigned Buffer::GetBufferId() const
 {
     return buffer_id_;
 }

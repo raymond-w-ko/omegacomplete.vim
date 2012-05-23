@@ -4,6 +4,12 @@
 #include "Buffer.hpp"
 #include "GarbageDeleter.hpp"
 
+struct ParseJob
+{
+    unsigned BufferNumber;
+    StringPtr Contents;
+};
+
 class Session
 :
 public Participant,
@@ -77,10 +83,14 @@ private:
     boost::thread worker_thread_;
     volatile int is_quitting_;
 
-    std::string current_buffer_;
-    typedef boost::unordered_map<std::string, Buffer>::value_type BuffersIterator;
-    boost::unordered_map<std::string, Buffer> buffers_;
+    boost::mutex buffers_mutex_;
+    typedef boost::unordered_map<unsigned, Buffer>::value_type BuffersIterator;
+    boost::unordered_map<unsigned, Buffer> buffers_;
 
+    boost::mutex job_queue_mutex_;
+    std::deque<ParseJob> job_queue_;
+
+    unsigned current_buffer_;
     std::string current_line_;
     std::pair<unsigned, unsigned> cursor_pos_;
     std::vector<std::string> current_tags_;

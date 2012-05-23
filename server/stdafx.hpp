@@ -118,3 +118,5 @@ __int64 to_int64(const FILETIME& ft)
 {
     return static_cast<__int64>(ft.dwHighDateTime) << 32 | ft.dwLowDateTime;
 }
+
+typedef boost::shared_ptr<std::string> StringPtr;
