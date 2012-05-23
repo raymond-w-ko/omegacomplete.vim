@@ -198,18 +198,18 @@ void Session::processClientMessage()
     }
     else if (command == "complete")
     {
-        Stopwatch watch; watch.Start();
+        //Stopwatch watch; watch.Start();
 
         calculateCompletionCandidates(*argument, response);
         writeResponse(response);
 
-        watch.Stop(); std::cout << "complete: "; watch.PrintResultMilliseconds();
+        //watch.Stop(); std::cout << "complete: "; watch.PrintResultMilliseconds();
     }
     else if (command == "free_buffer")
     {
         writeResponse(response);
 
-        buffers_.erase(boost::lexical_cast<unsigned>(argument));
+        buffers_.erase(boost::lexical_cast<unsigned>(*argument));
     }
     else if (command == "current_tags")
     {

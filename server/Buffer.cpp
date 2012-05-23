@@ -162,10 +162,11 @@ void Buffer::TokenizeContentsIntoKeywords(
                 continue;
             break;
         }
-        if (jj == contents_size) break;
 
         // construct word based off of pointer
-        std::string word(&text[ii], &text[jj]);
+        std::string word(
+            text.begin() + ii,
+            text.begin() + jj);
         (*words).insert(word);
 
         // for loop will autoincrement
