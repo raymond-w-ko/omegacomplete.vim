@@ -23,6 +23,7 @@ public:
     ~GlobalWordSet();
 
     void UpdateWord(const std::string& word, int reference_count_delta);
+    unsigned Prune();
 
     void GetPrefixCompletions(
         const std::string& prefix,

@@ -35,10 +35,6 @@ is_quitting_(0)
     quick_match_key_[17] = 'i';
     quick_match_key_[18] = 'o';
     quick_match_key_[19] = 'p';
-
-    worker_thread_ = boost::thread(
-        &Session::workerThreadLoop,
-        this);
 }
 
 Session::~Session()
@@ -52,6 +48,10 @@ Session::~Session()
 
 void Session::Start()
 {
+    worker_thread_ = boost::thread(
+        &Session::workerThreadLoop,
+        this);
+
     std::cout << "session started, connection number: " << connection_number_ << "\n";
     socket_.set_option(ip::tcp::no_delay(true));
     room_.Join(shared_from_this());
@@ -189,7 +189,19 @@ void Session::processClientMessage()
     {
         writeResponse(response);
 
+        // make sure job queue is empty before we can delete buffer
+        while (true) {
+            job_queue_mutex_.lock();
+            if (job_queue_.size() == 0) {
+                break;
+            }
+            job_queue_mutex_.unlock();
+        }
+
+        buffers_mutex_.lock();
         buffers_.erase(boost::lexical_cast<unsigned>(*argument));
+        buffers_mutex_.unlock();
+        job_queue_mutex_.unlock();
     }
     else if (command == "current_tags")
     {
@@ -227,8 +239,16 @@ void Session::processClientMessage()
     }
     else if (command == "vim_taglist_function")
     {
-        response = TagsSet::Instance()->VimTaglistFunction(*argument, taglist_tags_);
+        response = TagsSet::Instance()->VimTaglistFunction(
+            *argument,
+            taglist_tags_);
         writeResponse(response);
+    }
+    else if (command == "prune") {
+        writeResponse(response);
+
+        unsigned count = WordSet.Prune();
+        //std::cout << count << " words pruned" << std::endl;
     }
     else
     {
@@ -275,6 +295,8 @@ void Session::queueParseJob(ParseJob job)
 
 void Session::workerThreadLoop()
 {
+    bool did_prune = false;
+
     while (true)
     {
 #ifdef WIN32
@@ -290,19 +312,32 @@ void Session::workerThreadLoop()
         if (job_queue_.size() > 0) {
             job = job_queue_.front();
             job_queue_.pop_front();
-        }
-        job_queue_mutex_.unlock();
 
-        // the job queue is empty
-        if (job.Contents == NULL) continue;
+            job_queue_mutex_.unlock();
 
-        // do the job
-        if (Contains(buffers_, job.BufferNumber) == false) {
-            std::cout << "buffer " << job.BufferNumber << "no longer exists! "
-                      << "skipping this job" << std::endl;
+            // do the job
+            buffers_mutex_.lock();
+            if (Contains(buffers_, job.BufferNumber) == false) {
+                std::cout << "buffer " << job.BufferNumber
+                          << "no longer exists! "
+                          << "skipping this job" << std::endl;
+                continue;
+            }
+            buffers_[job.BufferNumber].ReplaceContents(job.Contents);
+            buffers_mutex_.unlock();
+
+            did_prune = false;
+        } else {
+            job_queue_mutex_.unlock();
+
+            if (did_prune == false) {
+                WordSet.Prune();
+                did_prune = true;
+            }
+
             continue;
         }
-        buffers_[job.BufferNumber].ReplaceContents(job.Contents);
+
     }
 }
 

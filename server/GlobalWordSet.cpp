@@ -194,3 +194,28 @@ void GlobalWordSet::GetAbbrCompletions(
 
     mutex_.unlock();
 }
+
+unsigned GlobalWordSet::Prune()
+{
+    mutex_.lock();
+
+    std::vector<std::string> to_be_pruned;
+    auto(iter, words_.begin());
+    for (; iter != words_.end(); ++iter) {
+        if (iter->second.ReferenceCount != 0) continue;
+
+        to_be_pruned.push_back(iter->first);
+    }
+
+    mutex_.unlock();
+
+    foreach (const std::string& word, to_be_pruned) {
+        mutex_.lock();
+        words_.erase(word);
+        title_cases_.erase(word);
+        underscores_.erase(word);
+        mutex_.unlock();
+    }
+
+    return to_be_pruned.size();
+}

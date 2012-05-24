@@ -34,7 +34,9 @@ Buffer::Buffer()
 
 Buffer::~Buffer()
 {
-    ;
+    foreach (const std::string& word, *words_) {
+        parent_->WordSet.UpdateWord(word, -1);
+    }
 }
 
 bool Buffer::operator==(const Buffer& other)
@@ -66,7 +68,6 @@ void Buffer::ReplaceContents(StringPtr new_contents)
 
     UnorderedStringSetPtr new_words = boost::make_shared<UnorderedStringSet>();
     Buffer::TokenizeContentsIntoKeywords(new_contents, new_words);
-
 
     if (!contents_) {
         // easy first case, just increment reference count for each word
