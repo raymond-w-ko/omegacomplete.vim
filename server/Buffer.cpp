@@ -6,11 +6,6 @@
 
 using namespace std;
 
-const unsigned int kTrieDepth = 2;
-const unsigned int kNumThreads = 8;
-const int kLevenshteinMaxCost = 2;
-const size_t kMinLengthForLevenshteinCompletion = 4;
-
 char Buffer::is_part_of_word_[256];
 char Buffer::to_lower_[256];
 
@@ -109,36 +104,6 @@ void Buffer::ReplaceContents(StringPtr new_contents)
     contents_ = new_contents;
     words_ = new_words;
 }
-
-//void Buffer::ParseInsertMode(
-    //const std::string& new_contents,
-    //const std::string& cur_line,
-    //std::pair<unsigned, unsigned> cursor_pos)
-//{
-    // if our cursor row has changed, then capture the contents of the original
-    // current line before any changes have occurred
-    //if (cursor_pos.first != cursor_pos_.first)
-    //{
-        //initial_current_line_ = cur_line;
-        //tokenizeKeywordsOfOriginalCurrentLine(initial_current_line_);
-
-        //// by changing lines in insert mode, we have to reparse buffer
-        //// to keep it current
-        //if (contents_ != new_contents)
-        //{
-            //contents_ = new_contents;
-            //tokenizeKeywords();
-        //}
-    //}
-
-    // calling the function implies that the current line has changed,
-    // so parse the current line
-    //tokenizeKeywordsOfCurrentLine(cur_line);
-    //calculateCurrentWordOfCursor(cur_line, cursor_pos);
-
-    //prev_cur_line_ = cur_line;
-    //cursor_pos_ = cursor_pos;
-//}
 
 void Buffer::TokenizeContentsIntoKeywords(
     StringPtr contents,

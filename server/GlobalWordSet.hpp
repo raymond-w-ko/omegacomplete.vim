@@ -1,5 +1,9 @@
 #pragma once
 
+#include "TrieNode.hpp"
+
+typedef std::map< int, std::set<std::string> > LevenshteinSearchResults;
+
 struct WordInfo
 {
     WordInfo();
@@ -33,7 +37,24 @@ public:
         const std::string& prefix,
         std::set<std::string>* completions);
 
+    void GetLevenshteinCompletions(
+        const std::string& prefix,
+        LevenshteinSearchResults& results);
+
 private:
+    void levenshteinSearch(
+        const std::string& word,
+        int max_cost,
+        LevenshteinSearchResults& results);
+
+    void levenshteinSearchRecursive(
+        TrieNode* node,
+        char letter,
+        const std::string& word,
+        const std::vector<int>& previous_row,
+        LevenshteinSearchResults& results,
+        int max_cost);
+
     static boost::unordered_map<std::string, std::string> title_case_cache_;
     static boost::unordered_map<std::string, std::string> underscore_cache_;
 
@@ -43,4 +64,7 @@ private:
     std::map<std::string, WordInfo>& const_words_;
     boost::unordered_multimap<std::string, std::string> title_cases_;
     boost::unordered_multimap<std::string, std::string> underscores_;
+
+    boost::mutex trie_mutex_;
+    TrieNode trie_;
 };

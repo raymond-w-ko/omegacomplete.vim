@@ -372,16 +372,18 @@ void Session::calculateCompletionCandidates(
     tags_prefix_completions.erase(prefix_to_complete);
 
 
-    //LevenshteinSearchResults levenshtein_completions;
+    LevenshteinSearchResults levenshtein_completions;
     // I type so fast and value the popup not appearing if it doesn't
     // recognize the word, so I have disabled this for now
     // only if we have no completions do we try to Levenshtein distance completion
-    //if ((abbr_completions.size() + prefix_completions.size()) == 0)
-    //{
-        //calculateLevenshteinCompletions(
-            //prefix_to_complete,
-            //levenshtein_completions);
-    //}
+    unsigned num_current_completions =
+        abbr_completions.size() + tags_abbr_completions.size() +
+        prefix_completions.size() + tags_prefix_completions.size();
+    if (num_current_completions == 0) {
+        WordSet.GetLevenshteinCompletions(
+            prefix_to_complete,
+            levenshtein_completions);
+    }
 
     // compile results and send
     unsigned int num_completions_added = 0;
@@ -434,6 +436,22 @@ void Session::calculateCompletionCandidates(
         added_words.insert(word);
 
         if (num_completions_added >= 32) break;
+    }
+
+    // append Levenshtein completions
+    auto (iter, levenshtein_completions.begin());
+    for (; iter != levenshtein_completions.end(); ++iter) {
+        int score = iter->first;
+        foreach (const std::string& word, iter->second) {
+            if (Contains(added_words, word) == true) continue;
+            if (word == prefix_to_complete) continue;
+
+            results << boost::str(boost::format(
+                "{'word':'*%s','menu':'[%d]'},")
+                % word % score);
+
+            added_words.insert(word);
+        }
     }
     results << "]";
 

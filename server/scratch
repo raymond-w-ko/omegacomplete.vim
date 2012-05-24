@@ -2,176 +2,46 @@
 
 #include "Buffer.hpp"
 
-typedef std::map< int, std::set<std::string> > LevenshteinSearchResults;
-
-    void GetLevenshteinCompletions(
-        const std::string& prefix,
-        LevenshteinSearchResults& results);
-
-    void levenshteinSearch(
-        const std::string& word,
-        int max_cost,
-        LevenshteinSearchResults& results);
-
-    void levenshteinSearchRecursive(
-        TrieNode* node,
-        char letter,
-        const std::string& word,
-        const std::vector<int>& previous_row,
-        LevenshteinSearchResults& results,
-        int max_cost);
-
-void Buffer::GetLevenshteinCompletions(
-    const std::string& prefix,
-    LevenshteinSearchResults& results)
-{
-    if ((words_->size()) > 0 && trie_->Empty())
-    {
-        //Stopwatch watch; watch.Start();
-        foreach (WordsIterator& word_count_pair, *words_)
-        {
-            trie_->Insert(&word_count_pair.first);
-        }
-        //watch.Stop();
-        //std::cout << "trie_ creation time: "; watch.PrintResultMilliseconds();
-    }
-
-    // only try fancier matching if we have a sufficiently long enough
-    // word to make it worthwhile
-    if (prefix.length() < kMinLengthForLevenshteinCompletion) return;
-
-    levenshteinSearch(prefix, kLevenshteinMaxCost, results);
-}
-
-
-// translated from Python code provided by
-// http://stevehanov.ca/blog/index.php?id=114
-void Buffer::levenshteinSearch(
-    const std::string& word,
-    int max_cost,
-    LevenshteinSearchResults& results)
-{
-    // generate sequence from [0, len(word)]
-    size_t current_row_end = word.length() + 1;
-    std::vector<int> current_row;
-    for (size_t ii = 0; ii < current_row_end; ++ii) current_row.push_back(ii);
-
-    foreach (TrieNode::ChildrenIterator& child, trie_->Children)
-    {
-        char letter = child.first;
-        TrieNode* next_node = child.second;
-        levenshteinSearchRecursive(
-            next_node,
-            letter,
-            word,
-            current_row,
-            results,
-            max_cost);
-    }
-}
-
-// translated from Python code provided by
-// http://stevehanov.ca/blog/index.php?id=114
-void Buffer::levenshteinSearchRecursive(
-    TrieNode* node,
-    char letter,
-    const std::string& word,
-    const std::vector<int>& previous_row,
-    LevenshteinSearchResults& results,
-    int max_cost)
-{
-    size_t columns = word.length() + 1;
-    std::vector<int> current_row;
-    current_row.push_back( previous_row[0] + 1 );
-
-    // Build one row for the letter, with a column for each letter in the target
-    // word, plus one for the empty string at column 0
-    for (unsigned column = 1; column < columns; ++column)
-    {
-        int insert_cost = current_row[column - 1] + 1;
-        int delete_cost = previous_row[column] + 1;
-
-        int replace_cost;
-        if (word[column - 1] != letter)
-            replace_cost = previous_row[column - 1] + 1;
-        else
-            replace_cost = previous_row[column - 1];
-
-        current_row.push_back( (std::min)(
-            insert_cost,
-            (std::min)(delete_cost, replace_cost)) );
-    }
-
-    // if the last entry in the row indicates the optimal cost is less than the
-    // maximum cost, and there is a word in this trie node, then add it.
-    size_t last_index = current_row.size() - 1;
-    if ( (current_row[last_index] <= max_cost) &&
-         (node->Word != NULL) &&
-         (node->Word->length() > 0) )
-    {
-        results[ current_row[last_index] ].insert(*node->Word);
-    }
-
-    // if any entries in the row are less than the maximum cost, then
-    // recursively search each branch of the trie
-    if (*std::min_element(current_row.begin(), current_row.end()) <= max_cost)
-    {
-        foreach (TrieNode::ChildrenIterator& child, node->Children)
-        {
-            char letter = child.first;
-            TrieNode* next_node = child.second;
-            levenshteinSearchRecursive(
-                next_node,
-                letter,
-                word,
-                current_row,
-                results,
-                max_cost);
-        }
-    }
-}
-
-
 static void dummy()
 {
-    //std::vector<std::string> words;
-    //words_.GetAllWordsWithPrefix("mo", &words);
-    //for (const std::string& word : words)
-    //{
-        //std::cout << word << " ";
-    //}
+    std::vector<std::string> words;
+    words_.GetAllWordsWithPrefix("mo", &words);
+    for (const std::string& word : words)
+    {
+        std::cout << word << " ";
+    }
 
-    //words.clear();
+    words.clear();
 
-    //typedef std::future<std::vector<std::string>> StringVectorFuture;
-    //std::vector<StringVectorFuture> futures;
+    typedef std::future<std::vector<std::string>> StringVectorFuture;
+    std::vector<StringVectorFuture> futures;
 
-    //std::future<int> the_answer = std::async([] { return 42; });
-    //int foobar = the_answer.get();
+    std::future<int> the_answer = std::async([] { return 42; });
+    int foobar = the_answer.get();
 
-    //for (size_t ii = 0; ii < kNumThreads; ++ii)
-    //{
-        //const size_t begin = (ii * already_processed_words_.size()) / kNumThreads;
-        //const size_t end = ((ii + 1) * already_processed_words_.size()) / kNumThreads;
+    for (size_t ii = 0; ii < kNumThreads; ++ii)
+    {
+        const size_t begin = (ii * already_processed_words_.size()) / kNumThreads;
+        const size_t end = ((ii + 1) * already_processed_words_.size()) / kNumThreads;
 
-        //std::vector<std::string>::iterator iter_begin = words.begin() + begin;
-        //std::vector<std::string>::iterator iter_end = words.begin() + end;
+        std::vector<std::string>::iterator iter_begin = words.begin() + begin;
+        std::vector<std::string>::iterator iter_end = words.begin() + end;
 
-        //StringVectorFuture svf = parent_->SubmitJob( boost::bind(
-            //&Buffer::fuzzyMatch,
-            //nullptr,
-            //nullptr));
+        StringVectorFuture svf = parent_->SubmitJob( boost::bind(
+            &Buffer::fuzzyMatch,
+            nullptr,
+            nullptr));
 
-        ////futures.push_back(svf);
-    //}
+        //futures.push_back(svf);
+    }
 
-    //for (auto& future : futures)
-    //{
-        //auto chunk = future.get();
-        //std::copy(chunk.begin(), chunk.end(), std::back_inserter(words));
-    //}
+    for (auto& future : futures)
+    {
+        auto chunk = future.get();
+        std::copy(chunk.begin(), chunk.end(), std::back_inserter(words));
+    }
 
-    //std::cout << "\n";
+    std::cout << "\n";
 }
 
 void Buffer::tokenizeKeywordsUsingRegex()
