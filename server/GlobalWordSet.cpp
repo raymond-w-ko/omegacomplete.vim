@@ -2,7 +2,7 @@
 #include "GlobalWordSet.hpp"
 
 const int kLevenshteinMaxCost = 2;
-const size_t kMinLengthForLevenshteinCompletion = 0;
+const size_t kMinLengthForLevenshteinCompletion = 4;
 
 char GlobalWordSet::is_part_of_word_[256];
 char GlobalWordSet::to_lower_[256];

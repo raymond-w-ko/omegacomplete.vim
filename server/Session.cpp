@@ -445,10 +445,11 @@ void Session::calculateCompletionCandidates(
         foreach (const std::string& word, iter->second) {
             if (Contains(added_words, word) == true) continue;
             if (word == prefix_to_complete) continue;
+            if (boost::starts_with(prefix_to_complete, word)) continue;
 
             results << boost::str(boost::format(
-                "{'word':'*%s','menu':'[%d]'},")
-                % word % score);
+                "{'abbr':'*%s','word':'%s','menu':'[%d]'},")
+                % word % word % score);
 
             added_words.insert(word);
         }
