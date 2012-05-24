@@ -103,6 +103,10 @@ endfunction
 
 function <SID>NormalModeSyncBuffer()
     let current_buffer_number = <SID>GetCurrentBufferNumber()
+    let current_buffer_name = bufname('%') 
+    if (current_buffer_name ==# 'GoToFile')
+        return
+    endif
 
     exe 'py oc_send_command("current_buffer ' . current_buffer_number . '")'
     exe 'py oc_send_current_buffer()'
@@ -128,6 +132,10 @@ function <SID>OnInsertEnter()
     call <SID>NormalModeSyncBuffer()
 endfunction
 
+function <SID>OnFocusLost()
+    exe 'py oc_send_command("prune 0")'
+endfunction
+
 augroup OmegaComplete
     autocmd!
     
@@ -150,6 +158,10 @@ augroup OmegaComplete
     autocmd InsertEnter
     \ *
     \ call <SID>OnInsertEnter()
+
+    autocmd FocusLost
+    \ *
+    \ call <SID>OnFocusLost()
 augroup END
 
 function <SID>IsPartOfWord(character)
