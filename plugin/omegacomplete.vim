@@ -83,13 +83,14 @@ function <SID>FeedPopup()
     exe 'py oc_server_result = oc_send_command("complete " + vim.eval("partial_line"))'
 
 " check to make sure we get something
-python << PYTHON
+python << DELIMITER
 if len(oc_server_result) == 0:
-    vim.command("return ''")
-PYTHON
+    vim.command('let g:omegacomplete_server_results=[]')
+else:
+    vim.command('let g:omegacomplete_server_results=' + oc_server_result)
+DELIMITER
 
     " try to show popup menu
-    exe 'py vim.command("let g:omegacomplete_server_results=" + oc_server_result)'
     if (len(g:omegacomplete_server_results) == 0)
         " do a failed popup anyway to prevent double Enter bug
         call feedkeys("\<C-X>\<C-U>", 't')
@@ -159,6 +160,9 @@ augroup OmegaComplete
     \ *
     \ call <SID>OnInsertEnter()
 
+    " when you switch from the VIM window to some other process,
+    " send a message to the server to prune unused words from its
+    " word set
     autocmd FocusLost
     \ *
     \ call <SID>OnFocusLost()
@@ -186,7 +190,8 @@ function OmegaCompleteFunc(findstart, base)
 
             let index = index - 1
         endwhile
-        return index + 1
+        let result = index + 1
+        return result
     else
         return { 'words' : g:omegacomplete_server_results }
     endif
