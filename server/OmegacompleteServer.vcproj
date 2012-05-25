@@ -191,10 +191,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\GarbageDeleter.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\GlobalWordSet.cpp"
 				>
 			</File>
@@ -258,10 +254,6 @@
 			</File>
 			<File
 				RelativePath=".\EntryPoint.hpp"
-				>
-			</File>
-			<File
-				RelativePath=".\GarbageDeleter.hpp"
 				>
 			</File>
 			<File

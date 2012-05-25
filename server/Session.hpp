@@ -2,7 +2,6 @@
 
 #include "Room.hpp"
 #include "Buffer.hpp"
-#include "GarbageDeleter.hpp"
 #include "GlobalWordSet.hpp"
 
 struct ParseJob
