@@ -83,12 +83,12 @@ function <SID>FeedPopup()
     exe 'py oc_server_result = oc_send_command("complete " + vim.eval("partial_line"))'
 
 " check to make sure we get something
-python << DELIMITER
+python << EOF
 if len(oc_server_result) == 0:
     vim.command('let g:omegacomplete_server_results=[]')
 else:
     vim.command('let g:omegacomplete_server_results=' + oc_server_result)
-DELIMITER
+EOF
 
     " try to show popup menu
     if (len(g:omegacomplete_server_results) == 0)
