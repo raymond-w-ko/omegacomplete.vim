@@ -14,8 +14,6 @@
 #include <cstdlib>
 
 #include <algorithm>
-#include <set>
-#include <vector>
 #include <iostream>
 #include <string>
 #include <functional>
@@ -40,12 +38,19 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
 #include <boost/typeof/typeof.hpp>
+#include <boost/container/flat_set.hpp>
+#include <boost/container/flat_map.hpp>
+#include <boost/container/vector.hpp>
+#include <boost/container/deque.hpp>
+#include <boost/container/set.hpp>
+#include <boost/container/map.hpp>
 
 #define auto BOOST_AUTO
 #define foreach BOOST_FOREACH
 #define reverse_foreach BOOST_REVERSE_FOREACH
 
 using namespace boost::asio;
+using namespace boost::container;
 
 inline void LogAsioError(
     const boost::system::error_code& error,

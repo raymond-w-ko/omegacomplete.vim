@@ -5,8 +5,10 @@ struct TagInfo
     std::string Tag;
     std::string Location;
     std::string Ex;
-    typedef std::map<std::string, std::string>::value_type InfoIterator;
-    std::map<std::string, std::string> Info;
+    typedef
+        boost::unordered_map<std::string, std::string>::value_type
+        InfoIterator;
+    boost::unordered_map<std::string, std::string> Info;
 };
 
 class Tags
@@ -20,16 +22,16 @@ public:
 
     void VimTaglistFunction(
         const std::string& expr,
-        const std::vector<std::string>& tags_list,
+        const vector<std::string>& tags_list,
         std::stringstream& ss);
 
     void GetAllWordsWithPrefix(
         const std::string& prefix,
-        std::set<std::string>* results);
+        set<std::string>* results);
 
     void GetAbbrCompletions(
         const std::string& prefix,
-        std::set<std::string>* results);
+        set<std::string>* results);
 
     void VimTaglistFunction(
         const std::string& word,
@@ -48,7 +50,7 @@ private:
     boost::thread thread_;
     boost::mutex mutex_;
 
-    std::multimap<std::string, TagInfo> tags_;
+    boost::unordered_multimap<std::string, TagInfo> tags_;
     boost::unordered_set<std::string> words_;
     boost::unordered_multimap<std::string, const std::string*> title_cases_;
     boost::unordered_multimap<std::string, const std::string*> underscores_;

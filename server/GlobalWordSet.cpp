@@ -162,7 +162,7 @@ void GlobalWordSet::UpdateWord(const std::string& word, int reference_count_delt
 
 void GlobalWordSet::GetPrefixCompletions(
     const std::string& prefix,
-    std::set<std::string>* completions)
+    set<std::string>* completions)
 {
     mutex_.lock();
 
@@ -182,7 +182,7 @@ void GlobalWordSet::GetPrefixCompletions(
 
 void GlobalWordSet::GetAbbrCompletions(
     const std::string& prefix,
-    std::set<std::string>* completions)
+    set<std::string>* completions)
 {
     mutex_.lock();
 

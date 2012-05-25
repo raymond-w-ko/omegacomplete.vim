@@ -209,7 +209,7 @@ void Session::processClientMessage()
 
         current_tags_.clear();
 
-        std::vector<std::string> tags_list;
+        vector<std::string> tags_list;
         boost::split(tags_list, *argument,
                      boost::is_any_of(","), boost::token_compress_on);
         foreach (const std::string& tags, tags_list)
@@ -226,7 +226,7 @@ void Session::processClientMessage()
 
         taglist_tags_.clear();
 
-        std::vector<std::string> tags_list;
+        vector<std::string> tags_list;
         boost::split(tags_list, *argument,
                      boost::is_any_of(","), boost::token_compress_on);
         foreach (const std::string& tags, tags_list)
@@ -351,21 +351,21 @@ void Session::calculateCompletionCandidates(
         return;
     }
 
-    std::set<std::string> abbr_completions;
+    set<std::string> abbr_completions;
     WordSet.GetAbbrCompletions(prefix_to_complete, &abbr_completions);
     abbr_completions.erase(prefix_to_complete);
 
-    std::set<std::string> tags_abbr_completions;
+    set<std::string> tags_abbr_completions;
     TagsSet::Instance()->GetAbbrCompletions(
         prefix_to_complete, current_tags_,
         &tags_abbr_completions);
     tags_abbr_completions.erase(prefix_to_complete);
 
-    std::set<std::string> prefix_completions;
+    set<std::string> prefix_completions;
     WordSet.GetPrefixCompletions(prefix_to_complete, &prefix_completions);
     prefix_completions.erase(prefix_to_complete);
 
-    std::set<std::string> tags_prefix_completions;
+    set<std::string> tags_prefix_completions;
     TagsSet::Instance()->GetAllWordsWithPrefix(
         prefix_to_complete, current_tags_,
         &tags_prefix_completions);

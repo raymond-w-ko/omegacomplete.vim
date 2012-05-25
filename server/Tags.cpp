@@ -25,7 +25,8 @@ bool Tags::Init(const std::string& pathname)
 
     if (calculateParentDirectory() == false)
     {
-        std::cout << "couldn't calculate parent directory for tags file, not parsing" << std::endl;
+        std::cout << "couldn't calculate parent directory for tags file, not parsing"
+                  << std::endl;
         std::cout << pathname_ << std::endl;
         return false;
     }
@@ -192,7 +193,7 @@ void Tags::reparse()
 
 void Tags::VimTaglistFunction(
     const std::string& expr,
-    const std::vector<std::string>& tags_list,
+    const vector<std::string>& tags_list,
     std::stringstream& ss)
 {
     mutex_.lock();
@@ -242,7 +243,7 @@ void Tags::VimTaglistFunction(
 
 void Tags::GetAllWordsWithPrefix(
     const std::string& prefix,
-    std::set<std::string>* results)
+    set<std::string>* results)
 {
     mutex_.lock();
     foreach (const std::string& word, words_)
@@ -257,7 +258,7 @@ void Tags::GetAllWordsWithPrefix(
 
 void Tags::GetAbbrCompletions(
     const std::string& prefix,
-    std::set<std::string>* results)
+    set<std::string>* results)
 {
     if (prefix.length() < 2) return;
 
