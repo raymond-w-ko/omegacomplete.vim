@@ -47,7 +47,9 @@
 
 using namespace boost::asio;
 
-inline void LogAsioError(const boost::system::error_code& error, std::string message)
+inline void LogAsioError(
+    const boost::system::error_code& error,
+    std::string message)
 {
     std::string msg = boost::str(boost::format(
         "code: %d, code_str: %s, %s")

@@ -448,8 +448,8 @@ void Session::calculateCompletionCandidates(
             if (boost::starts_with(prefix_to_complete, word)) continue;
 
             results << boost::str(boost::format(
-                "{'abbr':'*%s','word':'%s','menu':'[%d]'},")
-                % word % word % score);
+                "{'abbr':'***%s','word':'%s'},")
+                % word % word);
 
             added_words.insert(word);
         }

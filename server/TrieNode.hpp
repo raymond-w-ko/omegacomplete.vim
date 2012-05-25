@@ -10,7 +10,7 @@ struct TrieNode
     void Clear();
 
     std::string Word;
-    TrieNode* Parent;
+    //TrieNode* Parent;
     typedef std::map<char, TrieNode*>::value_type ChildrenIterator;
     std::map<char, TrieNode*> Children;
 };
