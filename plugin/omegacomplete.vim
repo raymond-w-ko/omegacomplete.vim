@@ -4,6 +4,8 @@ if exists('g:omegacomplete_loaded')
 endif
 let g:omegacomplete_loaded = 1
 
+let s:just_did_insertenter = 0
+
 function <SID>EscapePathname(pathname)
     return substitute(a:pathname, '\\', '\\\\', 'g')
 endfunction
@@ -72,7 +74,10 @@ function <SID>FeedPopup()
     exe 'py oc_send_command("cursor_position " + oc_get_cursor_pos())'
 
     " send server contents of the entire buffer in case reparse is needed
-    exe 'py oc_send_current_buffer()'
+    if (s:just_did_insertenter != 1)
+        exe 'py oc_send_current_buffer()'
+    endif
+    let s:just_did_insertenter = 0
 
     " send tags we are using to the server
     exe 'py current_tags = vim.eval("&tags")'
@@ -130,6 +135,7 @@ function <SID>OnBufLeave()
 endfunction
 
 function <SID>OnInsertEnter()
+    let s:just_did_insertenter = 1
     call <SID>NormalModeSyncBuffer()
 endfunction
 
@@ -137,35 +143,37 @@ function <SID>OnFocusLost()
     exe 'py oc_send_command("prune 0")'
 endfunction
 
+function <SID>OnBufReadPost()
+    call <SID>NormalModeSyncBuffer()
+endfunction
+
 augroup OmegaComplete
     autocmd!
     
-    " whenever you delete a buffer, remove it so that it doesn't introduce
-    " any false positive completions
-    autocmd BufDelete
-    \ *
-    \ call <SID>OnBufDelete()
+    " whenever you delete a buffer, delete it from the server so that it
+    " doesn't cause any outdated completions to be offered
+    autocmd BufDelete * call <SID>OnBufDelete()
     
     " whenever we leave a current buffer, send it to the server to it can
-    " decide if we have to update it. I'm going to to try going this route
-    " so we can defer buffer processing until we leave or enter into insert mode
-    autocmd BufLeave
-    \ *
-    \ call <SID>OnBufLeave()
+    " decide if we have to update it. this keeps the state of the buffer
+    " in sync so we can offer accurate completions when we switch to another
+    " buffer
+    autocmd BufLeave * call <SID>OnBufLeave()
 
-    " just before you enter insert mode send the contents of the buffer so
-    " that the server has a chance to synchronize before popping up the
-    " insertion completion menu
-    autocmd InsertEnter
-    \ *
-    \ call <SID>OnInsertEnter()
+    " just before you enter insert mode, send the contents of the buffer so
+    " that the server has a chance to synchronize before we start offering
+    " completions
+    autocmd InsertEnter * call <SID>OnInsertEnter()
 
-    " when you switch from the VIM window to some other process,
-    " send a message to the server to prune unused words from its
-    " word set
-    autocmd FocusLost
-    \ *
-    \ call <SID>OnFocusLost()
+    " when you switch from the VIM window to some other process, tell the
+    " server to prune unused words from its completion set
+    autocmd FocusLost * call <SID>OnFocusLost()
+
+    " when we open a file, send it contents to the server since we usually
+    " have some time before we need to start editing the file (usually you
+    " have to mentally parse where you are and/or go to the correct location
+    " before entering insert mode)
+    autocmd BufReadPost * call <SID>OnBufReadPost()
 augroup END
 
 function <SID>IsPartOfWord(character)
