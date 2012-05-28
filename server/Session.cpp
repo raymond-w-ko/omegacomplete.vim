@@ -271,7 +271,6 @@ void Session::writeResponse(std::string& response)
             this,
             placeholders::error));
 
-    //asyncReadUntilNullChar();
     asyncReadHeader();
 }
 
