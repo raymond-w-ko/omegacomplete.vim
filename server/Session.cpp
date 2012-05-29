@@ -209,7 +209,7 @@ void Session::processClientMessage()
 
         current_tags_.clear();
 
-        vector<std::string> tags_list;
+        std::vector<std::string> tags_list;
         boost::split(tags_list, *argument,
                      boost::is_any_of(","), boost::token_compress_on);
         foreach (const std::string& tags, tags_list)
@@ -226,7 +226,7 @@ void Session::processClientMessage()
 
         taglist_tags_.clear();
 
-        vector<std::string> tags_list;
+        std::vector<std::string> tags_list;
         boost::split(tags_list, *argument,
                      boost::is_any_of(","), boost::token_compress_on);
         foreach (const std::string& tags, tags_list)
