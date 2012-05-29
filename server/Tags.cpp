@@ -148,25 +148,27 @@ void Tags::reparse()
             tag_info.Info[key] = value;
         }
 
-        // calculate return type from Ex command by extracting prefix to the keyword
-        if (boost::starts_with(tag_info.Ex, "/^")) {
-            size_t index = tag_info.Ex.find(tag_info.Tag);
-            if (index != std::string::npos)
-            {
-                std::string returntype = tag_info.Ex.substr(2, index - 2);
-                // search back until we find a space to handle complex
-                // return types like
-                // std::map<int, int> FunctionName
-                // and
-                // void Class::FunctionName
-                index = returntype.rfind(" ");
-                if (index != std::string::npos)
-                {
-                    returntype = returntype.substr(0, index);
-                }
-                boost::trim(returntype);
-                tag_info.Info["returntype"] = returntype;
+        // calculate prefix from Ex command
+        // this can usually be used as the return type of the tag
+        size_t header_index = tag_info.Ex.find("/^");
+        size_t footer_index = tag_info.Ex.find(tag_info.Tag);
+        if ((header_index != std::string::npos) &&
+            (footer_index != std::string::npos)) {
+            header_index += 2;
+            std::string tag_prefix = tag_info.Ex.substr(
+                header_index,
+                footer_index - header_index);
+            // search back until we find a space to handle complex
+            // return types like
+            // std::map<int, int> FunctionName
+            // and
+            // void Class::FunctionName
+            footer_index = tag_prefix.rfind(" ");
+            if (footer_index != std::string::npos) {
+                tag_prefix = tag_prefix.substr(0, footer_index);
             }
+            boost::trim(tag_prefix);
+            tag_info.Info["prefix"] = tag_prefix;
         }
 
         tags_.insert( make_pair(tag_info.Tag, tag_info) );
