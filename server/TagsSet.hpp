@@ -14,17 +14,17 @@ public:
 
     void GetAllWordsWithPrefix(
         const std::string& prefix,
-        const vector<std::string>& tags_list,
-        set<std::string>* results);
+        const std::vector<std::string>& tags_list,
+        std::set<std::string>* results);
 
     void GetAbbrCompletions(
         const std::string& prefix,
-        const vector<std::string>& tags_list,
-        set<std::string>* results);
+        const std::vector<std::string>& tags_list,
+        std::set<std::string>* results);
 
     std::string VimTaglistFunction(
         const std::string& word,
-        const vector<std::string>& tags_list);
+        const std::vector<std::string>& tags_list);
 
 private:
     TagsSet();

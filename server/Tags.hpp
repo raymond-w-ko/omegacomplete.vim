@@ -22,16 +22,16 @@ public:
 
     void VimTaglistFunction(
         const std::string& expr,
-        const vector<std::string>& tags_list,
+        const std::vector<std::string>& tags_list,
         std::stringstream& ss);
 
     void GetAllWordsWithPrefix(
         const std::string& prefix,
-        set<std::string>* results);
+        std::set<std::string>* results);
 
     void GetAbbrCompletions(
         const std::string& prefix,
-        set<std::string>* results);
+        std::set<std::string>* results);
 
     void VimTaglistFunction(
         const std::string& word,

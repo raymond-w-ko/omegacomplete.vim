@@ -2,7 +2,7 @@
 
 #include "TrieNode.hpp"
 
-typedef map< int, set<std::string> > LevenshteinSearchResults;
+typedef std::map< int, std::set<std::string> > LevenshteinSearchResults;
 
 struct WordInfo
 {
@@ -31,11 +31,11 @@ public:
 
     void GetPrefixCompletions(
         const std::string& prefix,
-        set<std::string>* completions);
+        std::set<std::string>* completions);
 
     void GetAbbrCompletions(
         const std::string& prefix,
-        set<std::string>* completions);
+        std::set<std::string>* completions);
 
     void GetLevenshteinCompletions(
         const std::string& prefix,
@@ -60,8 +60,8 @@ private:
 
     boost::mutex mutex_;
 
-    map<std::string, WordInfo> words_;
-    map<std::string, WordInfo>& const_words_;
+    std::map<std::string, WordInfo> words_;
+    std::map<std::string, WordInfo>& const_words_;
     boost::unordered_multimap<std::string, std::string> title_cases_;
     boost::unordered_multimap<std::string, std::string> underscores_;
 

@@ -78,13 +78,13 @@ private:
     boost::unordered_map<unsigned, Buffer> buffers_;
 
     boost::mutex job_queue_mutex_;
-    deque<ParseJob> job_queue_;
+    std::deque<ParseJob> job_queue_;
 
     unsigned current_buffer_;
     std::string current_line_;
     std::pair<unsigned, unsigned> cursor_pos_;
-    vector<std::string> current_tags_;
-    vector<std::string> taglist_tags_;
+    std::vector<std::string> current_tags_;
+    std::vector<std::string> taglist_tags_;
 
     // quick match keys
     // basically a mapping from result number to keyboard key to press
@@ -92,7 +92,7 @@ private:
     // second result -> 's'
     // third result  -> 'd'
     // and etc.
-    vector<char> quick_match_key_;
+    std::vector<char> quick_match_key_;
 };
 
 typedef boost::shared_ptr<Session> SessionPtr;

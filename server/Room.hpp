@@ -8,5 +8,5 @@ public:
     void Join(ParticipantPtr participant);
     void Leave(ParticipantPtr participant);
 private:
-    set<ParticipantPtr> participants_;
+    std::set<ParticipantPtr> participants_;
 };

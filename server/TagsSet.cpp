@@ -49,7 +49,7 @@ TagsSet::~TagsSet()
 
 std::string TagsSet::VimTaglistFunction(
     const std::string& word,
-    const vector<std::string>& tags_list)
+    const std::vector<std::string>& tags_list)
 {
     std::stringstream ss;
 
@@ -71,8 +71,8 @@ std::string TagsSet::VimTaglistFunction(
 
 void TagsSet::GetAllWordsWithPrefix(
     const std::string& prefix,
-    const vector<std::string>& tags_list,
-    set<std::string>* results)
+    const std::vector<std::string>& tags_list,
+    std::set<std::string>* results)
 {
     foreach (const std::string& tags, tags_list)
     {
@@ -83,8 +83,8 @@ void TagsSet::GetAllWordsWithPrefix(
 
 void TagsSet::GetAbbrCompletions(
     const std::string& prefix,
-    const vector<std::string>& tags_list,
-    set<std::string>* results)
+    const std::vector<std::string>& tags_list,
+    std::set<std::string>* results)
 {
     foreach (const std::string& tags, tags_list)
     {

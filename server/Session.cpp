@@ -350,21 +350,21 @@ void Session::calculateCompletionCandidates(
         return;
     }
 
-    set<std::string> abbr_completions;
+    std::set<std::string> abbr_completions;
     WordSet.GetAbbrCompletions(prefix_to_complete, &abbr_completions);
     abbr_completions.erase(prefix_to_complete);
 
-    set<std::string> tags_abbr_completions;
+    std::set<std::string> tags_abbr_completions;
     TagsSet::Instance()->GetAbbrCompletions(
         prefix_to_complete, current_tags_,
         &tags_abbr_completions);
     tags_abbr_completions.erase(prefix_to_complete);
 
-    set<std::string> prefix_completions;
+    std::set<std::string> prefix_completions;
     WordSet.GetPrefixCompletions(prefix_to_complete, &prefix_completions);
     prefix_completions.erase(prefix_to_complete);
 
-    set<std::string> tags_prefix_completions;
+    std::set<std::string> tags_prefix_completions;
     TagsSet::Instance()->GetAllWordsWithPrefix(
         prefix_to_complete, current_tags_,
         &tags_prefix_completions);

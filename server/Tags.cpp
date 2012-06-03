@@ -195,7 +195,7 @@ void Tags::reparse()
 
 void Tags::VimTaglistFunction(
     const std::string& expr,
-    const vector<std::string>& tags_list,
+    const std::vector<std::string>& tags_list,
     std::stringstream& ss)
 {
     mutex_.lock();
@@ -245,7 +245,7 @@ void Tags::VimTaglistFunction(
 
 void Tags::GetAllWordsWithPrefix(
     const std::string& prefix,
-    set<std::string>* results)
+    std::set<std::string>* results)
 {
     mutex_.lock();
     foreach (const std::string& word, words_)
@@ -260,7 +260,7 @@ void Tags::GetAllWordsWithPrefix(
 
 void Tags::GetAbbrCompletions(
     const std::string& prefix,
-    set<std::string>* results)
+    std::set<std::string>* results)
 {
     if (prefix.length() < 2) return;
 

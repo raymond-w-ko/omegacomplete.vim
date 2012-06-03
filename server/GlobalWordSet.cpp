@@ -162,7 +162,7 @@ void GlobalWordSet::UpdateWord(const std::string& word, int reference_count_delt
 
 void GlobalWordSet::GetPrefixCompletions(
     const std::string& prefix,
-    set<std::string>* completions)
+    std::set<std::string>* completions)
 {
     mutex_.lock();
 
@@ -182,7 +182,7 @@ void GlobalWordSet::GetPrefixCompletions(
 
 void GlobalWordSet::GetAbbrCompletions(
     const std::string& prefix,
-    set<std::string>* completions)
+    std::set<std::string>* completions)
 {
     mutex_.lock();
 
@@ -211,7 +211,7 @@ unsigned GlobalWordSet::Prune()
     std::vector<std::string> to_be_pruned;
     auto(iter, words_.begin());
     for (; iter != words_.end(); ++iter) {
-        if (iter->second.ReferenceCount != 0) continue;
+        if (iter->second.ReferenceCount > 0) continue;
 
         to_be_pruned.push_back(iter->first);
     }
@@ -221,8 +221,8 @@ unsigned GlobalWordSet::Prune()
     foreach (const std::string& word, to_be_pruned) {
         mutex_.lock();
         words_.erase(word);
-        title_cases_.erase(word);
-        underscores_.erase(word);
+        title_cases_.erase(ComputeTitleCase(word));
+        underscores_.erase(ComputeUnderscore(word));
         mutex_.unlock();
 
         trie_mutex_.lock();
