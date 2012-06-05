@@ -6,8 +6,8 @@ const size_t kMinLengthForLevenshteinCompletion = 4;
 
 char GlobalWordSet::is_part_of_word_[256];
 char GlobalWordSet::to_lower_[256];
-boost::unordered_map<std::string, std::string> GlobalWordSet::title_case_cache_;
-boost::unordered_map<std::string, std::string> GlobalWordSet::underscore_cache_;
+StringToStringVectorUnorderedMap GlobalWordSet::title_case_cache_;
+StringToStringVectorUnorderedMap GlobalWordSet::underscore_cache_;
 
 void GlobalWordSet::GlobalInit()
 {
@@ -17,73 +17,115 @@ void GlobalWordSet::GlobalInit()
     {
         is_part_of_word_[index] = IsPartOfWord(index) ? 1 : 0;
         temp.resize(1, ' ');
-        temp[0] = (char)index;
+        temp[0] = static_cast<char>(index);
         boost::algorithm::to_lower(temp);
         to_lower_[index] = temp[0];
     }
 }
 
-const std::string& GlobalWordSet::ComputeUnderscore(const std::string& word)
+const StringVector* GlobalWordSet::ComputeUnderscore(
+    const std::string& word,
+    StringToStringVectorUnorderedMap& underscore_cache)
 {
-    if (Contains(underscore_cache_, word) == true) {
-        return underscore_cache_[word];
+    if (Contains(underscore_cache, word) == true) {
+        return &underscore_cache[word];
     }
 
-    std::string underscore;
-
     const size_t word_length = word.length();
-    for (size_t ii = 0; ii < word_length; ++ii) {
-        char c = word[ii];
+    std::vector<size_t> indices;
 
-        if (ii == 0) {
-            underscore += to_lower_[c];
+    // calculate indices of all the 'underscore' points
+    for (size_t ii = 0; ii < word_length; ++ii)
+    {
+        if (ii == 0 && word[ii] != '_') {
+            indices.push_back(ii);
             continue;
         }
 
         if (word[ii] == '_')
         {
-            if (ii < (word_length - 1) && word[ii + 1] != '_')
-                underscore += to_lower_[word[ii + 1]];
+            if ((ii < (word_length - 1)) && (word[ii + 1] != '_'))
+                indices.push_back(ii + 1);
         }
     }
 
-    if (underscore.length() < 2) underscore = "";
 
-    // store calculation in cache
-    underscore_cache_[word] = underscore;
+    size_t indices_size = indices.size();
 
-    return underscore_cache_[word];
-}
+    // if we only have 1 index, then we don't have enought for a underscore
+    // abbreviation
+    if (indices_size <= 1)
+        return &underscore_cache[word];
 
-const std::string& GlobalWordSet::ComputeTitleCase(const std::string& word)
-{
-    if (Contains(title_case_cache_, word) == true) {
-        return title_case_cache_[word];
+    for (size_t depth = 1; depth < (2 + 1); ++depth) {
+        std::string abbr;
+        for (size_t ii = 0; ii < indices.size(); ++ii) {
+            size_t index = indices[ii];
+            size_t next_index =
+                (ii + 1) < indices_size ? indices[ii + 1] : word.size();
+            for (size_t cur_depth = 0; cur_depth < depth; ++cur_depth) {
+                if ((index + cur_depth) >= next_index)
+                    break;
+                char c = word[index + cur_depth];
+                if (c == '_') break;
+                abbr += to_lower_[c];
+            }
+        }
+        underscore_cache[word].push_back(abbr);
     }
 
-    std::string title_case;
+    return &underscore_cache[word];
+}
+
+const StringVector* GlobalWordSet::ComputeTitleCase(
+    const std::string& word,
+    StringToStringVectorUnorderedMap& title_case_cache)
+{
+    if (Contains(title_case_cache, word) == true) {
+        return &title_case_cache[word];
+    }
 
     const size_t word_length = word.length();
+    std::vector<size_t> indices;
+
+    // calculate indices of all the 'TitleCase' points
     for (size_t ii = 0; ii < word_length; ++ii)
     {
         char c = word[ii];
 
         if (ii == 0) {
-            title_case += to_lower_[c];
+            indices.push_back(ii);
             continue;
         }
 
         if (IsUpper(c)) {
-            title_case += to_lower_[c];
+            indices.push_back(ii);
         }
     }
 
-    if (title_case.length() < 2) title_case = "";
+    size_t indices_size = indices.size();
 
-    // store calculation in cache
-    title_case_cache_[word] = title_case;
+    // if we only have 1 index, then we don't have enought for a TitleCase
+    // abbreviation
+    if (indices_size <= 1)
+        return &title_case_cache[word];
 
-    return title_case_cache_[word];
+    for (size_t depth = 1; depth < (2 + 1); ++depth) {
+        std::string abbr;
+        for (size_t ii = 0; ii < indices.size(); ++ii) {
+            size_t index = indices[ii];
+            size_t next_index =
+                (ii + 1) < indices_size ? indices[ii + 1] : word.size();
+            for (size_t cur_depth = 0; cur_depth < depth; ++cur_depth) {
+                if ((index + cur_depth) >= next_index)
+                    break;
+                abbr += to_lower_[word[index + cur_depth]];
+            }
+        }
+        title_case_cache[word].push_back(abbr);
+    }
+
+    return &title_case_cache[word];
 }
 
 WordInfo::WordInfo()
@@ -144,16 +186,20 @@ void GlobalWordSet::UpdateWord(const std::string& word, int reference_count_delt
 
     if (wi.GeneratedAbbreviations) return;
 
-    const std::string& title_case = ComputeTitleCase(word);
-    const std::string& underscore = ComputeUnderscore(word);
+    const StringVector* title_cases = ComputeTitleCase(word, title_case_cache_);
+    const StringVector* underscores = ComputeUnderscore(word, underscore_cache_);
 
     // generate and store abbreviations
     mutex_.lock();
-    if (title_case.length() > 0) {
-        title_cases_.insert(make_pair(title_case, word));
+    if (title_cases->size() > 0) {
+        foreach (const std::string& title_case, *title_cases) {
+            title_cases_.insert(make_pair(title_case, word));
+        }
     }
-    if (underscore.length() > 0) {
-        underscores_.insert(make_pair(underscore, word));
+    if (underscores->size() > 0) {
+        foreach (const std::string& underscore, *underscores) {
+            underscores_.insert(make_pair(underscore, word));
+        }
     }
     mutex_.unlock();
 
@@ -221,8 +267,22 @@ unsigned GlobalWordSet::Prune()
     foreach (const std::string& word, to_be_pruned) {
         mutex_.lock();
         words_.erase(word);
-        title_cases_.erase(ComputeTitleCase(word));
-        underscores_.erase(ComputeUnderscore(word));
+        // this actually can't be reliably used since it can caused
+        // the removal of abbreviations that are still valid.
+        // e.g.: if we have if we have 'foo_bar' and 'fizz_buzz', they
+        // both map to 'fb' but if all traces of foo_bar disappear,
+        // then it will remove 'fb' even though 'fizz_buzz' -> 'fb'
+        // is still valid.
+        // The proper way to fix this is to add reference counts to
+        // these also, but it might not be necessary.
+        /*
+        foreach (const std::string& w, *ComputeTitleCase(word)) {
+            title_cases_.erase(w);
+        }
+        foreach (const std::string& w, *ComputeUnderscore(word)) {
+            underscores_.erase(w);
+        }
+        */
         mutex_.unlock();
 
         trie_mutex_.lock();

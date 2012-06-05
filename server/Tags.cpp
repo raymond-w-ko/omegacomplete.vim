@@ -1,6 +1,7 @@
 #include "stdafx.hpp"
 
 #include "Tags.hpp"
+#include "GlobalWordSet.hpp"
 
 Tags::Tags()
 :
@@ -177,16 +178,20 @@ void Tags::reparse()
 
     foreach (const std::string& word, words_)
     {
-        std::string title_case, underscore;
-        CalculateTitlecaseAndUnderscore(word, to_lower_, title_case, underscore);
+        const StringVector* title_cases = GlobalWordSet::ComputeTitleCase(
+            word, title_case_cache_);
+        const StringVector* underscores = GlobalWordSet::ComputeUnderscore(
+            word, underscore_cache_);
 
-        if (title_case.length() >= 2)
-        {
-            title_cases_.insert(std::make_pair(title_case, &word));
+        if (title_cases->size() > 0) {
+            foreach (const std::string& title_case, *title_cases) {
+                title_cases_.insert(std::make_pair(title_case, &word));
+            }
         }
-        if (underscore.length() >= 2)
-        {
-            underscores_.insert(std::make_pair(underscore, &word));
+        if (underscores->size() > 0) {
+            foreach (const std::string& underscore, *underscores) {
+                underscores_.insert(std::make_pair(underscore, &word));
+            }
         }
     }
 
@@ -316,6 +321,7 @@ void Tags::Update()
 
     CloseHandle(hFile); hFile = INVALID_HANDLE_VALUE;
 #else
+    // TODO(rko): implement for UNIX OSes
 #endif
 
     if (reparse_needed)

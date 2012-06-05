@@ -54,4 +54,6 @@ private:
     boost::unordered_set<std::string> words_;
     boost::unordered_multimap<std::string, const std::string*> title_cases_;
     boost::unordered_multimap<std::string, const std::string*> underscores_;
+    StringToStringVectorUnorderedMap title_case_cache_;
+    StringToStringVectorUnorderedMap underscore_cache_;
 };

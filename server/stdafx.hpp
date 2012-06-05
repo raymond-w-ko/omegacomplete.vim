@@ -86,37 +86,6 @@ bool Contains(const Container& container, const Item& item)
     return container.find(item) != container.end();
 }
 
-inline void CalculateTitlecaseAndUnderscore(
-    const std::string& word,
-    const char* to_lower,
-    std::string& title_case, std::string& underscore)
-{
-    const size_t word_length = word.length();
-    for (size_t ii = 0; ii < word_length; ++ii)
-    {
-        char c = word[ii];
-
-        if (ii == 0)
-        {
-            title_case += to_lower[c];
-            underscore += to_lower[c];
-
-            continue;
-        }
-
-        if (IsUpper(c))
-        {
-            title_case += to_lower[c];
-        }
-
-        if (word[ii] == '_')
-        {
-            if (ii < (word_length - 1) && word[ii + 1] != '_')
-                underscore += to_lower[word[ii + 1]];
-        }
-    }
-}
-
 inline
 __int64 to_int64(const FILETIME& ft)
 {
@@ -126,3 +95,7 @@ __int64 to_int64(const FILETIME& ft)
 typedef boost::shared_ptr<std::string> StringPtr;
 typedef boost::unordered_set<std::string> UnorderedStringSet;
 typedef boost::shared_ptr<UnorderedStringSet> UnorderedStringSetPtr;
+typedef std::vector<std::string> StringVector;
+typedef
+    boost::unordered_map<std::string, StringVector>
+    StringToStringVectorUnorderedMap;

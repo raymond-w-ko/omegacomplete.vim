@@ -16,12 +16,17 @@ struct WordInfo
 class GlobalWordSet
 {
 public:
+
     static void GlobalInit();
 
     static char is_part_of_word_[256];
     static char to_lower_[256];
-    static const std::string& ComputeUnderscore(const std::string& word);
-    static const std::string& ComputeTitleCase(const std::string& word);
+    static const StringVector* ComputeUnderscore(
+        const std::string& word,
+        StringToStringVectorUnorderedMap& underscore_cache);
+    static const StringVector* ComputeTitleCase(
+        const std::string& word,
+        StringToStringVectorUnorderedMap& title_case_cache);
 
     GlobalWordSet();
     ~GlobalWordSet();
@@ -55,8 +60,8 @@ private:
         LevenshteinSearchResults& results,
         int max_cost);
 
-    static boost::unordered_map<std::string, std::string> title_case_cache_;
-    static boost::unordered_map<std::string, std::string> underscore_cache_;
+    static StringToStringVectorUnorderedMap title_case_cache_;
+    static StringToStringVectorUnorderedMap underscore_cache_;
 
     boost::mutex mutex_;
 
