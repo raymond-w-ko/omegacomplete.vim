@@ -39,11 +39,12 @@ completion first before prefix completion.
 Similar to the above, if you have "foo\_bar\_fizz\_buzz", the typeing "fbfb" would
 offer this completion first before prefix completion.
 
-### Levenshtein Distance <= X
-Completion Calculates the levenshtein distance of
-the current word against all known words in all buffers.  If the distance is
-less than or equal to X then, offers it as completions.  Right now this only
-triggers if words are longer than 3 characters and the distance <= 2.
+### Levenshtein Distance Correction Completion
+Omegacomplete calculates the Levenshtein distance of
+the current word against all known words in all buffers. If the Levenshtein distance
+between the current word and a candidate word is less than or equal to X,
+it offers the word as a completion completions.  Right now this only
+triggers if words are longer than 3 characters and the distance is <= 2.
 
 ## Other features
 
