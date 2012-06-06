@@ -23,6 +23,9 @@ To compile the server portion you need a relatively standards compliant C++03 co
 along with the compiled Boost C++ libraries for boost::asio. Your version of VIM also needs
 to have the Python 2.X bindings.
 
+If you use Visual Studio 2008 and have Boost compiled and installed in "C:\Boost", then you
+can just compiled with the solution file.
+
 ## Completion Types
 
 ### Prefix Completion
