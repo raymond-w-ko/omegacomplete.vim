@@ -64,4 +64,4 @@ binary search on the tags file everytime to find tag info.
 Also add a "prefix" tag info, which is the text
 that prefixes the keyword in the Ex command needed to find it. This is useful
 for extracting return types from C++ function definitions, as ctags does
-not natively offer it. See my vimrc repository on how I use it.
+not natively offer it. See my vimrc repository on how I use it for an example.
