@@ -45,14 +45,11 @@ the current word against all known words in all buffers.  If the distance is
 less than or equal to X then, offers it as completions.  Right now this only
 triggers if words are longer than 3 characters and the distance <= 2.
 
-## Random Ramblings
-Apparently freeing structures (such as the TrieNode) is so expensive (taking
-100 ms out of 300ms blocking operation on my machine) that I have to have
-a separate thread acting as a "garbage collector" and free there. I guess Herb
-Sutter was right when he said that you sometimes need a real garbage collector
-for absolute performant C++ code.
+## Other features
 
-Building a trie of all words in a buffer can get expensive. Similarly, building
-all abbreviations for all words is also expensive. It can probably be less
-expensive if we don't want words to be kept in sync but accuracy is probably
-more important.
+### Exuberant ctags Completion
+Understands what 'tags' is current set to in VIM and can use the list of tags
+found in those files to offer as a completion candidate. The tag files are
+cached in memory, so OmegaComplete does not do any file accesses after the
+initial parse. When it detects that the timestamp has changed, then it
+automatically tries to reparse.
