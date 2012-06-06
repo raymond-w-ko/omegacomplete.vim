@@ -40,7 +40,7 @@ Similar to the above, if you have "foo\_bar\_fizz\_buzz", the typeing "fbfb" wou
 offer this completion first before prefix completion.
 
 ### Levenshtein Distance Correction Completion
-Omegacomplete calculates the Levenshtein distance of
+OmegaComplete calculates the Levenshtein distance of
 the current word against all known words in all buffers. If the Levenshtein distance
 between the current word and a candidate word is less than or equal to X,
 it offers the word as a completion completions.  Right now this only
