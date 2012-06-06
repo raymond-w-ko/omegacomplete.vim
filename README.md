@@ -1,5 +1,6 @@
 # OmegaComplete
 
+## General Information
 This is my crazy sideproject which attempts to provide the fastest and most
 useful keyword completions for VIM.
 
@@ -8,6 +9,15 @@ coded in C++03 via sockets (for performance reasons), and uses VIM Python bindin
 to process buffers and send them to the server for synchronization. Issuing commands
 to the server is also done in Python.
 
+Processing of buffers and keyword extraction is done asynchronously,
+so results might lag behind a bit. But because of this, editing large files is not a problem
+and does not introduce input lag when in insert mode.
+
+The only bottleneck is in the Python code where buffer is joined into one string before sending to a
+buffer. For large ( > 2MB ) files, there might be pauses in insert mode when you type too fast.
+If anyone has a better solution, please, please let me know.
+
+## Prerequisites for Use
 Since this uses C++11, you need a recent compiler and also the compiled portion
 of the Boost C++ libraries. Your version of VIM also needs to have Python 2.X
 bindings.
