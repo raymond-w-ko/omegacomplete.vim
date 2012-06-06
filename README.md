@@ -24,13 +24,12 @@ along with the compiled Boost C++ libraries for boost::asio. Your version of VIM
 to have the Python 2.X bindings.
 
 If you use Visual Studio 2008 and have Boost compiled and installed in "C:\Boost", then you
-can just compiled with the solution file.
+can just use with the solution file provided.
 
 ## Completion Types
 
 ### Prefix Completion
-Standard completion provided by VIM when you press Ctrl-N / Ctrl-P
-
+Standard completion provided by VIM when you press Ctrl-N / Ctrl-P in insert mode.
 
 ### Title Case Completion
 If have a word like "MyAwesomeVariable", then typing "mav" would offer this
