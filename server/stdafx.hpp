@@ -5,9 +5,9 @@
 #include <windows.h>
 
 #ifdef WIN32
-#ifndef _DEBUG
-#define _SECURE_SCL 0
-#endif
+    #ifndef _DEBUG
+        #define _SECURE_SCL 0
+    #endif
 #endif
 
 #include <cstdio>

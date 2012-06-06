@@ -21,6 +21,17 @@ public:
 
     static char is_part_of_word_[256];
     static char to_lower_[256];
+    // digit_upper_bound is of the form [1, digit_upper_bound]
+    // no side effects
+    static void ResolveCarries(
+        std::vector<size_t>& indices,
+        size_t digit_upper_bound);
+    // no side effects
+    static void GenerateDepths(
+        const unsigned num_indices,
+        const unsigned depth,
+        std::vector<std::vector<size_t> >& depth_list);
+
     static const StringVector* ComputeUnderscore(
         const std::string& word,
         StringToStringVectorUnorderedMap& underscore_cache);
@@ -62,6 +73,10 @@ private:
 
     static StringToStringVectorUnorderedMap title_case_cache_;
     static StringToStringVectorUnorderedMap underscore_cache_;
+
+    static
+        boost::unordered_map<size_t, std::vector<std::vector<size_t> > >
+        depth_list_cache_;
 
     boost::mutex mutex_;
 

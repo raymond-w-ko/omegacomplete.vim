@@ -1,23 +1,36 @@
 #include "stdafx.hpp"
 
+#include "EntryPoint.hpp"
 #include "Server.hpp"
 #include "Tags.hpp"
 #include "TagsSet.hpp"
 #include "GlobalWordSet.hpp"
 
-const char* ADDRESS = "127.0.0.1";
-const unsigned short PORT = 31337;
+static const char* ADDRESS = "127.0.0.1";
+static const unsigned short PORT = 31337;
+
+static bool test()
+{
+    return true;
+}
 
 int main(int argc, char* argv[])
 {
+    if (test() == false)
+        return 0;
+
 #ifdef WIN32
     //SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
+#else
+    // TODO(rko): set priority on UNIX OSes
 #endif
+
     // static intializers
     if (TagsSet::GlobalInit() == false) return 1;
     GlobalWordSet::GlobalInit();
     Buffer::GlobalInit();
 
+    // where everything starts
     io_service io_service;
     std::vector<ServerPtr> servers;
     ip::tcp::endpoint endpoint(
