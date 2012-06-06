@@ -3,13 +3,18 @@
 This is my crazy sideproject which attempts to provide the fastest and most
 useful keyword completions for VIM.
 
-To accomplish this it talks to a server component coded in C++11 for maximum
-speed, and uses python glue code to send the contents of the current buffer to
-the server component for synchronization.
+To accomplish this, the VIM portion of OmegaComplete talks to a server component
+coded in C++03 via sockets (for performance reasons), and uses VIM Python bindings
+to process buffers and send them to the server for synchronization. Issuing commands
+to the server is also done in Python.
 
 Since this uses C++11, you need a recent compiler and also the compiled portion
 of the Boost C++ libraries. Your version of VIM also needs to have Python 2.X
 bindings.
+
+To compile the server portion you need a relatively standards compliant C++03 compiler
+along with the compiled Boost C++ libraries for boost::asio. Your version of VIM also needs
+to have the Python 2.X bindings.
 
 ## Completion Types
 
