@@ -54,3 +54,14 @@ found in those files to offer as a completion candidate. The tag files are
 cached in memory, so OmegaComplete does not do any file accesses after the
 initial parse. When it detects that the timestamp has changed, then it
 automatically tries to reparse.
+
+### VIM taglist("^keyword$") Function Replacement and Enhancement
+As a natural result of cached tags, OmegaComplete offers a function to lookup
+tag information in constant time (cache is implemented as a unordered hash table).
+This cuts down from the O( log(n) ) or O(n) time needed by VIM to perform a linear or
+binary search on the tags file everytime to find tag info.
+
+Also add a "prefix" tag info, which is the text
+that prefixes the keyword in the Ex command needed to find it. This is useful
+for extracting return types from C++ function definitions, as ctags does
+not natively offer it. See my vimrc repository on how I use it.
