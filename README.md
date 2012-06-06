@@ -13,9 +13,10 @@ Processing of buffers and keyword extraction is done asynchronously,
 so results might lag behind a bit. But because of this, editing large files is not a problem
 and does not introduce input lag when in insert mode.
 
-The only bottleneck is in the Python code where buffer is joined into one string before sending to a
-buffer. For large ( > 2MB ) files, there might be pauses in insert mode when you type too fast.
-If anyone has a better solution, please, please let me know.
+The only bottleneck is in the Python code where the buffer is joined into one huge string before sending to the server.
+For large ( > 2MB ) files, there might be pauses in insert mode when you type too fast.
+If anyone has a better solution, please, please let me know. For now I am not treating it
+as a problem, because you are screwed if you have to maintain source code files that big.
 
 ## Prerequisites for Use
 Since this uses C++11, you need a recent compiler and also the compiled portion
