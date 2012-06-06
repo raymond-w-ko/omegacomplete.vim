@@ -16,13 +16,9 @@ and does not introduce input lag when in insert mode.
 The only bottleneck is in the Python code where the buffer is joined into one huge string before sending to the server.
 For large ( > 2MB ) files, there might be pauses in insert mode when you type too fast.
 If anyone has a better solution, please, please let me know. For now I am not treating it
-as a problem, because you are screwed if you have to maintain source code files that big.
+as a problem, because you are screwed anyways if you have to maintain source code files that big.
 
 ## Prerequisites for Use
-Since this uses C++11, you need a recent compiler and also the compiled portion
-of the Boost C++ libraries. Your version of VIM also needs to have Python 2.X
-bindings.
-
 To compile the server portion you need a relatively standards compliant C++03 compiler
 along with the compiled Boost C++ libraries for boost::asio. Your version of VIM also needs
 to have the Python 2.X bindings.
