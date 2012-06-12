@@ -5,19 +5,14 @@
 #include "Tags.hpp"
 #include "TagsSet.hpp"
 #include "GlobalWordSet.hpp"
+#include "TestCases.hpp"
 
 static const char* ADDRESS = "127.0.0.1";
 static const unsigned short PORT = 31337;
 
-static bool test()
-{
-    return true;
-}
-
 int main(int argc, char* argv[])
 {
-    if (test() == false)
-        return 0;
+    TestCases tc;
 
 #ifdef WIN32
     //SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
