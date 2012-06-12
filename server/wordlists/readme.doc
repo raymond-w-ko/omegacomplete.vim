@@ -1,0 +1,27 @@
+British English Word Lists
+Version 0.7
+27 January 2010
+
+This zip archive contains two lists of English words with British spellings. They are intended as replacements for word lists using American spelling. These lists work with the spell check functions of programs such as the Arachnophilia HTML editor (http://www.arachnoid.com)
+
+The original source material contained many errors so it is gradually being corrected. In spite of this checking, there is no substitute for a good dictionary. (eg. MS Word cannot spell liaise)
+
+britcaps.txt	Abbreviations and Names (not checked)
+brit-a-z.txt	Lower case words starting with a to z (checked once)
+
+Normally, small word lists work better and find more unintended errors.
+Large lists may leave you with the correct spelling .... of the wrong word.
+The intention is to produce a small reliable useful list of common words.
+
+History:
+Version		Status
+0.1		Initial version
+0.2		Lower case a to c corrected
+0.3		Lower case a to i corrected
+0.4		Lower case a to n corrected
+0.5		Lower case a to q corrected
+0.6		Lower case a to z corrected
+0.7		Lower case a to z corrected (liase removed!)
+
+These files are provided "as is" without warranty. They may be used and copied freely for non-commercial purposes provided that this notice is included. All rights are reserved.
+Copyright August 2002 Richard Sheppard.
