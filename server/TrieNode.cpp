@@ -3,8 +3,6 @@
 #include "TrieNode.hpp"
 
 TrieNode::TrieNode()
-//:
-//Parent(NULL)
 {
 }
 
@@ -23,7 +21,6 @@ void TrieNode::Insert(const std::string& word)
         if (Contains(children, letter) == false) {
             TrieNode* new_node = new TrieNode;
             children.insert(std::make_pair(letter, new_node));
-            //new_node->Parent = node;
         }
 
         node = children[letter];
@@ -34,8 +31,10 @@ void TrieNode::Insert(const std::string& word)
 
 void TrieNode::Erase(const std::string& word)
 {
-    TrieNode* prev_node = NULL;
+    std::vector<TrieNode*> node_list;
+
     TrieNode* node = this;
+    node_list.push_back(node);
     foreach (char letter, word)
     {
         auto(&children, node->Children);
@@ -43,15 +42,26 @@ void TrieNode::Erase(const std::string& word)
             return;
         }
 
-        prev_node = node;
         node = children[letter];
+        node_list.push_back(node);
     }
 
     node->Word.clear();
 
-    if (node->Children.size() == 0) {
-        char index = word[word.size() - 1];
-        prev_node->Children.erase(index);
+    assert ( node_list.size() == (word.size() + 1) );
+
+    for (int ii = word.size() - 1; ii >= 0; --ii)
+    {
+        if (node_list[ii + 1]->Children.size() == 0 &&
+            node_list[ii + 1]->Word.empty())
+        {
+            char letter_key = word[ii];
+            node_list[ii]->Children.erase(letter_key);
+        }
+        else
+        {
+            break;
+        }
     }
 }
 
