@@ -49,6 +49,7 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.hpp"
 				WarningLevel="3"
+				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="4"
 			/>
 			<Tool
@@ -130,6 +131,7 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.hpp"
 				WarningLevel="3"
+				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -240,6 +242,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TestCases.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\TrieNode.cpp"
 				>
 			</File>
@@ -291,6 +297,10 @@
 			</File>
 			<File
 				RelativePath=".\TagsSet.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TestCases.hpp"
 				>
 			</File>
 			<File
