@@ -92,6 +92,14 @@ __int64 to_int64(const FILETIME& ft)
     return static_cast<__int64>(ft.dwHighDateTime) << 32 | ft.dwLowDateTime;
 }
 
+inline void always_assert(bool condition)
+{
+    if (condition == false)
+        throw std::exception();
+
+    return;
+}
+
 typedef boost::shared_ptr<std::string> StringPtr;
 typedef boost::unordered_set<std::string> UnorderedStringSet;
 typedef boost::shared_ptr<UnorderedStringSet> UnorderedStringSetPtr;
