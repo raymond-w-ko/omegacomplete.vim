@@ -1,11 +1,53 @@
-"load guard
+" script load guard
 if exists('g:omegacomplete_loaded')
-  finish
+    finish
 endif
 let g:omegacomplete_loaded = 1
 
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" local script variables
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" this variable acts a guard to prevent needlessly sending the same
+" buffer contents twice in a row
 let s:just_did_insertenter = 0
 
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" init
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+function s:Init()
+    set completefunc=OmegaCompleteFunc
+    call s:MapForMappingDriven()
+    nnoremap <silent> i i<C-r>=<SID>FeedPopup()<CR>
+    nnoremap <silent> I I<C-r>=<SID>FeedPopup()<CR>
+    nnoremap <silent> a a<C-r>=<SID>FeedPopup()<CR>
+    nnoremap <silent> A A<C-r>=<SID>FeedPopup()<CR>
+    nnoremap <silent> R R<C-r>=<SID>FeedPopup()<CR>
+
+    " find and load the omegacomplete Python code
+python << PYTHON
+import vim
+import os
+
+# find omegacomplete directory
+path_list = vim.eval("&runtimepath").split(",")
+omegacomplete_path = ""
+for path in path_list:
+    candidate_path = path + "/python/omegacomplete"
+    if (os.path.exists(candidate_path)):
+        omegacomplete_path = candidate_path
+
+sys.path.append(omegacomplete_path)
+
+# load omegacomplete python functions
+client_path = omegacomplete_path + "/client.py"
+exec(compile(open(client_path).read(), client_path, "exec"))
+
+oc_init_connection()
+PYTHON
+    return
+endfunction
+
+" utility functions that any script can use really
 function <SID>EscapePathname(pathname)
     return substitute(a:pathname, '\\', '\\\\', 'g')
 endfunction
@@ -18,35 +60,46 @@ function <SID>GetCurrentBufferPathname()
     return <SID>EscapePathname(expand('%:p'))
 endfunction
 
-" interface to the server
+function <SID>IsPartOfWord(character)
+    if (match(a:character, '[a-zA-Z0-9_]') == 0)
+        return 1
+    else
+        return 0
+    endif
+endfunction
 
-function s:mapForMappingDriven()
-    call s:unmapForMappingDriven()
-    let s:keysMappingDriven = [
+" if you want imap's to trigger the popup menu
+function s:MapForMappingDriven()
+    call s:UnmapForMappingDriven()
+    let s:keys_mapping_driven =
+        \ [
         \ 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
         \ 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
         \ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
         \ 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
         \ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-        \ '_', '<Space>', '<C-h>', '<BS>', ]
+        \ '_', '<Space>', '<C-h>', '<BS>', 
+        \ ]
 
         "\ '-', '_', '~', '^', '.', ',', ':', '!', '#', '=', '%', '$', '@',
         "\ '<', '>', '/', '\'
  
-    for key in s:keysMappingDriven
+    for key in s:keys_mapping_driven
         exe printf('inoremap <silent> %s %s<C-r>=<SID>FeedPopup()<CR>',
-                     \ key, key)
+                 \ key, key)
     endfor
 endfunction
 
-function s:unmapForMappingDriven()
-    if !exists('s:keysMappingDriven')
+" undo the effects of the previous function
+function s:UnmapForMappingDriven()
+    if !exists('s:keys_mapping_driven')
         return
     endif
-    for key in s:keysMappingDriven
+
+    for key in s:keys_mapping_driven
         exe 'iunmap ' . key
     endfor
-    let s:keysMappingDriven = []
+    let s:keys_mapping_driven = []
 endfunction
 
 function <SID>FeedPopup()
@@ -107,10 +160,15 @@ EOF
     endif
 endfunction
 
+" When we want to sync a buffer in normal mode. This mainly occurs when we
+" are entering a buffer for the first time (i.e. it just opened), or we are
+" switching windows and need it to be synced with the server in case you
+" added or deleted lines
 function <SID>NormalModeSyncBuffer()
     let current_buffer_number = <SID>GetCurrentBufferNumber()
     let current_buffer_name = bufname('%') 
-    if (current_buffer_name ==# 'GoToFile')
+    " don't process these special buffers from other plugins
+    if (match(current_buffer_name, '\v(GoToFile|ControlP)') != -1)
         return
     endif
 
@@ -140,7 +198,7 @@ function <SID>OnInsertEnter()
 endfunction
 
 function <SID>OnFocusLost()
-    exe 'py oc_send_command("prune 0")'
+    exe 'py oc_send_command("prune 1")'
 endfunction
 
 function <SID>OnBufReadPost()
@@ -176,14 +234,8 @@ augroup OmegaComplete
     autocmd BufReadPost * call <SID>OnBufReadPost()
 augroup END
 
-function <SID>IsPartOfWord(character)
-    if (match(a:character, '[a-zA-Z0-9_]') == 0)
-        return 1
-    else
-        return 0
-    endif
-endfunction
-
+" this needs to have global scope and it is what <C-X><C-U> depends on.
+" don't think  it can use script / scope specific functions
 function OmegaCompleteFunc(findstart, base)
     if a:findstart
         let index = col('.') - 2
@@ -206,12 +258,10 @@ function OmegaCompleteFunc(findstart, base)
 endfunction
 
 function omegacomplete#UseFirstWordOfPmenu()
-    if pumvisible() == 0
-        return ''
-    endif
-    return "\<C-n>\<C-y>"
+    return pumvisible() ? "\<C-n>\<C-y>" : ''
 endfunction
 
+" substitute for VIM's taglist() function
 function omegacomplete#taglist(expr)
     " send current tags we are using to the server
     exe 'py current_tags = vim.eval("&tags")'
@@ -239,35 +289,5 @@ PYTHON
     return taglist_results
 endfunction
 
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" init
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-set completefunc=OmegaCompleteFunc
-call s:mapForMappingDriven()
-nnoremap <silent> i i<C-r>=<SID>FeedPopup()<CR>
-nnoremap <silent> I I<C-r>=<SID>FeedPopup()<CR>
-nnoremap <silent> a a<C-r>=<SID>FeedPopup()<CR>
-nnoremap <silent> A A<C-r>=<SID>FeedPopup()<CR>
-nnoremap <silent> R R<C-r>=<SID>FeedPopup()<CR>
-
-python << PYTHON
-import vim
-import os
-
-# find omegacomplete directory
-path_list = vim.eval("&runtimepath").split(",")
-omegacomplete_path = ""
-for path in path_list:
-    candidate_path = path + "/python/omegacomplete"
-    if (os.path.exists(candidate_path)):
-        omegacomplete_path = candidate_path
-
-sys.path.append(omegacomplete_path)
-
-# load omegacomplete python functions
-client_path = omegacomplete_path + "/client.py"
-exec(compile(open(client_path).read(), client_path, "exec"))
-
-oc_init_connection()
-
-PYTHON
+" do initialization
+call s:Init()
