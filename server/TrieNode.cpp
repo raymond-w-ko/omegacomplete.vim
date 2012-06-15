@@ -32,6 +32,7 @@ void TrieNode::Insert(const std::string& word)
 void TrieNode::Erase(const std::string& word)
 {
     std::vector<TrieNode*> node_list;
+    node_list.reserve(word.size() + 1);
 
     TrieNode* node = this;
     node_list.push_back(node);
