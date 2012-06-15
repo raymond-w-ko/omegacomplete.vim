@@ -43,6 +43,6 @@ void TestCases::TrieNodeTest()
     delta = (end_time - start_time);
     std::cout << "wordlist removal time: " << delta  << " ms" << std::endl;
 
-    assert( root_node.Children.size() == 0 );
-    assert( root_node.Word.empty() );
+    always_assert( root_node.Children.size() == 0 );
+    always_assert( root_node.Word.empty() );
 }
