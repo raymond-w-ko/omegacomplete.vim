@@ -29,18 +29,18 @@ import vim
 import os
 
 # find omegacomplete directory
-path_list = vim.eval("&runtimepath").split(",")
+path_list = vim.eval('&runtimepath').split(',')
 omegacomplete_path = ""
 for path in path_list:
-    candidate_path = path + "/python/omegacomplete"
+    candidate_path = path + '/python/omegacomplete'
     if (os.path.exists(candidate_path)):
         omegacomplete_path = candidate_path
 
 sys.path.append(omegacomplete_path)
 
 # load omegacomplete python functions
-client_path = omegacomplete_path + "/client.py"
-exec(compile(open(client_path).read(), client_path, "exec"))
+client_path = omegacomplete_path + '/client.py'
+exec(compile(open(client_path).read(), client_path, 'exec'))
 
 oc_init_connection()
 PYTHON
@@ -114,7 +114,7 @@ function <SID>FeedPopup()
 
     " check if plugin has disabled itself because of connection problems
     " we can only do this only after 1 oc_send_command() has occurred
-    let is_oc_disabled=""
+    let is_oc_disabled=''
     exe 'py vim.command("let is_oc_disabled = " + oc_disable_check())'
     if (is_oc_disabled == "1")
         return ''
@@ -151,11 +151,11 @@ EOF
     " try to show popup menu
     if (len(g:omegacomplete_server_results) == 0)
         " do a failed popup anyway to prevent double Enter bug
-        call feedkeys("\<C-X>\<C-U>", 't')
+        call feedkeys("\<C-X>\<C-U>", 'n')
         return ''
     else
         " show actual popup
-        call feedkeys("\<C-X>\<C-U>\<C-P>", 't')
+        call feedkeys("\<C-X>\<C-U>\<C-P>", 'n')
         return ''
     endif
 endfunction
