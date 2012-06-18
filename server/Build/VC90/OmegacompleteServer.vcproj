@@ -173,7 +173,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy $(TargetPath) $(ProjectDir)\$(TargetFileName)"
+				CommandLine="copy $(TargetPath) $(ProjectDir)\..\..\$(TargetFileName)"
 			/>
 		</Configuration>
 	</Configurations>
@@ -186,35 +186,35 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\Buffer.cpp"
+				RelativePath="..\..\Buffer.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\EntryPoint.cpp"
+				RelativePath="..\..\EntryPoint.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\GlobalWordSet.cpp"
+				RelativePath="..\..\GlobalWordSet.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Participant.cpp"
+				RelativePath="..\..\Participant.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Room.cpp"
+				RelativePath="..\..\Room.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Server.cpp"
+				RelativePath="..\..\Server.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Session.cpp"
+				RelativePath="..\..\Session.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\stdafx.cpp"
+				RelativePath="..\..\stdafx.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -234,19 +234,19 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\Tags.cpp"
+				RelativePath="..\..\Tags.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\TagsSet.cpp"
+				RelativePath="..\..\TagsSet.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\TestCases.cpp"
+				RelativePath="..\..\TestCases.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\TrieNode.cpp"
+				RelativePath="..\..\TrieNode.cpp"
 				>
 			</File>
 		</Filter>
@@ -256,55 +256,55 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\Buffer.hpp"
+				RelativePath="..\..\Buffer.hpp"
 				>
 			</File>
 			<File
-				RelativePath=".\EntryPoint.hpp"
+				RelativePath="..\..\EntryPoint.hpp"
 				>
 			</File>
 			<File
-				RelativePath=".\GlobalWordSet.hpp"
+				RelativePath="..\..\GlobalWordSet.hpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Participant.hpp"
+				RelativePath="..\..\Participant.hpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Room.hpp"
+				RelativePath="..\..\Room.hpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Server.hpp"
+				RelativePath="..\..\Server.hpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Session.hpp"
+				RelativePath="..\..\Session.hpp"
 				>
 			</File>
 			<File
-				RelativePath=".\stdafx.hpp"
+				RelativePath="..\..\stdafx.hpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Stopwatch.hpp"
+				RelativePath="..\..\Stopwatch.hpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Tags.hpp"
+				RelativePath="..\..\Tags.hpp"
 				>
 			</File>
 			<File
-				RelativePath=".\TagsSet.hpp"
+				RelativePath="..\..\TagsSet.hpp"
 				>
 			</File>
 			<File
-				RelativePath=".\TestCases.hpp"
+				RelativePath="..\..\TestCases.hpp"
 				>
 			</File>
 			<File
-				RelativePath=".\TrieNode.hpp"
+				RelativePath="..\..\TrieNode.hpp"
 				>
 			</File>
 		</Filter>
