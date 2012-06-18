@@ -12,3 +12,5 @@ server/omegacomplete_server.exe
 root.dir
 *.ncb
 *.exe
+ipch/
+*.opensdf
