@@ -10,6 +10,8 @@ struct TrieNode
     void Clear();
 
     std::string Word;
-    typedef boost::unordered_map<char, TrieNode*>::value_type ChildrenIterator;
-    boost::unordered_map<char, TrieNode*> Children;
+    typedef
+        boost::container::flat_map<char, TrieNode*>::value_type
+        ChildrenIterator;
+    boost::container::flat_map<char, TrieNode*> Children;
 };
