@@ -42,6 +42,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
 #include <boost/typeof/typeof.hpp>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/uniform_int_distribution.hpp>
 
 #define auto BOOST_AUTO
 #define foreach BOOST_FOREACH
