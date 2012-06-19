@@ -62,7 +62,7 @@ Awe -> a, aw, awe
 Var -> v, va, var
 
 We then create all possible combinations of choosing a prefix from each set and appending them
-together inorder. Typing any of these combinations offer a completion for the original word.
+together inorder. Typing any of these combinations will offer a completion for the original word.
 In essence, any of the following abbreviations will offer a match to "MyAwesomeVariable":
 
 "mav", "mava", "mavar", "mawv", "mawva", "mawvar", "mawev", "maweva", "mawevar", ...
