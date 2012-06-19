@@ -1,8 +1,8 @@
 #include "stdafx.hpp"
 
 #include "Session.hpp"
-#include "Stopwatch.hpp"
 #include "TagsSet.hpp"
+#include "Stopwatch.hpp"
 
 unsigned int Session::connection_ticket_ = 0;
 

@@ -1,22 +1,24 @@
 #ifndef STOPWATCH_HPP
 #define STOPWATCH_HPP
 
+#ifdef WIN32
+
 // from
 // http://stackoverflow.com/questions/922829/c-boost-posix-time-elapsed-seconds-elapsed-fractional-seconds
 
 //! \brief Stopwatch for timing performance values
 //!
 //! This stopwatch class is designed for timing performance of various
-//! software operations.  If the values you get back a greater than a 
+//! software operations.  If the values you get back a greater than a
 //! few seconds, you should be using a different tool.
-//! On a Core 2 Duo E6850 @ 3.00GHz, the start/stop sequence takes 
-//! approximately 230 nano seconds in the debug configuration and 180 
+//! On a Core 2 Duo E6850 @ 3.00GHz, the start/stop sequence takes
+//! approximately 230 nano seconds in the debug configuration and 180
 //! nano seconds in the release configuration.  If you are timing on the
 //! sub-microsecond scale, please take this into account and test it on
 //! your machine.
 class Stopwatch {
 public:
-    //! \param start if set to true will initialize and then start the 
+    //! \param start if set to true will initialize and then start the
     //! timer.
 	Stopwatch(bool start=false) {
         _start.QuadPart = 0;
@@ -42,7 +44,7 @@ public:
 	}
 
     //! You can get the result of the stopwatch start-stop sequence at
-    //! your leisure.  
+    //! your leisure.
     double ResultNanoseconds() {
         LARGE_INTEGER frequency;
         QueryPerformanceFrequency(&frequency);
@@ -70,5 +72,7 @@ private:
     LARGE_INTEGER _start;
     LARGE_INTEGER _stop;
 };
+
+#endif
 
 #endif //STOPWATCH_HPP
