@@ -257,10 +257,6 @@ function OmegaCompleteFunc(findstart, base)
     endif
 endfunction
 
-function omegacomplete#UseFirstWordOfPmenu()
-    return pumvisible() ? "\<C-n>\<C-y>" : ''
-endfunction
-
 " substitute for VIM's taglist() function
 function omegacomplete#taglist(expr)
     " send current tags we are using to the server
