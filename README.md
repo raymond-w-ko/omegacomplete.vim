@@ -67,9 +67,9 @@ In essence, any of the following abbreviations will offer a match to "MyAwesomeV
 
 "mav", "mava", "mavar", "mawv", "mawva", "mawvar", "mawev", "maweva", "mawevar", ...
 
-The whole point of this is to reduce the number of false positives for Title Case and Underscore completions
+The whole point of this is to reduce the number of false positives for Title Case and Underscore Completions
 with only two index points, as they eventually become ambiguous given enough buffers open. In fact, if the
-"depth" is set to 1, it generates exactly the same as a normal Title Case or Undescore completion.
+"depth" is set to 1, it degenerates to the normal Title Case or Underscore Completion algorithm.
 
 ### Levenshtein Distance Correction Completion
 OmegaComplete calculates the Levenshtein distance of
