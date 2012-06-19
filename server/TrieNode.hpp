@@ -1,6 +1,6 @@
 #pragma once
 
-struct TrieNode
+struct TrieNode : public boost::noncopyable
 {
     TrieNode();
     ~TrieNode();

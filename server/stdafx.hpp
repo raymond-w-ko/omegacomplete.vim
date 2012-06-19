@@ -1,20 +1,27 @@
 #define BOOST_THREAD_USE_LIB
 
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+
 #define _WIN32_WINNT 0x0501
 
-#ifdef WIN32
+#ifdef _WIN32
+
     #include <winsock2.h>
     #include <windows.h>
 
     #ifndef _DEBUG
         #define _SECURE_SCL 0
     #endif
-#else
-    #include <stdint.h>
-#endif
 
-#include <cstdio>
-#include <cstdlib>
+    inline
+    int64_t to_int64(const FILETIME& ft)
+    {
+        return static_cast<int64_t>(ft.dwHighDateTime) << 32 | ft.dwLowDateTime;
+    }
+
+#endif
 
 #include <algorithm>
 #include <iostream>
@@ -29,6 +36,7 @@
 #include <set>
 #include <map>
 
+#include <boost/noncopyable.hpp>
 #include <boost/bind.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
@@ -45,8 +53,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
 #include <boost/typeof/typeof.hpp>
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/uniform_int_distribution.hpp>
 #include <boost/container/flat_map.hpp>
 
 #define auto BOOST_AUTO
@@ -91,16 +97,6 @@ bool Contains(const Container& container, const Item& item)
 {
     return container.find(item) != container.end();
 }
-
-#ifdef WIN32
-
-inline
-__int64 to_int64(const FILETIME& ft)
-{
-    return static_cast<__int64>(ft.dwHighDateTime) << 32 | ft.dwLowDateTime;
-}
-
-#endif
 
 inline void always_assert(bool condition)
 {

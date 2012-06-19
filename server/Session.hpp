@@ -12,6 +12,7 @@ struct ParseJob
 
 class Session
 :
+public boost::noncopyable,
 public Participant,
 public boost::enable_shared_from_this<Session>
 {

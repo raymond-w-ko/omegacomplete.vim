@@ -2,7 +2,7 @@
 
 #include "Tags.hpp"
 
-class TagsSet
+class TagsSet : public boost::noncopyable
 {
 public:
     static bool GlobalInit();

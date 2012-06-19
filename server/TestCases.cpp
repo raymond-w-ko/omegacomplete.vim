@@ -1,5 +1,8 @@
 #include "stdafx.hpp"
 
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/uniform_int_distribution.hpp>
+
 #include "TestCases.hpp"
 #include "TrieNode.hpp"
 #include "GlobalWordSet.hpp"

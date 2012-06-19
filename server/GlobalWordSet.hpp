@@ -13,7 +13,7 @@ struct WordInfo
     bool GeneratedAbbreviations;
 };
 
-class GlobalWordSet
+class GlobalWordSet : public boost::noncopyable
 {
 public:
 

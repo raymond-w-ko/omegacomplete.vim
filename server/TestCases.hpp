@@ -1,6 +1,6 @@
 #pragma once
 
-class TestCases
+class TestCases : public boost::noncopyable
 {
 public:
     TestCases();
