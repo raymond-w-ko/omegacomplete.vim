@@ -1,13 +1,16 @@
 #define BOOST_THREAD_USE_LIB
 
+#define _WIN32_WINNT 0x0501
+
 #ifdef WIN32
-    #define _WIN32_WINNT 0x0501
     #include <winsock2.h>
     #include <windows.h>
 
     #ifndef _DEBUG
         #define _SECURE_SCL 0
     #endif
+#else
+    #include <stdint.h>
 #endif
 
 #include <cstdio>

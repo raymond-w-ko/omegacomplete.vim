@@ -329,3 +329,23 @@ void Tags::Update()
         reparse();
     }
 }
+
+Tags::Tags(const Tags& other)
+{
+    for (int ii = 0; ii < 256; ++ii)
+    {
+        is_part_of_word_[ii] = other.is_part_of_word_[ii];
+        to_lower_[ii] = other.to_lower_[ii];
+    }
+
+    pathname_ = other.pathname_;
+    last_write_time_ = other.last_write_time_;
+    parent_directory_ = other.parent_directory_;
+
+    tags_ = other.tags_;
+    words_ = other.words_;
+    title_cases_ = other.title_cases_;
+    underscores_ = other.underscores_;
+    title_case_cache_ = other.title_case_cache_;
+    underscore_cache_ = other.underscore_cache_;
+}
