@@ -403,15 +403,16 @@ void GlobalWordSet::GetLevenshteinCompletions(
     if (prefix.length() < kMinLengthForLevenshteinCompletion) return;
 
     trie_mutex_.lock();
-    levenshteinSearch(prefix, kLevenshteinMaxCost, results);
+    LevenshteinSearch(prefix, kLevenshteinMaxCost, trie_, results);
     trie_mutex_.unlock();
 }
 
 // translated from Python code provided by
 // http://stevehanov.ca/blog/index.php?id=114
-void GlobalWordSet::levenshteinSearch(
+void GlobalWordSet::LevenshteinSearch(
     const std::string& word,
-    int max_cost,
+    const int max_cost,
+    const TrieNode& trie,
     LevenshteinSearchResults& results)
 {
     // generate sequence from [0, len(word)]
@@ -419,11 +420,11 @@ void GlobalWordSet::levenshteinSearch(
     std::vector<int> current_row;
     for (size_t ii = 0; ii < current_row_end; ++ii) current_row.push_back(ii);
 
-    foreach (const TrieNode::ChildrenIterator& iter, trie_.Children) {
+    foreach (const TrieNode::ChildrenIterator& iter, trie.Children) {
         char letter = iter.first;
         TrieNode* next_node = iter.second;
 
-        levenshteinSearchRecursive(
+        GlobalWordSet::LevenshteinSearchRecursive(
             next_node,
             letter,
             word,
@@ -435,7 +436,7 @@ void GlobalWordSet::levenshteinSearch(
 
 // translated from Python code provided by
 // http://stevehanov.ca/blog/index.php?id=114
-void GlobalWordSet::levenshteinSearchRecursive(
+void GlobalWordSet::LevenshteinSearchRecursive(
     TrieNode* node,
     char letter,
     const std::string& word,
@@ -481,7 +482,7 @@ void GlobalWordSet::levenshteinSearchRecursive(
         foreach (const TrieNode::ChildrenIterator& iter, node->Children) {
             char letter = iter.first;
             TrieNode* next_node = iter.second;
-            levenshteinSearchRecursive(
+            LevenshteinSearchRecursive(
                 next_node,
                 letter,
                 word,

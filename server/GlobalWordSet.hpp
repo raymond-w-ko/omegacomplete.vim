@@ -39,6 +39,20 @@ public:
         const std::string& word,
         StringToStringVectorUnorderedMap& title_case_cache);
 
+    static void LevenshteinSearch(
+        const std::string& word,
+        int max_cost,
+        const TrieNode& trie,
+        LevenshteinSearchResults& results);
+
+    static void LevenshteinSearchRecursive(
+        TrieNode* node,
+        char letter,
+        const std::string& word,
+        const std::vector<int>& previous_row,
+        LevenshteinSearchResults& results,
+        int max_cost);
+
     GlobalWordSet();
     ~GlobalWordSet();
 
@@ -58,19 +72,6 @@ public:
         LevenshteinSearchResults& results);
 
 private:
-    void levenshteinSearch(
-        const std::string& word,
-        int max_cost,
-        LevenshteinSearchResults& results);
-
-    void levenshteinSearchRecursive(
-        TrieNode* node,
-        char letter,
-        const std::string& word,
-        const std::vector<int>& previous_row,
-        LevenshteinSearchResults& results,
-        int max_cost);
-
     static StringToStringVectorUnorderedMap title_case_cache_;
     static StringToStringVectorUnorderedMap underscore_cache_;
 
