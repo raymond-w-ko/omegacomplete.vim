@@ -89,11 +89,15 @@ bool Contains(const Container& container, const Item& item)
     return container.find(item) != container.end();
 }
 
+#ifdef WIN32
+
 inline
 __int64 to_int64(const FILETIME& ft)
 {
     return static_cast<__int64>(ft.dwHighDateTime) << 32 | ft.dwLowDateTime;
 }
+
+#endif
 
 inline void always_assert(bool condition)
 {
