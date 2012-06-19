@@ -55,11 +55,11 @@ Second, we can assign a "depth" to these index points, which just means how many
 We now consider "MyAwesomeVariable" with a depth of 3. That means we work with the following chunks:
 "My", "Awe", and "Var". For each chunk, we generate a set of all possible prefixes:
 
-"My" -> "m", "my"
+My -> m, my
 
-"Awe" -> "a", "aw", "awe"
+Awe -> a, aw, awe
 
-"Var" -> "v", "va", "var"
+Var -> v, va, var
 
 We then create a all possible combinations of choosing a prefix from each set and appending them
 together inorder. Typing any of these combinations offer a completion for the original word.
