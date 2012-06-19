@@ -56,7 +56,9 @@ We now consider "MyAwesomeVariable" with a depth of 3. That means we work with t
 "My", "Awe", and "Var". For each chunk, we generate a set of all possible prefixes:
 
 "My" -> "m", "my"
+
 "Awe" -> "a", "aw", "awe"
+
 "Var" -> "v", "va", "var"
 
 We then create a all possible combinations of choosing a prefix from each set and appending them
