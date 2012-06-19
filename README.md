@@ -71,6 +71,10 @@ The whole point of this is to reduce the number of false positives for Title Cas
 with only two index points, as they eventually become ambiguous given enough buffers open. In fact, if the
 "depth" is set to 1, it degenerates to the normal Title Case or Underscore Completion algorithm.
 
+Right now it only generate the semantic abbreviations if the number of "index points" is less than 5.
+The "depth" is also capped at 3. The reason for this is that the number of possible abbreviations per
+word is "depth" to the power of the number of "index points", which can get pretty huge quickly.
+
 ### Levenshtein Distance Correction Completion
 OmegaComplete calculates the Levenshtein distance of
 the current word against all known words in all buffers. If the Levenshtein distance
