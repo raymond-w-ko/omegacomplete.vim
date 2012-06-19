@@ -19,7 +19,7 @@ LDFLAGS += -lboost_system$(BOOST_SUFFIX)
 LDFLAGS += -lwsock32 -lws2_32
 
 SOURCES = EntryPoint.cpp Server.cpp Session.cpp Participant.cpp Room.cpp
-SOURCES += Buffer.cpp TrieNode.cpp GarbageDeleter.cpp
+SOURCES += Buffer.cpp TrieNode.cpp
 SOURCES += Tags.cpp TagsSet.cpp GlobalWordSet.cpp stdafx.cpp TestCases.cpp
 
 HEADERS = $(SOURCES:.cpp=.hpp)
