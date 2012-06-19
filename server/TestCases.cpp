@@ -2,6 +2,7 @@
 
 #include "TestCases.hpp"
 #include "TrieNode.hpp"
+#include "GlobalWordSet.hpp"
 
 TestCases::TestCases()
 {
@@ -21,6 +22,8 @@ void TestCases::TrieNodeTest()
 
     std::ifstream input_file("wordlists/brit-a-z.txt");
     std::string line;
+
+    // creation time
     DWORD start_time = ::GetTickCount();
     while ( std::getline(input_file, line) )
     {
@@ -34,6 +37,33 @@ void TestCases::TrieNodeTest()
     input_file.clear();
     input_file.seekg(0, std::ios::beg);
 
+    // search time
+    start_time = ::GetTickCount();
+    LevenshteinSearchResults results;
+    std::vector<std::string> words;
+    while ( std::getline(input_file, line) )
+    {
+        words.push_back(line);
+    }
+    std::cout << "randomly selecting 128 words from from a pool of "
+              << words.size() << std::endl;
+
+    boost::random::mt19937 gen;
+    gen.seed(static_cast<unsigned int>(0));
+    boost::random::uniform_int_distribution<> dist(0, words.size() - 1);
+    for (int ii = 0; ii < 128; ++ii)
+    {
+        const std::string& word = words.at(dist(gen));
+        GlobalWordSet::LevenshteinSearch(word, 2, root_node, results);
+    }
+    end_time = ::GetTickCount();
+    delta = (end_time - start_time);
+    std::cout << "trie search time: " << delta  << " ms" << std::endl;
+
+    input_file.clear();
+    input_file.seekg(0, std::ios::beg);
+
+    // deletion time
     start_time = ::GetTickCount();
     while ( std::getline(input_file, line) )
     {
