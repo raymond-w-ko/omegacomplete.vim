@@ -253,7 +253,7 @@ function OmegaCompleteFunc(findstart, base)
         let result = index + 1
         return result
     else
-        return { 'words' : g:omegacomplete_server_results }
+        return {'words' : g:omegacomplete_server_results}
     endif
 endfunction
 
