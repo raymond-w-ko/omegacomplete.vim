@@ -39,6 +39,36 @@ completion first before prefix completion.
 Similar to the above, if you have "foo\_bar\_fizz\_buzz", the typeing "fbfb" would
 offer this completion first before prefix completion.
 
+### Sematic Completion (of the above two completions)
+There is no good way to briefly explain this in a few words, so you will have to read
+through the example I have.
+
+First is the concept of "index points." For instance, in Title Case Completion,
+"MyAwesomeVariable"'s "index points" are the capital letters and first letter,
+namely "M", "A", "V". In the case of Underscore Completion, "foo\_bar\_fizz\_buzz"
+the "index points" are the the first letter and the letters following the underscores.
+So, they would be "f", "b", "f", "b".
+
+Second, we can assign a "depth" to these index points, which just means how many letters
+(including the "index point") to consider.
+
+We now consider "MyAwesomeVariable" with a depth of 3. That means we work with the following chunks:
+"My", "Awe", and "Var". For each chunk, we generate a set of all possible prefixes:
+
+"My" -> "m", "my"
+"Awe" -> "a", "aw", "awe"
+"Var" -> "v", "va", "var"
+
+We then create a all possible combinations of choosing a prefix from each set and appending them
+together inorder. Typing any of these combinations offer a completion for the original word.
+In essence, any of the following abbreviations will offer a match to "MyAwesomeVariable":
+
+"mav", "mava", "mavar", "mawv", "mawva", "mawvar", "mawev", "maweva", "mawevar", ...
+
+The whole point of this is to reduce the number of false positives for Title Case and Underscore completions
+with only two index points, as they eventually become ambiguous given enough buffers open. In fact, if the
+"depth" is set to 1, it generates exactly the same as a normal Title Case or Undescore completion.
+
 ### Levenshtein Distance Correction Completion
 OmegaComplete calculates the Levenshtein distance of
 the current word against all known words in all buffers. If the Levenshtein distance
