@@ -61,7 +61,7 @@ Awe -> a, aw, awe
 
 Var -> v, va, var
 
-We then create a all possible combinations of choosing a prefix from each set and appending them
+We then create all possible combinations of choosing a prefix from each set and appending them
 together inorder. Typing any of these combinations offer a completion for the original word.
 In essence, any of the following abbreviations will offer a match to "MyAwesomeVariable":
 
