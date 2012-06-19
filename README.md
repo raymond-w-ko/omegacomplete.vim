@@ -45,8 +45,8 @@ through the example I have.
 
 First is the concept of "index points." For instance, in Title Case Completion,
 "MyAwesomeVariable"'s "index points" are the capital letters and first letter,
-namely "M", "A", "V". In the case of Underscore Completion, "foo\_bar\_fizz\_buzz"
-the "index points" are the the first letter and the letters following the underscores.
+namely "M", "A", "V". In the case of Underscore Completion "foo\_bar\_fizz\_buzz"'s
+"index points" are the the first letter and the letters following the underscores.
 So, they would be "f", "b", "f", "b".
 
 Second, we can assign a "depth" to these index points, which just means how many letters
