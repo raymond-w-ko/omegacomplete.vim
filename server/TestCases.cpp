@@ -41,7 +41,7 @@ void TestCases::TrieNodeTest()
     input_file.seekg(0, std::ios::beg);
 
     // search time
-    unsigned int num_searches = 1024;
+    unsigned int num_searches = 64;
     start_time = ::GetTickCount();
     LevenshteinSearchResults results;
     std::vector<std::string> words;
