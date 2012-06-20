@@ -60,14 +60,6 @@ function <SID>GetCurrentBufferPathname()
     return <SID>EscapePathname(expand('%:p'))
 endfunction
 
-function <SID>IsPartOfWord(character)
-    if (match(a:character, '[a-zA-Z0-9_]') == 0)
-        return 1
-    else
-        return 0
-    endif
-endfunction
-
 " if you want imap's to trigger the popup menu
 function s:MapForMappingDriven()
     call s:UnmapForMappingDriven()
@@ -243,7 +235,7 @@ function OmegaCompleteFunc(findstart, base)
             if (index == -1)
                 break
             endif
-            if ( <SID>IsPartOfWord( line[index] ) == 0 )
+            if ( match(line[index], '[a-zA-Z0-9_]') == -1 )
                 break
             endif
 
