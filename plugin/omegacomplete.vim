@@ -150,12 +150,11 @@ EOF
 
     " try to show popup menu
     if (len(g:omegacomplete_server_results) == 0)
-        " do a failed popup anyway to prevent double Enter bug
-        call feedkeys("\<C-X>\<C-U>", 'n')
+        call feedkeys("\<C-x>\<C-u>", 'n')
         return ''
     else
         " show actual popup
-        call feedkeys("\<C-X>\<C-U>\<C-P>", 'n')
+        call feedkeys("\<C-x>\<C-u>\<C-p>", 'n')
         return ''
     endif
 endfunction
