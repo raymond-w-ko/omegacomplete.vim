@@ -4,7 +4,7 @@
 
 class Session;
 
-class Buffer : public boost::noncopyable
+class Buffer
 {
 public:
     static void GlobalInit();
