@@ -313,7 +313,7 @@ void Tags::Update()
 {
     bool reparse_needed = false;
 
-#ifdef WIN32
+#ifdef _WIN32
     HANDLE hFile = ::CreateFile(
         pathname_.c_str(),
         GENERIC_READ,

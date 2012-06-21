@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
 {
     TestCases tc;
 
-#ifdef WIN32
+#ifdef _WIN32
     //SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 #else
     // TODO(rko): set priority on UNIX OSes

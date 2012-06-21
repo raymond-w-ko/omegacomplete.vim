@@ -1,7 +1,7 @@
 #ifndef STOPWATCH_HPP
 #define STOPWATCH_HPP
 
-#ifdef WIN32
+#ifdef _WIN32
 
 // from
 // http://stackoverflow.com/questions/922829/c-boost-posix-time-elapsed-seconds-elapsed-fractional-seconds
