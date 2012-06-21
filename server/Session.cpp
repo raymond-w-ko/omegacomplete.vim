@@ -129,6 +129,8 @@ void Session::processClientMessage()
     StringPtr argument = boost::make_shared<std::string>(
         request.begin() + index + 1, request.end());
 
+    //std::cout << command << " " << *argument << "$" << std::endl;
+
     std::string response = "ACK";
 
     if (false) { }
@@ -181,6 +183,7 @@ void Session::processClientMessage()
         //Stopwatch watch; watch.Start();
 
         calculateCompletionCandidates(*argument, response);
+        //std::cout << response << std::endl;
         writeResponse(response);
 
         //watch.Stop(); std::cout << "complete: "; watch.PrintResultMilliseconds();
@@ -301,7 +304,7 @@ void Session::workerThreadLoop()
 #ifdef WIN32
         ::Sleep(1);
 #else
-        sleep(1);
+        ::usleep(1 * 1000);
 #endif
         if (is_quitting_ == 1) break;
 
