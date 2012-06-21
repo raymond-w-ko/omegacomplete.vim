@@ -11,6 +11,8 @@ let g:omegacomplete_loaded = 1
 " buffer contents twice in a row
 let s:just_did_insertenter = 0
 
+" initialize this to be safe
+let g:omegacomplete_server_results=[]
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " init
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -244,7 +246,11 @@ function OmegaCompleteFunc(findstart, base)
         let result = index + 1
         return result
     else
-        return {'words' : g:omegacomplete_server_results}
+        if (v:version > 702)
+            return {'words' : dummy}
+        else
+            return g:omegacomplete_server_results
+        endif
     endif
 endfunction
 
