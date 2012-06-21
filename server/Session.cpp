@@ -4,6 +4,8 @@
 #include "TagsSet.hpp"
 #include "Stopwatch.hpp"
 
+static const unsigned kMaxNumCompletions = 32;
+
 unsigned int Session::connection_ticket_ = 0;
 
 Session::Session(io_service& io_service, Room& room)
@@ -298,10 +300,11 @@ void Session::queueParseJob(ParseJob job)
 void Session::workerThreadLoop()
 {
     bool did_prune = false;
+    ParseJob job;
 
     while (true)
     {
-#ifdef WIN32
+#ifdef _WIN32
         ::Sleep(1);
 #else
         ::usleep(1 * 1000);
@@ -309,12 +312,11 @@ void Session::workerThreadLoop()
         if (is_quitting_ == 1) break;
 
         // pop off the next job
-        ParseJob job;
+try_get_next_job:
         job_queue_mutex_.lock();
         if (job_queue_.size() > 0) {
             job = job_queue_.front();
             job_queue_.pop_front();
-
             job_queue_mutex_.unlock();
 
             // do the job
@@ -329,6 +331,11 @@ void Session::workerThreadLoop()
             buffers_mutex_.unlock();
 
             did_prune = false;
+
+            // try and see if there is something queued up
+            // if so, then immediately process it,
+            // don't go to sleep
+            goto try_get_next_job;
         } else {
             job_queue_mutex_.unlock();
 
@@ -373,10 +380,7 @@ void Session::calculateCompletionCandidates(
         &tags_prefix_completions);
     tags_prefix_completions.erase(prefix_to_complete);
 
-
     LevenshteinSearchResults levenshtein_completions;
-    // I type so fast and value the popup not appearing if it doesn't
-    // recognize the word, so I have disabled this for now
     // only if we have no completions do we try to Levenshtein distance completion
     unsigned num_current_completions =
         abbr_completions.size() + tags_abbr_completions.size() +
@@ -388,7 +392,7 @@ void Session::calculateCompletionCandidates(
     }
 
     // compile results and send
-    unsigned int num_completions_added = 0;
+    unsigned num_completions_added = 0;
     boost::unordered_set<std::string> added_words;
 
     std::stringstream results;
@@ -396,6 +400,7 @@ void Session::calculateCompletionCandidates(
     // append abbreviations first
     foreach (const std::string& word, abbr_completions)
     {
+        if (num_completions_added >= kMaxNumCompletions) break;
         results << boost::str(boost::format(
             "{'word':'%s','menu':'[%c]'},")
             % word % quick_match_key_[num_completions_added++]);
@@ -405,6 +410,7 @@ void Session::calculateCompletionCandidates(
     // append tags abbreviations, make sure it's not part of above
     foreach (const std::string& word, tags_abbr_completions)
     {
+        if (num_completions_added >= kMaxNumCompletions) break;
         if (Contains(added_words, word) == true) continue;
 
         results << boost::str(boost::format(
@@ -417,6 +423,7 @@ void Session::calculateCompletionCandidates(
     // append prefix completions
     foreach (const std::string& word, prefix_completions)
     {
+        if (num_completions_added >= kMaxNumCompletions) break;
         if (Contains(added_words, word) == true) continue;
 
         results << boost::str(boost::format(
@@ -424,11 +431,10 @@ void Session::calculateCompletionCandidates(
             % word % quick_match_key_[num_completions_added++]);
 
         added_words.insert(word);
-
-        if (num_completions_added >= 32) break;
     }
     foreach (const std::string& word, tags_prefix_completions)
     {
+        if (num_completions_added >= kMaxNumCompletions) break;
         if (Contains(added_words, word) == true) continue;
 
         results << boost::str(boost::format(
@@ -436,22 +442,24 @@ void Session::calculateCompletionCandidates(
             % word % quick_match_key_[num_completions_added++]);
 
         added_words.insert(word);
-
-        if (num_completions_added >= 32) break;
     }
 
     // append Levenshtein completions
     auto (iter, levenshtein_completions.begin());
     for (; iter != levenshtein_completions.end(); ++iter) {
+        if (num_completions_added >= kMaxNumCompletions) break;
+
         int score = iter->first;
         foreach (const std::string& word, iter->second) {
+            if (num_completions_added >= kMaxNumCompletions) break;
             if (Contains(added_words, word) == true) continue;
             if (word == prefix_to_complete) continue;
             if (boost::starts_with(prefix_to_complete, word)) continue;
 
             results << boost::str(boost::format(
-                "{'abbr':'***%s','word':'%s'},")
+                "{'abbr':'*** %s','word':'%s'},")
                 % word % word);
+            num_completions_added++;
 
             added_words.insert(word);
         }
