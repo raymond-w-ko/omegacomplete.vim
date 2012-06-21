@@ -247,7 +247,7 @@ function OmegaCompleteFunc(findstart, base)
         return result
     else
         if (v:version > 702)
-            return {'words' : dummy}
+            return {'words' : g:omegacomplete_server_results}
         else
             return g:omegacomplete_server_results
         endif
