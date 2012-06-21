@@ -1,10 +1,10 @@
 #include "stdafx.hpp"
 #include "GlobalWordSet.hpp"
 
-const int kLevenshteinMaxCost = 2;
-const size_t kMinLengthForLevenshteinCompletion = 4;
-const size_t kWordSizeCutoffPointForDepthLists = 5;
-const size_t kMaxDepthPerIndex = 3;
+static const int kLevenshteinMaxCost = 2;
+static const size_t kMinLengthForLevenshteinCompletion = 4;
+static const size_t kWordSizeCutoffPointForDepthLists = 5;
+static const size_t kMaxDepthPerIndex = 3;
 
 char GlobalWordSet::is_part_of_word_[256];
 char GlobalWordSet::to_lower_[256];
