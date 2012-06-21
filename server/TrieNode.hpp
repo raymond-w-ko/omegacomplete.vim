@@ -11,7 +11,7 @@ struct TrieNode : public boost::noncopyable
 
     std::string Word;
     typedef
-        boost::container::flat_map<char, TrieNode*>::value_type
+        boost::unordered_map<char, TrieNode*>::value_type
         ChildrenIterator;
-    boost::container::flat_map<char, TrieNode*> Children;
+    boost::unordered_map<char, TrieNode*> Children;
 };
