@@ -11,10 +11,11 @@ struct TagInfo
     boost::unordered_map<std::string, std::string> Info;
 };
 
-class Tags : public boost::noncopyable
+class Tags
 {
 public:
     Tags();
+    Tags(const Tags& other);
     ~Tags();
     bool Init(const std::string& pathname);
 
@@ -38,8 +39,6 @@ public:
         std::stringstream& ss);
 
 private:
-    Tags(const Tags& other);
-
     bool calculateParentDirectory();
     void reparse();
 
@@ -50,7 +49,7 @@ private:
     int64_t last_write_time_;
     std::string parent_directory_;
     boost::thread thread_;
-    boost::mutex mutex_;
+    mutable boost::mutex mutex_;
 
     boost::unordered_multimap<std::string, TagInfo> tags_;
     boost::unordered_set<std::string> words_;
