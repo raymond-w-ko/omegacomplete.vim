@@ -1,26 +1,24 @@
 #define BOOST_THREAD_USE_LIB
 
+#ifdef _WIN32
+    #ifndef _DEBUG
+        #define _SECURE_SCL 0
+    #endif
+#endif
+
 #include <stdint.h>
 #include <cstdio>
 #include <cstdlib>
 
-#define _WIN32_WINNT 0x0501
-
 #ifdef _WIN32
-
     #include <winsock2.h>
     #include <windows.h>
-
-    #ifndef _DEBUG
-        #define _SECURE_SCL 0
-    #endif
 
     inline
     int64_t to_int64(const FILETIME& ft)
     {
         return static_cast<int64_t>(ft.dwHighDateTime) << 32 | ft.dwLowDateTime;
     }
-
 #endif
 
 #include <algorithm>
