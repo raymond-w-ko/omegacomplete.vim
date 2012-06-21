@@ -1,6 +1,6 @@
 #define BOOST_THREAD_USE_LIB
 
-#include <cstdint>
+#include <stdint.h>
 #include <cstdio>
 #include <cstdlib>
 
@@ -53,7 +53,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
 #include <boost/typeof/typeof.hpp>
-#include <boost/container/flat_map.hpp>
 
 #define auto BOOST_AUTO
 #define foreach BOOST_FOREACH
