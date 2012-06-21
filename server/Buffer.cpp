@@ -29,6 +29,9 @@ Buffer::Buffer()
 
 Buffer::~Buffer()
 {
+    if (parent_ == NULL) return;
+    if (words_ == NULL) return;
+
     foreach (const std::string& word, *words_) {
         parent_->WordSet.UpdateWord(word, -1);
     }
