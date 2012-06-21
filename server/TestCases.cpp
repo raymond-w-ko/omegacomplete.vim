@@ -1,7 +1,11 @@
 #include "stdafx.hpp"
 
+#ifdef HAVE_RECENT_BOOST_LIBRARY
+
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int_distribution.hpp>
+
+#endif
 
 #include "TestCases.hpp"
 #include "TrieNode.hpp"
@@ -21,6 +25,7 @@ TestCases::~TestCases()
 
 void TestCases::TrieNodeTest()
 {
+#ifdef _WIN32
     TrieNode root_node;
 
     std::ifstream input_file("wordlists/brit-a-z.txt");
@@ -80,4 +85,5 @@ void TestCases::TrieNodeTest()
 
     always_assert( root_node.Children.size() == 0 );
     always_assert( root_node.Word.empty() );
+#endif
 }
