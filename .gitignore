@@ -8,7 +8,7 @@ server/Build/*/Release
 server/ipch
 *.o
 *.gch
-server/omegacomplete_server.exe
+server/omegacomplete_server
 root.dir
 *.ncb
 *.exe
