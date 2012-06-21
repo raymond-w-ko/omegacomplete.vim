@@ -63,6 +63,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <FloatingPointExceptions>true</FloatingPointExceptions>
+      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);HAVE_RECENT_BOOST_LIBRARY</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>C:\Boost\stage\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -90,6 +91,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <FloatingPointExceptions>false</FloatingPointExceptions>
+      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);HAVE_RECENT_BOOST_LIBRARY</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>C:\Boost\stage\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
