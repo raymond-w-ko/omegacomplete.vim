@@ -25,6 +25,7 @@ int main(int argc, char* argv[])
     LookupTable::GlobalInit();
     if (TagsSet::GlobalInit() == false) return 1;
     GlobalWordSet::GlobalInit();
+    Session::GlobalInit();
 
     // where everything starts
     io_service io_service;

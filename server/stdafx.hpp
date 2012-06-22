@@ -91,3 +91,4 @@ typedef std::vector<std::string> StringVector;
 typedef
     boost::unordered_map<std::string, StringVector>
     StringToStringVectorUnorderedMap;
+typedef std::pair<std::string, std::string> StringPair;

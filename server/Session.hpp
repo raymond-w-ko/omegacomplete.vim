@@ -17,6 +17,8 @@ public Participant,
 public boost::enable_shared_from_this<Session>
 {
 public:
+    static void GlobalInit();
+
     Session(io_service& io_service, Room& room);
     ~Session();
 
@@ -53,11 +55,27 @@ private:
         std::string& result);
     std::string getWordToComplete(const std::string& line);
 
+    void addWordsToResults(
+        const std::set<std::string>& words,
+        std::vector<StringPair>& result,
+        unsigned& num_completions_added,
+        boost::unordered_set<std::string>& added_words);
+
+    bool shouldEnableDisambiguateMode(const std::string& word);
+
     ////////////////////////////////////////////////////////////////////////////
     // boost::asio
     ////////////////////////////////////////////////////////////////////////////
     // when creating a session, this determine what the connection number is
     static unsigned int connection_ticket_;
+    // quick match keys
+    // basically a mapping from result number to keyboard key to press
+    // first result  -> 'a'
+    // second result -> 's'
+    // third result  -> 'd'
+    // and etc.
+    static std::vector<char> quick_match_key_;
+    static boost::unordered_map<char, unsigned> reverse_quick_match_;
 
     ip::tcp::socket socket_;
     Room& room_;
@@ -86,14 +104,7 @@ private:
     std::pair<unsigned, unsigned> cursor_pos_;
     std::vector<std::string> current_tags_;
     std::vector<std::string> taglist_tags_;
-
-    // quick match keys
-    // basically a mapping from result number to keyboard key to press
-    // first result  -> 'a'
-    // second result -> 's'
-    // third result  -> 'd'
-    // and etc.
-    std::vector<char> quick_match_key_;
+    std::vector<std::string> prev_input_;
 };
 
 typedef boost::shared_ptr<Session> SessionPtr;

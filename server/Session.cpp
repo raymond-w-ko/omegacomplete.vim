@@ -8,15 +8,13 @@
 static const unsigned kMaxNumCompletions = 32;
 
 unsigned int Session::connection_ticket_ = 0;
+std::vector<char> Session::quick_match_key_;
+boost::unordered_map<char, unsigned> Session::reverse_quick_match_;
 
-Session::Session(io_service& io_service, Room& room)
-:
-socket_(io_service),
-room_(room),
-connection_number_(connection_ticket_++),
-quick_match_key_(kMaxNumCompletions, ' '),
-is_quitting_(0)
+void Session::GlobalInit()
 {
+    quick_match_key_.resize(kMaxNumCompletions, ' '),
+
     quick_match_key_[0] = 'a';
     quick_match_key_[1] = 's';
     quick_match_key_[2] = 'd';
@@ -38,6 +36,21 @@ is_quitting_(0)
     quick_match_key_[17] = 'i';
     quick_match_key_[18] = 'o';
     quick_match_key_[19] = 'p';
+
+    for (unsigned ii = 0; ii < 20; ++ii)
+    {
+        reverse_quick_match_[quick_match_key_[ii]] = ii;
+    }
+}
+
+Session::Session(io_service& io_service, Room& room)
+:
+socket_(io_service),
+room_(room),
+connection_number_(connection_ticket_++),
+is_quitting_(0),
+prev_input_(3)
+{
 }
 
 Session::~Session()
@@ -362,6 +375,20 @@ void Session::calculateCompletionCandidates(
         return;
     }
 
+    prev_input_[2] = prev_input_[1];
+    prev_input_[1] = prev_input_[0];
+    prev_input_[0] = prefix_to_complete;
+
+    bool disambiguate_mode = shouldEnableDisambiguateMode(prefix_to_complete);
+    char disambiguate_letter = 0;
+    if (disambiguate_mode)
+    {
+        disambiguate_letter = prefix_to_complete[ prefix_to_complete.size() - 1 ];
+        disambiguate_letter = LookupTable::ToLower[disambiguate_letter];
+
+        prefix_to_complete.resize( prefix_to_complete.size() - 1 );
+    }
+
     std::set<std::string> abbr_completions;
     WordSet.GetAbbrCompletions(prefix_to_complete, &abbr_completions);
     abbr_completions.erase(prefix_to_complete);
@@ -395,77 +422,101 @@ void Session::calculateCompletionCandidates(
 
     // compile results and send
     unsigned num_completions_added = 0;
+    std::vector<StringPair> result_list;
     boost::unordered_set<std::string> added_words;
 
-    result += "[";
+    if (prev_input_[1].size() == (prefix_to_complete.size() + 1) &&
+        boost::starts_with(prev_input_[1], prefix_to_complete))
+    {
+        added_words.insert(prev_input_[1]);
+    }
+
     // append abbreviations first
-    foreach (const std::string& word, abbr_completions)
-    {
-        if (num_completions_added >= kMaxNumCompletions) break;
-        result += boost::str(boost::format(
-            "{'word':'%s','menu':'[%c]'},")
-            % word % quick_match_key_[num_completions_added++]);
+    addWordsToResults(
+        abbr_completions,
+        result_list, num_completions_added, added_words);
 
-        added_words.insert(word);
-    }
-    // append tags abbreviations, make sure it's not part of above
-    foreach (const std::string& word, tags_abbr_completions)
-    {
-        if (num_completions_added >= kMaxNumCompletions) break;
-        if (Contains(added_words, word) == true) continue;
-
-        result += boost::str(boost::format(
-            "{'word':'%s','menu':'[%c]'},")
-            % word % quick_match_key_[num_completions_added++]);
-
-        added_words.insert(word);
-    }
+    // append tags abbreviations
+    addWordsToResults(
+        tags_abbr_completions,
+        result_list, num_completions_added, added_words);
 
     // append prefix completions
-    foreach (const std::string& word, prefix_completions)
+    addWordsToResults(
+        prefix_completions,
+        result_list, num_completions_added, added_words);
+
+    // append tags prefix completions
+    addWordsToResults(
+        tags_prefix_completions,
+        result_list, num_completions_added, added_words);
+
+    result += "[";
+    if (disambiguate_mode == false)
     {
-        if (num_completions_added >= kMaxNumCompletions) break;
-        if (Contains(added_words, word) == true) continue;
-
-        result += boost::str(boost::format(
-            "{'word':'%s','menu':'[%c]'},")
-            % word % quick_match_key_[num_completions_added++]);
-
-        added_words.insert(word);
-    }
-    foreach (const std::string& word, tags_prefix_completions)
-    {
-        if (num_completions_added >= kMaxNumCompletions) break;
-        if (Contains(added_words, word) == true) continue;
-
-        result += boost::str(boost::format(
-            "{'word':'%s','menu':'[%c]'},")
-            % word % quick_match_key_[num_completions_added++]);
-
-        added_words.insert(word);
-    }
-
-    // append Levenshtein completions
-    auto (iter, levenshtein_completions.begin());
-    for (; iter != levenshtein_completions.end(); ++iter) {
-        if (num_completions_added >= kMaxNumCompletions) break;
-
-        int score = iter->first;
-        foreach (const std::string& word, iter->second) {
-            if (num_completions_added >= kMaxNumCompletions) break;
-            if (Contains(added_words, word) == true) continue;
-            if (word == prefix_to_complete) continue;
-            if (boost::starts_with(prefix_to_complete, word)) continue;
-
+        foreach (const StringPair& pair, result_list)
+        {
             result += boost::str(boost::format(
-                "{'abbr':'*** %s','word':'%s'},")
-                % word % word);
-            num_completions_added++;
+                "{'word':'%s','menu':'[%s]'},")
+                % pair.first % pair.second );
+        }
 
-            added_words.insert(word);
+        // append Levenshtein completions
+        auto (iter, levenshtein_completions.begin());
+        for (; iter != levenshtein_completions.end(); ++iter) {
+            if (num_completions_added >= kMaxNumCompletions) break;
+
+            int score = iter->first;
+            foreach (const std::string& word, iter->second) {
+                if (num_completions_added >= kMaxNumCompletions) break;
+                if (Contains(added_words, word) == true) continue;
+                if (word == prefix_to_complete) continue;
+                if (boost::starts_with(prefix_to_complete, word)) continue;
+
+                result += boost::str(boost::format(
+                    "{'abbr':'*** %s','word':'%s'},")
+                    % word % word);
+
+                num_completions_added++;
+
+                added_words.insert(word);
+            }
         }
     }
+    else
+    {
+        if (Contains(reverse_quick_match_, disambiguate_letter) == true)
+        {
+            unsigned result_index = reverse_quick_match_[disambiguate_letter];
+            const std::string& single_result =
+                result_list[result_index].first;
+            result += boost::str(boost::format(
+                "{'abbr':'%s','word':'%s'},")
+                % (single_result + " <--") % single_result );
+        }
+    }
+
     result += "]";
+}
+
+void Session::addWordsToResults(
+    const std::set<std::string>& words,
+    std::vector<StringPair>& result_list,
+    unsigned& num_completions_added,
+    boost::unordered_set<std::string>& added_words)
+{
+    foreach (const std::string& word, words)
+    {
+        if (num_completions_added >= kMaxNumCompletions) break;
+        if (Contains(added_words, word) == true) continue;
+
+        result_list.push_back(std::make_pair(
+            word,
+            boost::lexical_cast<std::string>(
+                quick_match_key_[num_completions_added++]) ));
+
+        added_words.insert(word);
+    }
 }
 
 std::string Session::getWordToComplete(const std::string& line)
@@ -487,4 +538,19 @@ std::string Session::getWordToComplete(const std::string& line)
 
     std::string partial( &line[partial_begin + 1], &line[partial_end] );
     return partial;
+}
+
+bool Session::shouldEnableDisambiguateMode(const std::string& word)
+{
+    if (word.size() < 2) return false;
+    if ( !LookupTable::IsUpper[ word[word.size() - 1] ] )
+        return false;
+
+    for (size_t ii = 0; ii < (word.size() - 1); ++ii)
+    {
+        if ( LookupTable::IsUpper[ word[ii] ] )
+            return false;
+    }
+
+    return true;
 }
