@@ -147,11 +147,13 @@ void Tags::VimTaglistFunction(
             % tag_name
             % tag_info.Location
             % tag_info.Ex);
-        foreach (const TagInfo::InfoIterator& pair, tag_info.Info)
+        for (TagInfo::InfoIterator pair = tag_info.Info.begin();
+            pair != tag_info.Info.end();
+            ++pair)
         {
             ss << boost::str(boost::format(
                 "'%s':'%s',")
-                % pair.first % pair.second);
+                % pair->first % pair->second);
         }
 
         ss << "},";

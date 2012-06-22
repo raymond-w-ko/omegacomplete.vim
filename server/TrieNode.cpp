@@ -8,8 +8,11 @@ TrieNode::TrieNode()
 
 TrieNode::~TrieNode()
 {
-    foreach (const ChildrenIterator& iter, Children) {
-        delete iter.second;
+    for (ChildrenIterator iter = Children.begin();
+        iter != Children.end();
+        ++iter)
+    {
+        delete iter->second;
     }
 }
 

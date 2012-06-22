@@ -93,7 +93,6 @@ private:
     volatile int is_quitting_;
 
     boost::mutex buffers_mutex_;
-    typedef boost::unordered_map<unsigned, Buffer>::value_type BuffersIterator;
     boost::unordered_map<unsigned, Buffer> buffers_;
 
     boost::mutex job_queue_mutex_;

@@ -406,9 +406,12 @@ void GlobalWordSet::LevenshteinSearch(
     std::vector<int> current_row;
     for (size_t ii = 0; ii < current_row_end; ++ii) current_row.push_back(ii);
 
-    foreach (const TrieNode::ChildrenIterator& iter, trie.Children) {
-        char letter = iter.first;
-        TrieNode* next_node = iter.second;
+    for (TrieNode::ChildrenConstIterator iter = trie.Children.begin();
+        iter != trie.Children.end();
+        ++iter)
+    {
+        char letter = iter->first;
+        TrieNode* next_node = iter->second;
 
         GlobalWordSet::LevenshteinSearchRecursive(
             next_node,
@@ -465,9 +468,13 @@ void GlobalWordSet::LevenshteinSearchRecursive(
     // recursively search each branch of the trie
     if (*std::min_element(current_row.begin(), current_row.end()) <= max_cost)
     {
-        foreach (const TrieNode::ChildrenIterator& iter, node->Children) {
-            char letter = iter.first;
-            TrieNode* next_node = iter.second;
+        for (TrieNode::ChildrenConstIterator iter = node->Children.begin();
+            iter != node->Children.end();
+            ++iter)
+        {
+            char letter = iter->first;
+            TrieNode* next_node = iter->second;
+
             LevenshteinSearchRecursive(
                 next_node,
                 letter,

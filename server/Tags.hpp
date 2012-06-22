@@ -5,7 +5,7 @@ struct TagInfo
     std::string Location;
     std::string Ex;
     typedef
-        boost::unordered_map<std::string, std::string>::value_type
+        boost::unordered_map<std::string, std::string>::iterator
         InfoIterator;
     boost::unordered_map<std::string, std::string> Info;
 };

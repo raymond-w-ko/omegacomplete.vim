@@ -13,8 +13,6 @@
 
 TestCases::TestCases()
 {
-    return;
-
     std::cout << "running test cases" << std::endl;
 
     TrieNodeTest();
@@ -48,7 +46,7 @@ void TestCases::TrieNodeTest()
     input_file.seekg(0, std::ios::beg);
 
     // search time
-    unsigned int num_searches = 32;
+    unsigned int num_searches = 64;
     start_time = ::GetTickCount();
     LevenshteinSearchResults results;
     std::vector<std::string> words;
