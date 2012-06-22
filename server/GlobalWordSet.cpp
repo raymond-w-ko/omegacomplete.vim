@@ -155,7 +155,7 @@ const StringVector* GlobalWordSet::ComputeTitleCase(
             continue;
         }
 
-        if (IsUpper(c)) {
+        if (LookupTable::IsUpper[c]) {
             indices.push_back(ii);
         }
     }

@@ -14,7 +14,7 @@ Session::Session(io_service& io_service, Room& room)
 socket_(io_service),
 room_(room),
 connection_number_(connection_ticket_++),
-quick_match_key_(1024, ' '),
+quick_match_key_(kMaxNumCompletions, ' '),
 is_quitting_(0)
 {
     quick_match_key_[0] = 'a';
@@ -185,6 +185,8 @@ void Session::processClientMessage()
     {
         //Stopwatch watch; watch.Start();
 
+        response.clear();
+        response.reserve(1024);
         calculateCompletionCandidates(*argument, response);
         //std::cout << response << std::endl;
         writeResponse(response);
@@ -357,7 +359,6 @@ void Session::calculateCompletionCandidates(
 {
     std::string prefix_to_complete = getWordToComplete(line);
     if (prefix_to_complete.empty()) {
-        result.clear();
         return;
     }
 
@@ -383,7 +384,7 @@ void Session::calculateCompletionCandidates(
 
     LevenshteinSearchResults levenshtein_completions;
     // only if we have no completions do we try to Levenshtein distance completion
-    unsigned num_current_completions =
+    size_t num_current_completions =
         abbr_completions.size() + tags_abbr_completions.size() +
         prefix_completions.size() + tags_prefix_completions.size();
     if (num_current_completions == 0) {
@@ -396,13 +397,12 @@ void Session::calculateCompletionCandidates(
     unsigned num_completions_added = 0;
     boost::unordered_set<std::string> added_words;
 
-    std::stringstream results;
-    results << "[";
+    result += "[";
     // append abbreviations first
     foreach (const std::string& word, abbr_completions)
     {
         if (num_completions_added >= kMaxNumCompletions) break;
-        results << boost::str(boost::format(
+        result += boost::str(boost::format(
             "{'word':'%s','menu':'[%c]'},")
             % word % quick_match_key_[num_completions_added++]);
 
@@ -414,7 +414,7 @@ void Session::calculateCompletionCandidates(
         if (num_completions_added >= kMaxNumCompletions) break;
         if (Contains(added_words, word) == true) continue;
 
-        results << boost::str(boost::format(
+        result += boost::str(boost::format(
             "{'word':'%s','menu':'[%c]'},")
             % word % quick_match_key_[num_completions_added++]);
 
@@ -427,7 +427,7 @@ void Session::calculateCompletionCandidates(
         if (num_completions_added >= kMaxNumCompletions) break;
         if (Contains(added_words, word) == true) continue;
 
-        results << boost::str(boost::format(
+        result += boost::str(boost::format(
             "{'word':'%s','menu':'[%c]'},")
             % word % quick_match_key_[num_completions_added++]);
 
@@ -438,7 +438,7 @@ void Session::calculateCompletionCandidates(
         if (num_completions_added >= kMaxNumCompletions) break;
         if (Contains(added_words, word) == true) continue;
 
-        results << boost::str(boost::format(
+        result += boost::str(boost::format(
             "{'word':'%s','menu':'[%c]'},")
             % word % quick_match_key_[num_completions_added++]);
 
@@ -457,7 +457,7 @@ void Session::calculateCompletionCandidates(
             if (word == prefix_to_complete) continue;
             if (boost::starts_with(prefix_to_complete, word)) continue;
 
-            results << boost::str(boost::format(
+            result += boost::str(boost::format(
                 "{'abbr':'*** %s','word':'%s'},")
                 % word % word);
             num_completions_added++;
@@ -465,9 +465,7 @@ void Session::calculateCompletionCandidates(
             added_words.insert(word);
         }
     }
-    results << "]";
-
-    result = results.str();
+    result += "]";
 }
 
 std::string Session::getWordToComplete(const std::string& line)

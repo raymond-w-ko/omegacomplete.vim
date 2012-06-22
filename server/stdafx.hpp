@@ -70,12 +70,6 @@ inline void LogAsioError(
     std::cerr << msg << std::endl;
 }
 
-inline bool IsUpper(char c)
-{
-    if (('A' <= c) && (c <= 'Z')) return true;
-    return false;
-}
-
 template <typename Container, typename Item>
 bool Contains(const Container& container, const Item& item)
 {
