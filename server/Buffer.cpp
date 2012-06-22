@@ -3,25 +3,9 @@
 #include "Buffer.hpp"
 #include "Session.hpp"
 #include "Stopwatch.hpp"
+#include "LookupTable.hpp"
 
 using namespace std;
-
-char Buffer::is_part_of_word_[256];
-char Buffer::to_lower_[256];
-
-void Buffer::GlobalInit()
-{
-    // generate lookup tables
-    std::string temp(1, ' ');
-    for (size_t index = 0; index <= 255; ++index)
-    {
-        is_part_of_word_[index] = IsPartOfWord(index) ? 1 : 0;
-        temp.resize(1, ' ');
-        temp[0] = (char)index;
-        boost::algorithm::to_lower(temp);
-        to_lower_[index] = temp[0];
-    }
-}
 
 Buffer::Buffer()
 {
@@ -120,14 +104,14 @@ void Buffer::TokenizeContentsIntoKeywords(
         // this will be what is considered a word
         // I guess we have unicode stuff we are screwed :
         char c = text[ii];
-        if (!is_part_of_word_[c]) continue;
+        if (!LookupTable::IsPartOfWord[c]) continue;
 
         // we have found the beginning of the word, loop until
         // we reach the end or we find a non world character
         size_t jj = ii + 1;
         for (; jj < contents_size; ++jj)
         {
-            if (is_part_of_word_[text[jj]])
+            if (LookupTable::IsPartOfWord[text[jj]])
                 continue;
             break;
         }
@@ -148,15 +132,15 @@ void Buffer::CalculateCurrentWordOfCursor(
     const std::pair<unsigned, unsigned> pos)
 {
     int end_bound = pos.second;
-    while ( is_part_of_word_[line[end_bound]] &&
-            end_bound < static_cast<int>(line.size()) )
+    while (LookupTable::IsPartOfWord[line[end_bound]] &&
+           end_bound < static_cast<int>(line.size()))
     {
         end_bound++;
     }
 
     int begin_bound = pos.second - 1;
     while ( begin_bound >= 0 &&
-            is_part_of_word_[line[begin_bound]] )
+            LookupTable::IsPartOfWord[line[begin_bound]] )
     {
         begin_bound--;
     }

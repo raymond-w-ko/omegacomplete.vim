@@ -2,6 +2,7 @@
 
 #include "Tags.hpp"
 #include "GlobalWordSet.hpp"
+#include "LookupTable.hpp"
 
 Tags::Tags()
 :
@@ -13,16 +14,6 @@ last_write_time_(0)
 bool Tags::Init(const std::string& pathname)
 {
     pathname_ = pathname;
-
-    std::string temp(1, ' ');
-    for (size_t index = 0; index <= 255; ++index)
-    {
-        is_part_of_word_[index] = IsPartOfWord(index) ? 1 : 0;
-        temp.resize(1, ' ');
-        temp[0] = (char)index;
-        boost::algorithm::to_lower(temp);
-        to_lower_[index] = temp[0];
-    }
 
     if (calculateParentDirectory() == false)
     {
@@ -66,12 +57,6 @@ bool Tags::calculateParentDirectory()
 Tags::Tags(const Tags& other)
 {
     other.mutex_.lock();
-
-    for (int ii = 0; ii < 256; ++ii)
-    {
-        is_part_of_word_[ii] = other.is_part_of_word_[ii];
-        to_lower_[ii] = other.to_lower_[ii];
-    }
 
     pathname_ = other.pathname_;
     last_write_time_ = other.last_write_time_;

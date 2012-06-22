@@ -1,13 +1,12 @@
 #include "stdafx.hpp"
 #include "GlobalWordSet.hpp"
+#include "LookupTable.hpp"
 
 static const int kLevenshteinMaxCost = 2;
 static const size_t kMinLengthForLevenshteinCompletion = 4;
 static const size_t kWordSizeCutoffPointForDepthLists = 5;
 static const size_t kMaxDepthPerIndex = 3;
 
-char GlobalWordSet::is_part_of_word_[256];
-char GlobalWordSet::to_lower_[256];
 StringToStringVectorUnorderedMap GlobalWordSet::title_case_cache_;
 StringToStringVectorUnorderedMap GlobalWordSet::underscore_cache_;
 boost::unordered_map<size_t, std::vector<std::vector<size_t> > >
@@ -15,19 +14,6 @@ boost::unordered_map<size_t, std::vector<std::vector<size_t> > >
 
 void GlobalWordSet::GlobalInit()
 {
-    // generate lookup tables
-    // for determining what is part of of a 'word'
-    // for determining what the lowercase equivalent of a letter is
-    std::string temp(1, ' ');
-    for (size_t index = 0; index <= 255; ++index)
-    {
-        is_part_of_word_[index] = IsPartOfWord(index) ? 1 : 0;
-        temp.resize(1, ' ');
-        temp[0] = static_cast<char>(index);
-        boost::algorithm::to_lower(temp);
-        to_lower_[index] = temp[0];
-    }
-
     // generate depth lists
     for (size_t ii = 1; ii < kWordSizeCutoffPointForDepthLists; ++ii) {
         GlobalWordSet::GenerateDepths(ii, kMaxDepthPerIndex, depth_list_cache_[ii]);
@@ -118,7 +104,7 @@ const StringVector* GlobalWordSet::ComputeUnderscore(
         std::string abbr;
         abbr.reserve(kWordSizeCutoffPointForDepthLists);
         foreach (size_t index, indices)
-            abbr += to_lower_[word[index]];
+            abbr += LookupTable::ToLower[word[index]];
         underscore_cache[word].push_back(abbr);
     }
     // generate various abbreviations based on depth permutations
@@ -138,7 +124,7 @@ const StringVector* GlobalWordSet::ComputeUnderscore(
                     char c = word[index + cur_depth];
                     if (c == '_')
                         break;
-                    abbr += to_lower_[c];
+                    abbr += LookupTable::ToLower[c];
                 }
             }
             underscore_cache[word].push_back(abbr);
@@ -189,7 +175,7 @@ const StringVector* GlobalWordSet::ComputeTitleCase(
             for (size_t cur_depth = 0; cur_depth < depth; ++cur_depth) {
                 if ((index + cur_depth) >= next_index)
                     break;
-                abbr += to_lower_[word[index + cur_depth]];
+                abbr += LookupTable::ToLower[word[index + cur_depth]];
             }
         }
         title_case_cache[word].push_back(abbr);
@@ -201,7 +187,7 @@ const StringVector* GlobalWordSet::ComputeTitleCase(
         std::string abbr;
         abbr.reserve(kWordSizeCutoffPointForDepthLists);
         foreach (size_t index, indices)
-            abbr += to_lower_[word[index]];
+            abbr += LookupTable::ToLower[word[index]];
         title_case_cache_[word].push_back(abbr);
     }
     // generate various abbreviations based on depth permutations
@@ -219,7 +205,7 @@ const StringVector* GlobalWordSet::ComputeTitleCase(
                     if ((index + cur_depth) >= next_index)
                         break;
                     char c = word[index + cur_depth];
-                    abbr += to_lower_[c];
+                    abbr += LookupTable::ToLower[c];
                 }
             }
             title_case_cache_[word].push_back(abbr);

@@ -47,6 +47,9 @@
     <ClCompile Include="..\..\TrieNode.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\LookupTable.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Buffer.hpp">
@@ -86,6 +89,9 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\..\TrieNode.hpp">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\LookupTable.hpp">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

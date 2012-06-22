@@ -6,6 +6,7 @@
 #include "TagsSet.hpp"
 #include "GlobalWordSet.hpp"
 #include "TestCases.hpp"
+#include "LookupTable.hpp"
 
 static const char* ADDRESS = "127.0.0.1";
 static const unsigned short PORT = 31337;
@@ -21,9 +22,9 @@ int main(int argc, char* argv[])
 #endif
 
     // static intializers
+    LookupTable::GlobalInit();
     if (TagsSet::GlobalInit() == false) return 1;
     GlobalWordSet::GlobalInit();
-    Buffer::GlobalInit();
 
     // where everything starts
     io_service io_service;

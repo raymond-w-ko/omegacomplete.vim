@@ -42,9 +42,6 @@ private:
     bool calculateParentDirectory();
     void reparse();
 
-    char is_part_of_word_[256];
-    char to_lower_[256];
-
     std::string pathname_;
     int64_t last_write_time_;
     std::string parent_directory_;

@@ -3,6 +3,7 @@
 #include "Session.hpp"
 #include "TagsSet.hpp"
 #include "Stopwatch.hpp"
+#include "LookupTable.hpp"
 
 static const unsigned kMaxNumCompletions = 32;
 
@@ -478,10 +479,8 @@ std::string Session::getWordToComplete(const std::string& line)
     for (; partial_begin >= 0; --partial_begin)
     {
         char c = line[partial_begin];
-        if (IsPartOfWord(c) == true)
-        {
+        if (LookupTable::IsPartOfWord[c])
             continue;
-        }
 
         break;
     }

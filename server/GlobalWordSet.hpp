@@ -19,8 +19,6 @@ public:
 
     static void GlobalInit();
 
-    static char is_part_of_word_[256];
-    static char to_lower_[256];
     // digit_upper_bound is of the form [1, digit_upper_bound]
     // no side effects
     static void ResolveCarries(

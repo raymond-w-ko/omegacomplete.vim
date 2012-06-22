@@ -70,19 +70,6 @@ inline void LogAsioError(
     std::cerr << msg << std::endl;
 }
 
-inline bool IsPartOfWord(char c)
-{
-    if ( (('a' <= c) && (c <= 'z')) ||
-         (('A' <= c) && (c <= 'Z')) ||
-         (c == '_') ||
-         (('0' <= c) && (c <= '9')) )
-    {
-        return true;
-    }
-
-    return false;
-}
-
 inline bool IsUpper(char c)
 {
     if (('A' <= c) && (c <= 'Z')) return true;

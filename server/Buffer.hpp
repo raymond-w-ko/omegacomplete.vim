@@ -7,7 +7,6 @@ class Session;
 class Buffer
 {
 public:
-    static void GlobalInit();
     static void TokenizeContentsIntoKeywords(
         StringPtr contents,
         UnorderedStringSetPtr words);
@@ -26,9 +25,6 @@ public:
         const std::pair<unsigned, unsigned> pos);
 
 private:
-    static char is_part_of_word_[256];
-    static char to_lower_[256];
-
     Session* parent_;
     unsigned buffer_id_;
 
