@@ -88,7 +88,4 @@ typedef boost::shared_ptr<std::string> StringPtr;
 typedef boost::unordered_set<std::string> UnorderedStringSet;
 typedef boost::shared_ptr<UnorderedStringSet> UnorderedStringSetPtr;
 typedef std::vector<std::string> StringVector;
-typedef
-    boost::unordered_map<std::string, StringVector>
-    StringToStringVectorUnorderedMap;
 typedef std::pair<std::string, std::string> StringPair;

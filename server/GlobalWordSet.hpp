@@ -32,10 +32,10 @@ public:
 
     static const StringVector* ComputeUnderscore(
         const std::string& word,
-        StringToStringVectorUnorderedMap& underscore_cache);
+        boost::unordered_map<std::string, StringVector>& underscore_cache);
     static const StringVector* ComputeTitleCase(
         const std::string& word,
-        StringToStringVectorUnorderedMap& title_case_cache);
+        boost::unordered_map<std::string, StringVector>& title_case_cache);
 
     static void LevenshteinSearch(
         const std::string& word,
@@ -70,8 +70,8 @@ public:
         LevenshteinSearchResults& results);
 
 private:
-    static StringToStringVectorUnorderedMap title_case_cache_;
-    static StringToStringVectorUnorderedMap underscore_cache_;
+    static boost::unordered_map<std::string, StringVector> title_case_cache_;
+    static boost::unordered_map<std::string, StringVector> underscore_cache_;
 
     static
         boost::unordered_map<size_t, std::vector<std::vector<size_t> > >

@@ -7,8 +7,8 @@ static const size_t kMinLengthForLevenshteinCompletion = 4;
 static const size_t kWordSizeCutoffPointForDepthLists = 5;
 static const size_t kMaxDepthPerIndex = 3;
 
-StringToStringVectorUnorderedMap GlobalWordSet::title_case_cache_;
-StringToStringVectorUnorderedMap GlobalWordSet::underscore_cache_;
+boost::unordered_map<std::string, StringVector> GlobalWordSet::title_case_cache_;
+boost::unordered_map<std::string, StringVector> GlobalWordSet::underscore_cache_;
 boost::unordered_map<size_t, std::vector<std::vector<size_t> > >
     GlobalWordSet::depth_list_cache_;
 
@@ -68,7 +68,7 @@ void GlobalWordSet::GenerateDepths(
 
 const StringVector* GlobalWordSet::ComputeUnderscore(
     const std::string& word,
-    StringToStringVectorUnorderedMap& underscore_cache)
+    boost::unordered_map<std::string, StringVector>& underscore_cache)
 {
     // we have already computed this before
     if (Contains(underscore_cache, word) == true) {
@@ -136,7 +136,7 @@ const StringVector* GlobalWordSet::ComputeUnderscore(
 
 const StringVector* GlobalWordSet::ComputeTitleCase(
     const std::string& word,
-    StringToStringVectorUnorderedMap& title_case_cache)
+    boost::unordered_map<std::string, StringVector>& title_case_cache)
 {
     // we have already computed this before
     if (Contains(title_case_cache, word) == true) {

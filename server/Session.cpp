@@ -226,8 +226,6 @@ void Session::processClientMessage()
     }
     else if (command == "current_tags")
     {
-        writeResponse(response);
-
         current_tags_.clear();
 
         std::vector<std::string> tags_list;
@@ -240,11 +238,11 @@ void Session::processClientMessage()
             TagsSet::Instance()->CreateOrUpdate(tags);
             current_tags_.push_back(tags);
         }
+
+        writeResponse(response);
     }
     else if (command == "taglist_tags")
     {
-        writeResponse(response);
-
         taglist_tags_.clear();
 
         std::vector<std::string> tags_list;
@@ -257,6 +255,8 @@ void Session::processClientMessage()
             TagsSet::Instance()->CreateOrUpdate(tags);
             taglist_tags_.push_back(tags);
         }
+
+        writeResponse(response);
     }
     else if (command == "vim_taglist_function")
     {

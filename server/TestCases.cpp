@@ -13,6 +13,8 @@
 
 TestCases::TestCases()
 {
+    return;
+
     std::cout << "running test cases" << std::endl;
 
     TrieNodeTest();

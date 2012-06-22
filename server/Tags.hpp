@@ -2,7 +2,6 @@
 
 struct TagInfo
 {
-    std::string Tag;
     std::string Location;
     std::string Ex;
     typedef
@@ -21,11 +20,6 @@ public:
 
     void Update();
 
-    void VimTaglistFunction(
-        const std::string& expr,
-        const std::vector<std::string>& tags_list,
-        std::stringstream& ss);
-
     void GetAllWordsWithPrefix(
         const std::string& prefix,
         std::set<std::string>* results);
@@ -41,17 +35,23 @@ public:
 private:
     bool calculateParentDirectory();
     void reparse();
+    bool calculateTagInfo(
+        const std::string& line,
+        std::string& tag_name,
+        TagInfo& tag_info);
+
+
+    static boost::unordered_map<std::string, StringVector> title_case_cache_;
+    static boost::unordered_map<std::string, StringVector> underscore_cache_;
 
     std::string pathname_;
     int64_t last_write_time_;
     std::string parent_directory_;
-    boost::thread thread_;
-    mutable boost::mutex mutex_;
 
-    boost::unordered_multimap<std::string, TagInfo> tags_;
-    boost::unordered_set<std::string> words_;
+    typedef
+        boost::unordered_multimap<std::string, std::string>::iterator
+        tags_iterator;
+    boost::unordered_multimap<std::string, std::string> tags_;
     boost::unordered_multimap<std::string, const std::string*> title_cases_;
     boost::unordered_multimap<std::string, const std::string*> underscores_;
-    StringToStringVectorUnorderedMap title_case_cache_;
-    StringToStringVectorUnorderedMap underscore_cache_;
 };
