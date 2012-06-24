@@ -234,6 +234,12 @@ void Tags::Update()
     CloseHandle(hFile); hFile = INVALID_HANDLE_VALUE;
 #else
     // TODO(rko): implement for UNIX OSes
+    if (last_write_time_ == 0)
+    {
+        last_write_time_ = 1;
+        reparse_needed = true;
+        std::cout << "in UNIX, deciding to parse: " << pathname_ << std::endl;
+    }
 #endif
 
     if (reparse_needed)
