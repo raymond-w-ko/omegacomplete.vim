@@ -18,6 +18,10 @@ let g:omegacomplete_server_results=[]
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 function s:Init()
     set completefunc=OmegaCompleteFunc
+
+    set completeopt+=menu
+    set completeopt+=menuone
+
     call s:MapForMappingDriven()
     nnoremap <silent> i i<C-r>=<SID>FeedPopup()<CR>
     nnoremap <silent> I I<C-r>=<SID>FeedPopup()<CR>
