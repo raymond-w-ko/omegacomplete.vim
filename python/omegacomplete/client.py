@@ -75,7 +75,7 @@ def oc_get_cursor_pos():
     return row + ' ' + col
 
 def oc_send_current_buffer():
-    global oc_is_diabled
+    global oc_is_disabled
     if oc_is_disabled:
         return
 
