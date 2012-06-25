@@ -488,11 +488,15 @@ void Session::calculateCompletionCandidates(
         if (Contains(reverse_quick_match_, disambiguate_letter) == true)
         {
             unsigned result_index = reverse_quick_match_[disambiguate_letter];
-            const std::string& single_result =
-                result_list[result_index].first;
-            result += boost::str(boost::format(
-                "{'abbr':'%s','word':'%s'},")
-                % (single_result + " <--") % single_result );
+            // make sure we actually have a result, or we crash
+            if (result_list.size() > result_index)
+            {
+                const std::string& single_result =
+                    result_list[result_index].first;
+                result += boost::str(boost::format(
+                    "{'abbr':'%s','word':'%s'},")
+                    % (single_result + " <--") % single_result );
+            }
         }
     }
 
