@@ -5,7 +5,7 @@
 static const int kLevenshteinMaxCost = 2;
 static const size_t kMinLengthForLevenshteinCompletion = 4;
 static const size_t kWordSizeCutoffPointForDepthLists = 5;
-static const size_t kMaxDepthPerIndex = 3;
+static const size_t kMaxDepthPerIndex = 4;
 
 boost::unordered_map<std::string, StringVector> GlobalWordSet::title_case_cache_;
 boost::unordered_map<std::string, StringVector> GlobalWordSet::underscore_cache_;
@@ -188,7 +188,7 @@ const StringVector* GlobalWordSet::ComputeTitleCase(
         abbr.reserve(kWordSizeCutoffPointForDepthLists);
         foreach (size_t index, indices)
             abbr += LookupTable::ToLower[word[index]];
-        title_case_cache_[word].push_back(abbr);
+        title_case_cache[word].push_back(abbr);
     }
     // generate various abbreviations based on depth permutations
     else {
@@ -208,7 +208,7 @@ const StringVector* GlobalWordSet::ComputeTitleCase(
                     abbr += LookupTable::ToLower[c];
                 }
             }
-            title_case_cache_[word].push_back(abbr);
+            title_case_cache[word].push_back(abbr);
         }
     }
 
