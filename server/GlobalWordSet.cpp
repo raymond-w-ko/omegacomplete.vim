@@ -4,8 +4,9 @@
 
 static const int kLevenshteinMaxCost = 2;
 static const size_t kMinLengthForLevenshteinCompletion = 4;
+
 static const size_t kWordSizeCutoffPointForDepthLists = 5;
-static const size_t kMaxDepthPerIndex = 4;
+static const size_t kMaxDepthPerIndex = 3;
 
 boost::unordered_map<std::string, StringVector> GlobalWordSet::title_case_cache_;
 boost::unordered_map<std::string, StringVector> GlobalWordSet::underscore_cache_;
