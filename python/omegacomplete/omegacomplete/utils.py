@@ -2,13 +2,22 @@ import struct
 import platform
 import string
 import time
+import math
 
 receive_buffer = ""
 def safe_recvall(conn):
     global receive_buffer
+    global oc_is_disabled
 
     # infinite loop until we find ourselves with a NULL character
+    begin_time = time.time()
     while not "\x00" in receive_buffer:
+        now = time.time()
+
+        if (math.fabs(now - begin_time) >= 10.0):
+            oc_is_disabled = True
+            break
+
         data = ""
 
         try:
