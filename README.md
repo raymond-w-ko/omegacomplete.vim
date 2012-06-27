@@ -33,7 +33,7 @@ to trample anyones default keybinds
 
 Example of what to place in your vimrc:
 <pre>
-inoremap <expr> <Tab> pumvisible() ? "\<C-n>\<C-y>" : "\<Tab>"
+inoremap <expr> <Tab> pumvisible() ? "\&lt;C-n&gt;\&lt;C-y&gt;" : "\&lt;Tab&gt;"
 </pre>
 
 ## Completion Types
