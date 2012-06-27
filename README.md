@@ -27,7 +27,7 @@ If you use Visual Studio 2008 and have Boost compiled and installed in "C:\Boost
 can just use with the solution file provided.
 
 ## Important Tip
-You really should map your 'Tab' (or favority equivalent completion key) to this.
+You really should map 'Tab' (or favority equivalent completion key) to this.
 Otherwise, this plugin becomes somewhat useless. I didn't map this by default as I don't want
 to trample anyones default keybinds
 
