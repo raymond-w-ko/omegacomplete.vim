@@ -16,7 +16,7 @@ LDFLAGS =
 LDFLAGS += -lboost_system$(BOOST_SUFFIX) -lboost_thread$(BOOST_SUFFIX)
 
 SOURCES = EntryPoint.cpp Server.cpp Session.cpp Participant.cpp Room.cpp
-SOURCES += Buffer.cpp TrieNode.cpp LookupTable.cpp
+SOURCES += Buffer.cpp TrieNode.cpp LookupTable.cpp CompletionSet.cpp
 SOURCES += Tags.cpp TagsSet.cpp GlobalWordSet.cpp stdafx.cpp TestCases.cpp
 
 HEADERS = $(SOURCES:.cpp=.hpp)
