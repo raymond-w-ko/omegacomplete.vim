@@ -29,7 +29,7 @@ can just use with the solution file provided.
 ## Important Tip
 You really should map 'Tab' (or favorite equivalent completion key) to this.
 Otherwise, this plugin becomes somewhat useless. I didn't map this by default because I don't want
-to trample anyone's default keybinds.
+to trample anyone's keybinds.
 
 Example of what to place in your vimrc:
 <pre>
