@@ -4,42 +4,41 @@
 #include "TagsSet.hpp"
 #include "Stopwatch.hpp"
 #include "LookupTable.hpp"
-
-static const unsigned kMaxNumCompletions = 32;
+#include "CompletionSet.hpp"
 
 unsigned int Session::connection_ticket_ = 0;
-std::vector<char> Session::quick_match_key_;
-boost::unordered_map<char, unsigned> Session::reverse_quick_match_;
+std::vector<char> Session::QuickMatchKey;
+boost::unordered_map<char, unsigned> Session::ReverseQuickMatch;
 
 void Session::GlobalInit()
 {
-    quick_match_key_.resize(kMaxNumCompletions, ' '),
+    QuickMatchKey.resize(CompletionSet::kMaxNumCompletions, ' '),
 
-    quick_match_key_[0] = 'A';
-    quick_match_key_[1] = 'S';
-    quick_match_key_[2] = 'D';
-    quick_match_key_[3] = 'F';
-    quick_match_key_[4] = 'G';
-    quick_match_key_[5] = 'H';
-    quick_match_key_[6] = 'J';
-    quick_match_key_[7] = 'K';
-    quick_match_key_[8] = 'L';
-    quick_match_key_[9] = ';';
+    QuickMatchKey[0] = 'A';
+    QuickMatchKey[1] = 'S';
+    QuickMatchKey[2] = 'D';
+    QuickMatchKey[3] = 'F';
+    QuickMatchKey[4] = 'G';
+    QuickMatchKey[5] = 'H';
+    QuickMatchKey[6] = 'J';
+    QuickMatchKey[7] = 'K';
+    QuickMatchKey[8] = 'L';
+    QuickMatchKey[9] = ';';
 
-    quick_match_key_[10] = 'Q';
-    quick_match_key_[11] = 'W';
-    quick_match_key_[12] = 'E';
-    quick_match_key_[13] = 'R';
-    quick_match_key_[14] = 'T';
-    quick_match_key_[15] = 'Y';
-    quick_match_key_[16] = 'U';
-    quick_match_key_[17] = 'I';
-    quick_match_key_[18] = 'O';
-    quick_match_key_[19] = 'P';
+    QuickMatchKey[10] = 'Q';
+    QuickMatchKey[11] = 'W';
+    QuickMatchKey[12] = 'E';
+    QuickMatchKey[13] = 'R';
+    QuickMatchKey[14] = 'T';
+    QuickMatchKey[15] = 'Y';
+    QuickMatchKey[16] = 'U';
+    QuickMatchKey[17] = 'I';
+    QuickMatchKey[18] = 'O';
+    QuickMatchKey[19] = 'P';
 
     for (unsigned ii = 0; ii < 20; ++ii)
     {
-        reverse_quick_match_[quick_match_key_[ii]] = ii;
+        ReverseQuickMatch[QuickMatchKey[ii]] = ii;
     }
 }
 
@@ -379,45 +378,38 @@ void Session::calculateCompletionCandidates(
     prev_input_[1] = prev_input_[0];
     prev_input_[0] = prefix_to_complete;
 
+    bool terminus_mode = shouldEnableTerminusMode(prefix_to_complete);
+    std::string terminus_prefix;
+
     bool disambiguate_mode = shouldEnableDisambiguateMode(prefix_to_complete);
     char disambiguate_letter = 0;
-    int disambiguate_index = -1;
-    if (disambiguate_mode)
+    unsigned disambiguate_index = UINT_MAX;
+    if (terminus_mode)
+    {
+        terminus_prefix = prefix_to_complete;
+        terminus_prefix.resize( prefix_to_complete.size() - 1 );
+    }
+    else if (disambiguate_mode)
     {
         disambiguate_letter = prefix_to_complete[ prefix_to_complete.size() - 1 ];
 
         prefix_to_complete.resize( prefix_to_complete.size() - 1 );
 
-        if (Contains(reverse_quick_match_, disambiguate_letter) == true)
-            disambiguate_index = reverse_quick_match_[disambiguate_letter];
+        if (Contains(ReverseQuickMatch, disambiguate_letter) == true)
+            disambiguate_index = ReverseQuickMatch[disambiguate_letter];
     }
 
-    std::set<std::string> abbr_completions;
-    std::set<std::string> tags_abbr_completions;
-    std::set<std::string> prefix_completions;
-    std::set<std::string> tags_prefix_completions;
+    CompletionSet main_completion_set;
+    CompletionSet terminus_completion_set;
 
 retry_completion:
 
-    WordSet.GetAbbrCompletions(prefix_to_complete, &abbr_completions);
-    abbr_completions.erase(prefix_to_complete);
-
-    TagsSet::Instance()->GetAbbrCompletions(
-        prefix_to_complete, current_tags_,
-        &tags_abbr_completions);
-    tags_abbr_completions.erase(prefix_to_complete);
-
-    WordSet.GetPrefixCompletions(prefix_to_complete, &prefix_completions);
-    prefix_completions.erase(prefix_to_complete);
-
-    TagsSet::Instance()->GetAllWordsWithPrefix(
-        prefix_to_complete, current_tags_,
-        &tags_prefix_completions);
-    tags_prefix_completions.erase(prefix_to_complete);
-
-    size_t num_current_completions =
-        abbr_completions.size() + tags_abbr_completions.size() +
-        prefix_completions.size() + tags_prefix_completions.size();
+    if (terminus_mode)
+    {
+        always_assert(disambiguate_mode == false);
+        fillCompletionSet(terminus_prefix, terminus_completion_set);
+    }
+    fillCompletionSet(prefix_to_complete, main_completion_set);
 
     // encountered an invalid disambiguation, abort and retry normally
     // as though it was not intended
@@ -426,15 +418,12 @@ retry_completion:
     // but we probably want to try it as a regular prefix completion
     if (disambiguate_mode &&
         disambiguate_index >= 0 &&
-        disambiguate_index >= num_current_completions)
+        disambiguate_index >= main_completion_set.GetNumCompletions())
     {
         disambiguate_mode = false;
-        disambiguate_index = -1;
+        disambiguate_index = UINT_MAX;
 
-        abbr_completions.clear();
-        tags_abbr_completions.clear();
-        prefix_completions.clear();
-        tags_prefix_completions.clear();
+        main_completion_set.Clear();
 
         prefix_to_complete += boost::lexical_cast<std::string>(disambiguate_letter);
 
@@ -443,44 +432,60 @@ retry_completion:
 
     // only if we have no completions do we try to Levenshtein distance completion
     LevenshteinSearchResults levenshtein_completions;
-    if (num_current_completions == 0) {
+    if (main_completion_set.GetNumCompletions() == 0) {
         WordSet.GetLevenshteinCompletions(
             prefix_to_complete,
             levenshtein_completions);
     }
 
-    unsigned num_completions_added = 0;
     std::vector<StringPair> result_list;
-    boost::unordered_set<std::string> added_words;
+    std::vector<StringPair> terminus_result_list;
+
+    if (terminus_mode)
+    {
+        terminus_completion_set.FillResults(terminus_result_list);
+    }
 
     // this is to prevent completions from being considered
     // that are basically the word from before you press Backspace.
     if (prev_input_[1].size() == (prefix_to_complete.size() + 1) &&
         boost::starts_with(prev_input_[1], prefix_to_complete))
     {
-        added_words.insert(prev_input_[1]);
+        main_completion_set.AddBannedWord(prev_input_[1]);
+        if (terminus_mode)
+        {
+            terminus_completion_set.AddBannedWord(prev_input_[1]);
+        }
     }
 
-    addWordsToResults(
-        abbr_completions,
-        result_list, num_completions_added, added_words);
+    if (terminus_mode)
+    {
+        foreach (const StringPair& pair, terminus_result_list)
+        {
+            main_completion_set.AddBannedWord(pair.first);
+        }
+    }
 
-    addWordsToResults(
-        tags_abbr_completions,
-        result_list, num_completions_added, added_words);
-
-    addWordsToResults(
-        prefix_completions,
-        result_list, num_completions_added, added_words);
-
-    addWordsToResults(
-        tags_prefix_completions,
-        result_list, num_completions_added, added_words);
+    main_completion_set.FillResults(result_list);
 
     // convert to format that VIM expects, basically a list of dictionaries
     result += "[";
     if (disambiguate_mode == false)
     {
+        if (terminus_mode)
+        {
+            foreach (const StringPair& pair, terminus_result_list)
+            {
+                const std::string& word = pair.first;
+                if (word[ word.size() - 1 ] != '_')
+                    continue;
+
+                result += boost::str(boost::format(
+                    "{'word':'%s','menu':'[%s]'},")
+                    % pair.first % pair.second );
+            }
+        }
+
         foreach (const StringPair& pair, result_list)
         {
             result += boost::str(boost::format(
@@ -488,27 +493,10 @@ retry_completion:
                 % pair.first % pair.second );
         }
 
-        // append Levenshtein completions
-        auto (iter, levenshtein_completions.begin());
-        for (; iter != levenshtein_completions.end(); ++iter) {
-            if (num_completions_added >= kMaxNumCompletions) break;
-
-            int score = iter->first;
-            foreach (const std::string& word, iter->second) {
-                if (num_completions_added >= kMaxNumCompletions) break;
-                if (Contains(added_words, word) == true) continue;
-                if (word == prefix_to_complete) continue;
-                if (boost::starts_with(prefix_to_complete, word)) continue;
-
-                result += boost::str(boost::format(
-                    "{'abbr':'*** %s','word':'%s'},")
-                    % word % word);
-
-                num_completions_added++;
-
-                added_words.insert(word);
-            }
-        }
+        main_completion_set.FillLevenshteinResults(
+            levenshtein_completions,
+            prefix_to_complete,
+            result);
     }
     else
     {
@@ -525,25 +513,6 @@ retry_completion:
     result += "]";
 }
 
-void Session::addWordsToResults(
-    const std::set<std::string>& words,
-    std::vector<StringPair>& result_list,
-    unsigned& num_completions_added,
-    boost::unordered_set<std::string>& added_words)
-{
-    foreach (const std::string& word, words)
-    {
-        if (num_completions_added >= kMaxNumCompletions) break;
-        if (Contains(added_words, word) == true) continue;
-
-        result_list.push_back(std::make_pair(
-            word,
-            boost::lexical_cast<std::string>(
-                quick_match_key_[num_completions_added++]) ));
-
-        added_words.insert(word);
-    }
-}
 
 std::string Session::getWordToComplete(const std::string& line)
 {
@@ -579,4 +548,39 @@ bool Session::shouldEnableDisambiguateMode(const std::string& word)
     }
 
     return true;
+}
+
+bool Session::shouldEnableTerminusMode(const std::string& word)
+{
+    if (word.size() < 2) return false;
+
+    if (word[ word.size() - 1 ] == '_')
+        return true;
+
+    return false;
+}
+
+void Session::fillCompletionSet(
+    const std::string& prefix_to_complete,
+    CompletionSet& completion_set)
+{
+    this->WordSet.GetAbbrCompletions(
+        prefix_to_complete,
+        &completion_set.AbbrCompletions);
+    completion_set.AbbrCompletions.erase(prefix_to_complete);
+
+    TagsSet::Instance()->GetAbbrCompletions(
+        prefix_to_complete, current_tags_,
+        &completion_set.TagsAbbrCompletions);
+    completion_set.TagsAbbrCompletions.erase(prefix_to_complete);
+
+    this->WordSet.GetPrefixCompletions(
+        prefix_to_complete,
+        &completion_set.PrefixCompletions);
+    completion_set.PrefixCompletions.erase(prefix_to_complete);
+
+    TagsSet::Instance()->GetAllWordsWithPrefix(
+        prefix_to_complete, current_tags_,
+        &completion_set.TagsPrefixCompletions);
+    completion_set.TagsPrefixCompletions.erase(prefix_to_complete);
 }

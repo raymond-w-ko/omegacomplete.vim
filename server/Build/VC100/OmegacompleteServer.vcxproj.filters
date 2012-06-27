@@ -50,6 +50,9 @@
     <ClCompile Include="..\..\LookupTable.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\CompletionSet.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Buffer.hpp">
@@ -92,6 +95,9 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\..\LookupTable.hpp">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\CompletionSet.hpp">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

@@ -3,6 +3,7 @@
 #include "Room.hpp"
 #include "Buffer.hpp"
 #include "GlobalWordSet.hpp"
+#include "CompletionSet.hpp"
 
 struct ParseJob
 {
@@ -18,6 +19,20 @@ public boost::enable_shared_from_this<Session>
 {
 public:
     static void GlobalInit();
+
+    ////////////////////////////////////////////////////////////////////////////
+    // boost::asio
+    ////////////////////////////////////////////////////////////////////////////
+    // when creating a session, this determine what the connection number is
+    static unsigned int connection_ticket_;
+    // quick match keys
+    // basically a mapping from result number to keyboard key to press
+    // first result  -> 'a'
+    // second result -> 's'
+    // third result  -> 'd'
+    // and etc.
+    static std::vector<char> QuickMatchKey;
+    static boost::unordered_map<char, unsigned> ReverseQuickMatch;
 
     Session(io_service& io_service, Room& room);
     ~Session();
@@ -62,20 +77,10 @@ private:
         boost::unordered_set<std::string>& added_words);
 
     bool shouldEnableDisambiguateMode(const std::string& word);
-
-    ////////////////////////////////////////////////////////////////////////////
-    // boost::asio
-    ////////////////////////////////////////////////////////////////////////////
-    // when creating a session, this determine what the connection number is
-    static unsigned int connection_ticket_;
-    // quick match keys
-    // basically a mapping from result number to keyboard key to press
-    // first result  -> 'a'
-    // second result -> 's'
-    // third result  -> 'd'
-    // and etc.
-    static std::vector<char> quick_match_key_;
-    static boost::unordered_map<char, unsigned> reverse_quick_match_;
+    bool shouldEnableTerminusMode(const std::string& word);
+    void fillCompletionSet(
+        const std::string& prefix_to_complete,
+        CompletionSet& completion_set);
 
     ip::tcp::socket socket_;
     Room& room_;
@@ -105,5 +110,4 @@ private:
     std::vector<std::string> taglist_tags_;
     std::vector<std::string> prev_input_;
 };
-
 typedef boost::shared_ptr<Session> SessionPtr;
