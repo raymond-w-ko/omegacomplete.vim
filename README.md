@@ -77,6 +77,7 @@ Right now it only generate the semantic abbreviations if the number of "index po
 The "depth" is also capped at 3. The reason for this is that the number of possible abbreviations per
 word is "depth" to the power of the number of "index points", which can get pretty huge quickly.
 
+***
 ### Disambiguate Mode
 As you may have noticed, completions in general have a '[X]' (where X is a capital letter) 
 after them in the VIM popup menu. This is so that you may append that capital letter and cause
@@ -101,12 +102,31 @@ gcS|
 GetChar  &lt;--
 </pre>
 
+***
+
 ### Underscore Terminus Mode
 This is really for Google Style C++ where member variables end in an underscore. From my experience,
 when creating constructors or false positives are triggered sometimes you want the one that ends with
 an underscore. This means playing around with <C-n> and <C-p> which is not that efficient. Now, when
 your input word ends in an underscore, that completions that have an underscore as their ending character
 are placed first.
+
+#### Example of completions offered
+<pre>
+camera_list_ camera_list CommonLisp
+cl|
+CommonLisp   [A]
+camera_list  [S]
+camera_list_ [D]
+</pre>
+
+#### Disambiguate Mode triggered by 'S'
+<pre>
+camera_list_ camera_list CommonLisp
+cl_|
+camera_list_ [D]
+</pre>
+***
 
 ### Levenshtein Distance Correction Completion
 OmegaComplete calculates the Levenshtein distance of
