@@ -26,6 +26,16 @@ to have the Python 2.X bindings.
 If you use Visual Studio 2008 and have Boost compiled and installed in "C:\Boost", then you
 can just use with the solution file provided.
 
+## Important Tip
+You really should map your 'Tab' (or favority equivalent completion key) to this.
+Otherwise, this plugin becomes somewhat useless. I didn't map this by default as I don't want
+to trample anyones default keybinds
+
+Example of what to place in your vimrc:
+<pre>
+inoremap <expr> <Tab> pumvisible() ? "\<C-n>\<C-y>" : "\<Tab>"
+</pre>
+
 ## Completion Types
 
 ### Prefix Completion
