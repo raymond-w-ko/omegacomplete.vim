@@ -75,6 +75,14 @@ Right now it only generate the semantic abbreviations if the number of "index po
 The "depth" is also capped at 3. The reason for this is that the number of possible abbreviations per
 word is "depth" to the power of the number of "index points", which can get pretty huge quickly.
 
+### Disambiguate Mode
+As you may have noticed, completions in general have a '[X]' (where X is a capital letter) 
+after them in the VIM popup menu. This is so that you may append that capital letter and cause
+that to be the only match that comes up. In the cases where there are 10 or so ambiguous entries,
+this is useful because you don't have to use <C-n> or <C-p> to select that entry. Note that at this
+time the prefix before the capital letter must be entirely lowercase in order for disambiguate mode
+to be triggered.
+
 ### Levenshtein Distance Correction Completion
 OmegaComplete calculates the Levenshtein distance of
 the current word against all known words in all buffers. If the Levenshtein distance
