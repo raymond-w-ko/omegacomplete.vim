@@ -145,6 +145,9 @@ cached in memory, so OmegaComplete does not do any file accesses after the
 initial parse. When it detects that the timestamp has changed, then it
 automatically tries to reparse.
 
+Note that this is a blocking operation, so expect slight freezes when OmegaComplete
+is parsing tags files.
+
 ### VIM taglist("^keyword$") Function Replacement and Enhancement
 As a natural result of cached tags, OmegaComplete offers a function to lookup
 tag information in constant time (cache is implemented as a unordered hash table).
