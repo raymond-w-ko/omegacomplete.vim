@@ -462,7 +462,9 @@ retry_completion:
     {
         foreach (const StringPair& pair, terminus_result_list)
         {
-            main_completion_set.AddBannedWord(pair.first);
+            const std::string& word = pair.first;
+            if (word[word.size() - 1] == '_')
+                main_completion_set.AddBannedWord(pair.first);
         }
     }
 
@@ -478,6 +480,8 @@ retry_completion:
             {
                 const std::string& word = pair.first;
                 if (word[ word.size() - 1 ] != '_')
+                    continue;
+                if (word == prefix_to_complete)
                     continue;
 
                 result += boost::str(boost::format(
