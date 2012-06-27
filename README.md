@@ -82,7 +82,7 @@ word is "depth" to the power of the number of "index points", which can get pret
 As you may have noticed, completions in general have a '[X]' (where X is a capital letter) 
 after them in the VIM popup menu. This is so that you may append that capital letter and cause
 that to be the only match that comes up. In the cases where there are 10 or so ambiguous entries,
-this is useful because you don't have to use <C-n> or <C-p> to select that entry. Note that at this
+this is useful because you don't have to use Ctrl-N or Ctrl-P to select that entry. Note that at this
 time the prefix before the capital letter must be entirely lowercase in order for disambiguate mode
 to be triggered.
 
@@ -107,7 +107,7 @@ GetChar  &lt;--
 ### Underscore Terminus Mode
 This is really for Google Style C++ where member variables end in an underscore. From my experience,
 when creating constructors or false positives are triggered sometimes you want the one that ends with
-an underscore. This means playing around with <C-n> and <C-p> which is not that efficient. Now, when
+an underscore. This means playing around with Ctrl-N or Ctrl-P which is not that efficient. Now, when
 your input word ends in an underscore, that completions that have an underscore as their ending character
 are placed first.
 
