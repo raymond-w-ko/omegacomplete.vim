@@ -105,7 +105,8 @@ GetChar  &lt;--
 ***
 
 ### Underscore Terminus Mode
-This is really for Google Style C++ where member variables end in an underscore. From my experience,
+This is really for Google style C++ (http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml)
+where member variables end in an underscore. From my experience,
 when creating constructors or false positives are triggered sometimes you want the one that ends with
 an underscore. This means playing around with Ctrl-N or Ctrl-P which is not that efficient. Now, when
 your input word ends in an underscore, that completions that have an underscore as their ending character
