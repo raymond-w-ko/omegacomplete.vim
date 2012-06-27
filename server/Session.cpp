@@ -15,27 +15,27 @@ void Session::GlobalInit()
 {
     quick_match_key_.resize(kMaxNumCompletions, ' '),
 
-    quick_match_key_[0] = 'a';
-    quick_match_key_[1] = 's';
-    quick_match_key_[2] = 'd';
-    quick_match_key_[3] = 'f';
-    quick_match_key_[4] = 'g';
-    quick_match_key_[5] = 'h';
-    quick_match_key_[6] = 'j';
-    quick_match_key_[7] = 'k';
-    quick_match_key_[8] = 'l';
+    quick_match_key_[0] = 'A';
+    quick_match_key_[1] = 'S';
+    quick_match_key_[2] = 'D';
+    quick_match_key_[3] = 'F';
+    quick_match_key_[4] = 'G';
+    quick_match_key_[5] = 'H';
+    quick_match_key_[6] = 'J';
+    quick_match_key_[7] = 'K';
+    quick_match_key_[8] = 'L';
     quick_match_key_[9] = ';';
 
-    quick_match_key_[10] = 'q';
-    quick_match_key_[11] = 'w';
-    quick_match_key_[12] = 'e';
-    quick_match_key_[13] = 'r';
-    quick_match_key_[14] = 't';
-    quick_match_key_[15] = 'y';
-    quick_match_key_[16] = 'u';
-    quick_match_key_[17] = 'i';
-    quick_match_key_[18] = 'o';
-    quick_match_key_[19] = 'p';
+    quick_match_key_[10] = 'Q';
+    quick_match_key_[11] = 'W';
+    quick_match_key_[12] = 'E';
+    quick_match_key_[13] = 'R';
+    quick_match_key_[14] = 'T';
+    quick_match_key_[15] = 'Y';
+    quick_match_key_[16] = 'U';
+    quick_match_key_[17] = 'I';
+    quick_match_key_[18] = 'O';
+    quick_match_key_[19] = 'P';
 
     for (unsigned ii = 0; ii < 20; ++ii)
     {
@@ -371,86 +371,113 @@ void Session::calculateCompletionCandidates(
     std::string& result)
 {
     std::string prefix_to_complete = getWordToComplete(line);
-    if (prefix_to_complete.empty()) {
+    if (prefix_to_complete.empty())
         return;
-    }
 
+    // keep a trailing list of previous inputs
     prev_input_[2] = prev_input_[1];
     prev_input_[1] = prev_input_[0];
     prev_input_[0] = prefix_to_complete;
 
     bool disambiguate_mode = shouldEnableDisambiguateMode(prefix_to_complete);
     char disambiguate_letter = 0;
+    int disambiguate_index = -1;
     if (disambiguate_mode)
     {
         disambiguate_letter = prefix_to_complete[ prefix_to_complete.size() - 1 ];
-        disambiguate_letter = LookupTable::ToLower[disambiguate_letter];
 
         prefix_to_complete.resize( prefix_to_complete.size() - 1 );
+
+        if (Contains(reverse_quick_match_, disambiguate_letter) == true)
+            disambiguate_index = reverse_quick_match_[disambiguate_letter];
     }
 
     std::set<std::string> abbr_completions;
+    std::set<std::string> tags_abbr_completions;
+    std::set<std::string> prefix_completions;
+    std::set<std::string> tags_prefix_completions;
+
+retry_completion:
+
     WordSet.GetAbbrCompletions(prefix_to_complete, &abbr_completions);
     abbr_completions.erase(prefix_to_complete);
 
-    std::set<std::string> tags_abbr_completions;
     TagsSet::Instance()->GetAbbrCompletions(
         prefix_to_complete, current_tags_,
         &tags_abbr_completions);
     tags_abbr_completions.erase(prefix_to_complete);
 
-    std::set<std::string> prefix_completions;
     WordSet.GetPrefixCompletions(prefix_to_complete, &prefix_completions);
     prefix_completions.erase(prefix_to_complete);
 
-    std::set<std::string> tags_prefix_completions;
     TagsSet::Instance()->GetAllWordsWithPrefix(
         prefix_to_complete, current_tags_,
         &tags_prefix_completions);
     tags_prefix_completions.erase(prefix_to_complete);
 
-    LevenshteinSearchResults levenshtein_completions;
-    // only if we have no completions do we try to Levenshtein distance completion
     size_t num_current_completions =
         abbr_completions.size() + tags_abbr_completions.size() +
         prefix_completions.size() + tags_prefix_completions.size();
+
+    // encountered an invalid disambiguation, abort and retry normally
+    // as though it was not intended
+    //
+    // for example, shouldE would falsely trigger 'disambiguate_mode'
+    // but we probably want to try it as a regular prefix completion
+    if (disambiguate_mode &&
+        disambiguate_index >= 0 &&
+        disambiguate_index >= num_current_completions)
+    {
+        disambiguate_mode = false;
+        disambiguate_index = -1;
+
+        abbr_completions.clear();
+        tags_abbr_completions.clear();
+        prefix_completions.clear();
+        tags_prefix_completions.clear();
+
+        prefix_to_complete += boost::lexical_cast<std::string>(disambiguate_letter);
+
+        goto retry_completion;
+    }
+
+    // only if we have no completions do we try to Levenshtein distance completion
+    LevenshteinSearchResults levenshtein_completions;
     if (num_current_completions == 0) {
         WordSet.GetLevenshteinCompletions(
             prefix_to_complete,
             levenshtein_completions);
     }
 
-    // compile results and send
     unsigned num_completions_added = 0;
     std::vector<StringPair> result_list;
     boost::unordered_set<std::string> added_words;
 
+    // this is to prevent completions from being considered
+    // that are basically the word from before you press Backspace.
     if (prev_input_[1].size() == (prefix_to_complete.size() + 1) &&
         boost::starts_with(prev_input_[1], prefix_to_complete))
     {
         added_words.insert(prev_input_[1]);
     }
 
-    // append abbreviations first
     addWordsToResults(
         abbr_completions,
         result_list, num_completions_added, added_words);
 
-    // append tags abbreviations
     addWordsToResults(
         tags_abbr_completions,
         result_list, num_completions_added, added_words);
 
-    // append prefix completions
     addWordsToResults(
         prefix_completions,
         result_list, num_completions_added, added_words);
 
-    // append tags prefix completions
     addWordsToResults(
         tags_prefix_completions,
         result_list, num_completions_added, added_words);
 
+    // convert to format that VIM expects, basically a list of dictionaries
     result += "[";
     if (disambiguate_mode == false)
     {
@@ -485,21 +512,16 @@ void Session::calculateCompletionCandidates(
     }
     else
     {
-        if (Contains(reverse_quick_match_, disambiguate_letter) == true)
+        // make sure we actually have a result, or we crash
+        if (result_list.size() > disambiguate_index)
         {
-            unsigned result_index = reverse_quick_match_[disambiguate_letter];
-            // make sure we actually have a result, or we crash
-            if (result_list.size() > result_index)
-            {
-                const std::string& single_result =
-                    result_list[result_index].first;
-                result += boost::str(boost::format(
-                    "{'abbr':'%s','word':'%s'},")
-                    % (single_result + " <--") % single_result );
-            }
+            const std::string& single_result =
+                result_list[disambiguate_index].first;
+            result += boost::str(boost::format(
+                "{'abbr':'%s','word':'%s'},")
+                % (single_result + " <--") % single_result );
         }
     }
-
     result += "]";
 }
 
