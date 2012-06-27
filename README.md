@@ -83,6 +83,13 @@ this is useful because you don't have to use <C-n> or <C-p> to select that entry
 time the prefix before the capital letter must be entirely lowercase in order for disambiguate mode
 to be triggered.
 
+### Underscore Terminus Mode
+This is really for Google Style C++ where member variables end in an underscore. From my experience,
+when creating constructors or false positives are triggered sometimes you want the one that ends with
+an underscore. This means playing around with <C-n> and <C-p> which is not that efficient. Now, when
+your input word ends in an underscore, that completions that have an underscore as their ending character
+are placed first.
+
 ### Levenshtein Distance Correction Completion
 OmegaComplete calculates the Levenshtein distance of
 the current word against all known words in all buffers. If the Levenshtein distance
