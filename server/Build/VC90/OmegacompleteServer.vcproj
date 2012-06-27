@@ -192,11 +192,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\CompletionSet.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\EntryPoint.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\GlobalWordSet.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\LookupTable.cpp"
 				>
 			</File>
 			<File
@@ -262,11 +270,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\CompletionSet.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\EntryPoint.hpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\GlobalWordSet.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\LookupTable.hpp"
 				>
 			</File>
 			<File
