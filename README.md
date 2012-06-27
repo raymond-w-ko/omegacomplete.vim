@@ -55,11 +55,13 @@ Second, we can assign a "depth" to these index points, which just means how many
 We now consider "MyAwesomeVariable" with a depth of 3. That means we work with the following chunks:
 "My", "Awe", and "Var". For each chunk, we generate a set of all possible prefixes:
 
+<pre>
 My -> m, my
 
 Awe -> a, aw, awe
 
 Var -> v, va, var
+</pre>
 
 We then create all possible combinations of choosing a prefix from each set and appending them
 together inorder. Typing any of these combinations will offer a completion for the original word.
@@ -82,6 +84,22 @@ that to be the only match that comes up. In the cases where there are 10 or so a
 this is useful because you don't have to use <C-n> or <C-p> to select that entry. Note that at this
 time the prefix before the capital letter must be entirely lowercase in order for disambiguate mode
 to be triggered.
+
+#### Example of completions offered
+<pre>
+GetCode GetChar GarbageCollect
+gc|
+GarbageCollect  [A]
+GetChar         [S]
+GetCode         [D]
+</pre>
+
+#### Disambiguate Mode triggered by 'S'
+<pre>
+GetCode GetChar GarbageCollect
+gcS|
+GetChar  &lt;--
+</pre>
 
 ### Underscore Terminus Mode
 This is really for Google Style C++ where member variables end in an underscore. From my experience,
