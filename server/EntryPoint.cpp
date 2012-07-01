@@ -13,7 +13,9 @@ static const unsigned short PORT = 31337;
 
 int main(int argc, char* argv[])
 {
+#ifndef _DEBUG
     TestCases tc;
+#endif
 
 #ifdef _WIN32
     //SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
