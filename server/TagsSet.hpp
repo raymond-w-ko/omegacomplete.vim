@@ -8,27 +8,39 @@ public:
     static bool GlobalInit();
     static TagsSet* Instance();
     static void GlobalShutdown();
+    std::string ResolveFullPathname(
+        const std::string& tags_pathname,
+        const std::string& current_directory);
+
     ~TagsSet();
 
-    bool CreateOrUpdate(const std::string tags_path);
+    bool CreateOrUpdate(
+        std::string tags_pathname,
+        const std::string& current_directory);
 
     void GetAllWordsWithPrefix(
         const std::string& prefix,
         const std::vector<std::string>& tags_list,
+        const std::string& current_directory,
         std::set<std::string>* results);
 
     void GetAbbrCompletions(
         const std::string& prefix,
         const std::vector<std::string>& tags_list,
+        const std::string& current_directory,
         std::set<std::string>* results);
 
     std::string VimTaglistFunction(
         const std::string& word,
-        const std::vector<std::string>& tags_list);
+        const std::vector<std::string>& tags_list,
+        const std::string& current_directory);
 
 private:
     TagsSet();
     static TagsSet* instance_;
+#ifdef _WIN32
+    static std::string win32_system_drive_;
+#endif
 
     boost::unordered_map<std::string, Tags> tags_list_;
 };

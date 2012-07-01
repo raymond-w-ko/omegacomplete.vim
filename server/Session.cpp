@@ -223,6 +223,12 @@ void Session::processClientMessage()
         buffers_mutex_.unlock();
         job_queue_mutex_.unlock();
     }
+    else if (command == "current_directory")
+    {
+        current_directory_ = *argument;
+
+        writeResponse(response);
+    }
     else if (command == "current_tags")
     {
         current_tags_.clear();
@@ -234,7 +240,7 @@ void Session::processClientMessage()
         {
             if (tags.size() == 0) continue;
 
-            TagsSet::Instance()->CreateOrUpdate(tags);
+            TagsSet::Instance()->CreateOrUpdate(tags, current_directory_);
             current_tags_.push_back(tags);
         }
 
@@ -251,7 +257,7 @@ void Session::processClientMessage()
         {
             if (tags.size() == 0) continue;
 
-            TagsSet::Instance()->CreateOrUpdate(tags);
+            TagsSet::Instance()->CreateOrUpdate(tags, current_directory_);
             taglist_tags_.push_back(tags);
         }
 
@@ -260,8 +266,7 @@ void Session::processClientMessage()
     else if (command == "vim_taglist_function")
     {
         response = TagsSet::Instance()->VimTaglistFunction(
-            *argument,
-            taglist_tags_);
+            *argument, taglist_tags_, current_directory_);
         writeResponse(response);
     }
     else if (command == "prune") {
@@ -574,7 +579,7 @@ void Session::fillCompletionSet(
     completion_set.AbbrCompletions.erase(prefix_to_complete);
 
     TagsSet::Instance()->GetAbbrCompletions(
-        prefix_to_complete, current_tags_,
+        prefix_to_complete, current_tags_, current_directory_,
         &completion_set.TagsAbbrCompletions);
     completion_set.TagsAbbrCompletions.erase(prefix_to_complete);
 
@@ -584,7 +589,7 @@ void Session::fillCompletionSet(
     completion_set.PrefixCompletions.erase(prefix_to_complete);
 
     TagsSet::Instance()->GetAllWordsWithPrefix(
-        prefix_to_complete, current_tags_,
+        prefix_to_complete, current_tags_, current_directory_,
         &completion_set.TagsPrefixCompletions);
     completion_set.TagsPrefixCompletions.erase(prefix_to_complete);
 }

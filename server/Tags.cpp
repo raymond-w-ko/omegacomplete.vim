@@ -33,21 +33,26 @@ bool Tags::Init(const std::string& pathname)
 
 bool Tags::calculateParentDirectory()
 {
-    // normalize Windows pathnames to UNIX format
-    boost::replace_all(pathname_, "\\", "/");
+    std::string directory_separator;
 
-    size_t pos = pathname_.rfind('/');
-    // error out because we can't find the last '/'
+#ifdef _WIN32
+    directory_separator = "\\";
+#else
+    directory_separator = "/";
+#endif
+
+    size_t pos = pathname_.rfind(directory_separator);
+    // error out because we can't find the last directory separator
     if (pos == std::string::npos)
     {
         std::cout << "coulnd't find last directory separator" << std::endl;
         std::cout << pathname_ << std::endl;
         return false;
     }
-    // there is nothing after the '/'
+    // there is nothing after the last directory separator
     if (pos >= (pathname_.size() - 1))
     {
-        std::cout << "there is nothing after the last '/'" << std::endl;
+        std::cout << "there is nothing after the last directory separator" << std::endl;
         std::cout << pathname_ << std::endl;
         return false;
     }

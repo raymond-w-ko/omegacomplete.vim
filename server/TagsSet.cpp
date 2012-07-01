@@ -3,15 +3,25 @@
 #include "TagsSet.hpp"
 
 TagsSet* TagsSet::instance_ = NULL;
+#ifdef _WIN32
+std::string TagsSet::win32_system_drive_;
+#endif
 
 bool TagsSet::GlobalInit()
 {
     instance_ = new TagsSet;
 
-    if (instance_ == NULL)
+#ifdef _WIN32
+    char* sys_drive = ::getenv("SystemDrive");
+    if (sys_drive == NULL)
         return false;
-    else
-        return true;
+
+    win32_system_drive_.resize(2);
+    win32_system_drive_[0] = sys_drive[0];
+    win32_system_drive_[1] = ':';
+#endif
+
+    return true;
 }
 
 TagsSet* TagsSet::Instance()
@@ -24,16 +34,24 @@ void TagsSet::GlobalShutdown()
     delete instance_; instance_ = NULL;
 }
 
-bool TagsSet::CreateOrUpdate(const std::string tags_path)
+bool TagsSet::CreateOrUpdate(
+    std::string tags_pathname,
+    const std::string& current_directory)
 {
-    if (Contains(tags_list_, tags_path) == false)
+    // in case the user has set 'tags' to something like:
+    // './tags,./TAGS,tags,TAGS'
+    // we have to resolve ambiguity
+    tags_pathname = ResolveFullPathname(tags_pathname, current_directory);
+
+    if (Contains(tags_list_, tags_pathname) == false)
     {
-        tags_list_[tags_path].Init(tags_path);
+        tags_list_[tags_pathname].Init(tags_pathname);
     }
     else
     {
-        tags_list_[tags_path].Update();
+        tags_list_[tags_pathname].Update();
     }
+
     return true;
 }
 
@@ -49,19 +67,19 @@ TagsSet::~TagsSet()
 
 std::string TagsSet::VimTaglistFunction(
     const std::string& word,
-    const std::vector<std::string>& tags_list)
+    const std::vector<std::string>& tags_list,
+    const std::string& current_directory)
 {
     std::stringstream ss;
 
     ss << "[";
 
-    foreach (const std::string& requested_tag, tags_list)
+    foreach (std::string tags, tags_list)
     {
-        if (Contains(tags_list_, requested_tag) == false) continue;
+        tags = ResolveFullPathname(tags, current_directory);
+        if (Contains(tags_list_, tags) == false) continue;
 
-        Tags& tags = tags_list_[requested_tag];
-
-        tags.VimTaglistFunction(word, ss);
+        tags_list_[tags].VimTaglistFunction(word, ss);
     }
 
     ss << "]";
@@ -72,11 +90,14 @@ std::string TagsSet::VimTaglistFunction(
 void TagsSet::GetAllWordsWithPrefix(
     const std::string& prefix,
     const std::vector<std::string>& tags_list,
+    const std::string& current_directory,
     std::set<std::string>* results)
 {
-    foreach (const std::string& tags, tags_list)
+    foreach (std::string tags, tags_list)
     {
+        tags = ResolveFullPathname(tags, current_directory);
         if (Contains(tags_list_, tags) == false) continue;
+
         tags_list_[tags].GetAllWordsWithPrefix(prefix, results);
     }
 }
@@ -84,11 +105,60 @@ void TagsSet::GetAllWordsWithPrefix(
 void TagsSet::GetAbbrCompletions(
     const std::string& prefix,
     const std::vector<std::string>& tags_list,
+    const std::string& current_directory,
     std::set<std::string>* results)
 {
-    foreach (const std::string& tags, tags_list)
+    foreach (std::string tags, tags_list)
     {
+        tags = ResolveFullPathname(tags, current_directory);
         if (Contains(tags_list_, tags) == false) continue;
+
         tags_list_[tags].GetAbbrCompletions(prefix, results);
     }
+}
+
+std::string TagsSet::ResolveFullPathname(
+    const std::string& tags_pathname,
+    const std::string& current_directory)
+{
+    std::string full_tags_pathname = tags_pathname;
+
+// TODO(rko): support UNC if someone uses it
+#ifdef _WIN32
+    NormalizeToWindowsPathSeparators(full_tags_pathname);
+
+    // we have an absolute pathname of the form "C:\X"
+    if (full_tags_pathname.size() >= 4 &&
+        ::isalpha(full_tags_pathname[0]) &&
+        full_tags_pathname[1] == ':' &&
+        full_tags_pathname[2] == '\\')
+    {
+        return full_tags_pathname;
+    }
+
+    // we have a UNIX style pathname that assumes someone will
+    // prepend the system drive in front of the tags pathname
+    if (full_tags_pathname.size() >= 2 &&
+        full_tags_pathname[0] == '\\')
+    {
+        full_tags_pathname = win32_system_drive_ + full_tags_pathname;
+        return full_tags_pathname;
+    }
+
+    // we have a relative pathname, prepend current_directory
+    full_tags_pathname = current_directory + "\\" + full_tags_pathname;
+#else
+    NormalizeToUnixPathSeparators(full_tags_pathname);
+
+    // given pathname is absolute
+    if (full_tags_pathname[0] == '/')
+    {
+        return full_tags_pathname;
+    }
+
+    // we have a relative pathname, prepend current_directory
+    full_tags_pathname = current_directory + "/" + full_tags_pathname;
+#endif
+
+    return full_tags_pathname;
 }

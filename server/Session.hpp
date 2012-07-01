@@ -106,6 +106,7 @@ private:
     unsigned current_buffer_;
     std::string current_line_;
     std::pair<unsigned, unsigned> cursor_pos_;
+    std::string current_directory_;
     std::vector<std::string> current_tags_;
     std::vector<std::string> taglist_tags_;
     std::vector<std::string> prev_input_;

@@ -130,6 +130,10 @@ function <SID>FeedPopup()
     endif
     let s:just_did_insertenter = 0
 
+    " send current directory to server in preparation for sending tags
+    exe 'py current_directory = vim.eval("getcwd()")'
+    exe 'py oc_send_command("current_directory " + current_directory)'
+
     " send tags we are using to the server
     exe 'py current_tags = vim.eval("&tags")'
     exe 'py oc_send_command("current_tags " + current_tags)'
@@ -260,6 +264,10 @@ endfunction
 
 " substitute for VIM's taglist() function
 function omegacomplete#taglist(expr)
+    " send current directory to server in preparation for sending tags
+    exe 'py current_directory = vim.eval("getcwd()")'
+    exe 'py oc_send_command("current_directory " + current_directory)'
+
     " send current tags we are using to the server
     exe 'py current_tags = vim.eval("&tags")'
     exe 'py oc_send_command("taglist_tags " + current_tags)'
