@@ -12,13 +12,20 @@ bool TagsSet::GlobalInit()
     instance_ = new TagsSet;
 
 #ifdef _WIN32
-    char* sys_drive = ::getenv("SystemDrive");
-    if (sys_drive == NULL)
+    char* sys_drive;
+    size_t sys_drive_len;
+    errno_t err = ::_dupenv_s(&sys_drive, &sys_drive_len, "SystemDrive");
+    if (err)
+        return false;
+    // apparently this means "C:\0", so 3 bytes
+    if (sys_drive_len != 3)
         return false;
 
     win32_system_drive_.resize(2);
     win32_system_drive_[0] = sys_drive[0];
     win32_system_drive_[1] = ':';
+
+    free(sys_drive); sys_drive = NULL;
 #endif
 
     return true;
