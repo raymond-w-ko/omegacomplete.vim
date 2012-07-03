@@ -121,6 +121,7 @@
     </ClCompile>
     <ClCompile Include="..\..\Tags.cpp" />
     <ClCompile Include="..\..\TagsSet.cpp" />
+    <ClCompile Include="..\..\Teleprompter.cpp" />
     <ClCompile Include="..\..\TestCases.cpp" />
     <ClCompile Include="..\..\TrieNode.cpp" />
   </ItemGroup>
@@ -138,6 +139,7 @@
     <ClInclude Include="..\..\Stopwatch.hpp" />
     <ClInclude Include="..\..\Tags.hpp" />
     <ClInclude Include="..\..\TagsSet.hpp" />
+    <ClInclude Include="..\..\Teleprompter.hpp" />
     <ClInclude Include="..\..\TestCases.hpp" />
     <ClInclude Include="..\..\TrieNode.hpp" />
   </ItemGroup>

@@ -7,6 +7,7 @@
 #include "GlobalWordSet.hpp"
 #include "TestCases.hpp"
 #include "LookupTable.hpp"
+#include "Teleprompter.hpp"
 
 static const char* ADDRESS = "127.0.0.1";
 static const unsigned short PORT = 31337;
@@ -17,17 +18,17 @@ int main(int argc, char* argv[])
     TestCases tc;
 #endif
 
-#ifdef _WIN32
-    //SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
-#else
-    // TODO(rko): set priority on UNIX OSes
-#endif
-
     // static intializers
     LookupTable::GlobalInit();
-    if (TagsSet::GlobalInit() == false) return 1;
+    if (TagsSet::GlobalInit() == false)
+        return 1;
     GlobalWordSet::GlobalInit();
     Session::GlobalInit();
+
+#ifdef _WIN32
+    Teleprompter::GlobalInit();
+#else
+#endif
 
     // where everything starts
     io_service io_service;
