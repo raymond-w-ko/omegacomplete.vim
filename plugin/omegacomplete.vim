@@ -198,6 +198,10 @@ function <SID>OnInsertEnter()
     call <SID>NormalModeSyncBuffer()
 endfunction
 
+function <SID>OnInsertLeave()
+    exe 'py oc_send_command("hide_teleprompter 1")'
+endfunction
+
 function <SID>OnFocusLost()
     exe 'py oc_send_command("prune 1")'
 endfunction
@@ -223,6 +227,9 @@ augroup OmegaComplete
     " that the server has a chance to synchronize before we start offering
     " completions
     autocmd InsertEnter * call <SID>OnInsertEnter()
+
+    " when you leave insert mode turn off any Teleprompter if possible
+    autocmd InsertLeave * call <SID>OnInsertLeave()
 
     " when you switch from the VIM window to some other process, tell the
     " server to prune unused words from its completion set
@@ -292,6 +299,16 @@ PYTHON
     exe 'py vim.command("let taglist_results=" + oc_server_result)'
 
     return taglist_results
+endfunction
+
+function omegacomplete#UseFirstEntryOfPopup()
+    exe 'py oc_send_command("hide_teleprompter 1")'
+
+    if pumvisible()
+        return "\<C-n>\<C-y>"
+    else
+        return "\<Tab>"
+    endif
 endfunction
 
 " do initialization

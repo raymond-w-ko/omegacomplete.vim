@@ -5,6 +5,7 @@
 #include "Stopwatch.hpp"
 #include "LookupTable.hpp"
 #include "CompletionSet.hpp"
+#include "Teleprompter.hpp"
 
 unsigned int Session::connection_ticket_ = 0;
 std::vector<char> Session::QuickMatchKey;
@@ -275,6 +276,11 @@ void Session::processClientMessage()
         unsigned count = WordSet.Prune();
         //std::cout << count << " words pruned" << std::endl;
     }
+    else if (command == "hide_teleprompter")
+    {
+        writeResponse(response);
+        Teleprompter::Instance()->Show(false);
+    }
     else
     {
         std::cout << boost::str(boost::format(
@@ -376,7 +382,10 @@ void Session::calculateCompletionCandidates(
 {
     std::string prefix_to_complete = getWordToComplete(line);
     if (prefix_to_complete.empty())
+    {
+        Teleprompter::Instance()->Show(false);
         return;
+    }
 
     // keep a trailing list of previous inputs
     prev_input_[2] = prev_input_[1];
@@ -476,6 +485,10 @@ retry_completion:
     main_completion_set.FillResults(result_list);
 
     // convert to format that VIM expects, basically a list of dictionaries
+    Teleprompter::Instance()->Show(true);
+    Teleprompter::Instance()->Clear();
+    Teleprompter::Instance()->SetCurrentWord(prefix_to_complete);
+
     result += "[";
     if (disambiguate_mode == false)
     {
@@ -493,6 +506,8 @@ retry_completion:
                     "{'word':'%s','menu':'[%s]'},")
                     % pair.first % pair.second );
             }
+
+            Teleprompter::Instance()->AppendText(terminus_result_list);
         }
 
         foreach (const StringPair& pair, result_list)
@@ -501,6 +516,8 @@ retry_completion:
                 "{'word':'%s','menu':'[%s]'},")
                 % pair.first % pair.second );
         }
+            
+        Teleprompter::Instance()->AppendText(result_list);
 
         main_completion_set.FillLevenshteinResults(
             levenshtein_completions,
@@ -517,9 +534,14 @@ retry_completion:
             result += boost::str(boost::format(
                 "{'abbr':'%s','word':'%s'},")
                 % (single_result + " <--") % single_result );
+
+            Teleprompter::Instance()->AppendText(
+                single_result + "    <==");
         }
     }
     result += "]";
+
+    Teleprompter::Instance()->Redraw();
 }
 
 
