@@ -16,22 +16,31 @@ public:
     void Show(bool flag);
 
 private:
-    static LRESULT CALLBACK WndProc(
+    static LRESULT CALLBACK _WndProc(
+        HWND hwnd,
+        UINT msg,
+        WPARAM wParam,
+        LPARAM lParam);
+    LRESULT CALLBACK WndProc(
         HWND hwnd,
         UINT msg,
         WPARAM wParam,
         LPARAM lParam);
 
     Teleprompter();
+    void calculateWindowDimAndLocation();
     void guiThreadEntryPoint();
+    HFONT createCurrentWordFont(unsigned height);
+    HFONT createCompletionFont(unsigned height);
 
     static Teleprompter* instance_;
 
     boost::thread gui_thread_;
     boost::mutex mutex_;
 
-    const unsigned width_;
-    const unsigned height_;
+    unsigned monitor_width_, monitor_height_;
+    unsigned width_, height_;
+    int x_, y_;
     HINSTANCE hinstance_;
     HWND hwnd_;
 

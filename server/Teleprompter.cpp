@@ -12,10 +12,9 @@ void Teleprompter::GlobalInit()
 }
 
 Teleprompter::Teleprompter()
-:
-width_(1920 / 2),
-height_(1080 / 2)
 {
+    calculateWindowDimAndLocation();
+
     gui_thread_ = boost::thread(
         &Teleprompter::guiThreadEntryPoint,
         this);
@@ -26,6 +25,27 @@ Teleprompter::~Teleprompter()
     gui_thread_.join();
 }
 
+void Teleprompter::calculateWindowDimAndLocation()
+{
+    // get monitor info
+    POINT ptZero = { 0 };
+    HMONITOR hmonPrimary = ::MonitorFromPoint(ptZero, MONITOR_DEFAULTTOPRIMARY);
+    MONITORINFO monitor_info = { 0 };
+    monitor_info.cbSize = sizeof(monitor_info);
+    ::GetMonitorInfo(hmonPrimary, &monitor_info);
+
+    monitor_width_ = monitor_info.rcMonitor.right - monitor_info.rcMonitor.left;
+    monitor_height_ = monitor_info.rcMonitor.bottom - monitor_info.rcMonitor.top;
+    width_ = monitor_width_;
+    height_ = monitor_height_ / 2;
+
+    //const RECT& rcWork = monitor_info.rcWork;
+    //x_ = rcWork.left + (rcWork.right - rcWork.left - width_) / 2;
+    //y_ = rcWork.top + (rcWork.bottom - rcWork.top - height_) / 2;
+    x_ = 0;
+    y_ = monitor_height_ / 2;
+}
+
 void Teleprompter::guiThreadEntryPoint()
 {
     hinstance_ = ::GetModuleHandle(NULL);
@@ -33,7 +53,7 @@ void Teleprompter::guiThreadEntryPoint()
     WNDCLASSEX wc;
     wc.cbSize = sizeof(WNDCLASSEX);
     wc.style = 0;
-    wc.lpfnWndProc = WndProc;
+    wc.lpfnWndProc = _WndProc;
     wc.cbClsExtra = 0;
     wc.cbWndExtra = 0;
     wc.hInstance = hinstance_;
@@ -54,24 +74,12 @@ void Teleprompter::guiThreadEntryPoint()
         return;
     }
 
-    // get monitor info
-    POINT ptZero = { 0 };
-    HMONITOR hmonPrimary = ::MonitorFromPoint(ptZero, MONITOR_DEFAULTTOPRIMARY);
-    MONITORINFO monitor_info = { 0 };
-    monitor_info.cbSize = sizeof(monitor_info);
-    ::GetMonitorInfo(hmonPrimary, &monitor_info);
-
-    const RECT& rcWork = monitor_info.rcWork;
-    POINT ptCenter;
-    ptCenter.x = rcWork.left + (rcWork.right - rcWork.left - width_) / 2;
-    ptCenter.y = rcWork.top + (rcWork.bottom - rcWork.top - height_) / 2;
-
     hwnd_ = ::CreateWindowEx(
         WS_EX_TOOLWINDOW | WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TRANSPARENT,
         g_szClassName,
-        "The title of my window",
+        "OmegaComplete Teleprompter",
         WS_POPUP,
-        ptCenter.x, ptCenter.y,
+        x_, y_,
         width_, height_,
         NULL,
         NULL,
@@ -108,6 +116,15 @@ void Teleprompter::guiThreadEntryPoint()
     return;
 }
 
+LRESULT CALLBACK Teleprompter::_WndProc(
+    HWND hwnd,
+    UINT msg,
+    WPARAM wParam,
+    LPARAM lParam)
+{
+    return Teleprompter::Instance()->WndProc(hwnd, msg, wParam, lParam);
+}
+
 LRESULT CALLBACK Teleprompter::WndProc(
     HWND hwnd,
     UINT msg,
@@ -135,46 +152,45 @@ LRESULT CALLBACK Teleprompter::WndProc(
         ::DeleteObject(hBrush);
 
         const unsigned font_height = 80;
-        HFONT hFont = ::CreateFont(
-            font_height,
-            0,0,0,FW_BOLD,0,0,0,0,0,0,2,0,
-            "Calibri");
-        HFONT hTmp = (HFONT)::SelectObject(hdc, hFont);
+        const unsigned current_word_height = 24;
+        HFONT current_word_font = createCurrentWordFont(current_word_height);
+        HFONT completion_font = createCompletionFont(font_height);
 
         ::SetBkMode(
             hdc,
             TRANSPARENT);
 
-        Teleprompter::Instance()->mutex_.lock();
+        mutex_.lock();
 
-        unsigned y_offset = 10;
+        unsigned y_offset = 0;
 
         // draw text
-        ::SetTextAlign(hdc, TA_CENTER);
-        ::SetTextColor(hdc, RGB(255, 255, 255));
-        const std::string& word = Teleprompter::Instance()->word_;
-        ::TextOut(
-            hdc,
-            center_x, y_offset,
-            word.c_str(), word.size());
-        y_offset += font_height;
+        //::SetTextAlign(hdc, TA_CENTER);
+        //::SetTextColor(hdc, RGB(255, 255, 255));
+        //::SelectObject(hdc, current_word_font);
+        //::TextOut(
+            //hdc,
+            //center_x, y_offset,
+            //word_.c_str(), word_.size());
+        //y_offset += current_word_height / 2;
 
         ::SetTextAlign(hdc, TA_CENTER);
         ::SetTextColor(hdc, RGB(0, 255, 0));
-        foreach (const std::string& line,
-                 Teleprompter::Instance()->text_list_)
+        ::SelectObject(hdc, completion_font);
+        foreach (const std::string& line, text_list_)
         {
             ::TextOut(
                 hdc,
                 center_x, y_offset,
                 line.c_str(), line.size());
-            y_offset += font_height;
+            y_offset += font_height + 24;
         }
 
-        Teleprompter::Instance()->mutex_.unlock();
+        mutex_.unlock();
 
         // cleanup
-        ::DeleteObject(SelectObject(hdc,hTmp));
+        ::DeleteObject(current_word_font);
+        ::DeleteObject(completion_font);
 
         ::EndPaint(hwnd, &ps);
         break;
@@ -185,7 +201,7 @@ LRESULT CALLBACK Teleprompter::WndProc(
         return 1;
         break;
     default:
-        return DefWindowProc(hwnd,msg, wParam, lParam);
+        return ::DefWindowProc(hwnd,msg, wParam, lParam);
         break;
     }
 
@@ -248,6 +264,50 @@ void Teleprompter::Show(bool flag)
 {
     ::SetWindowPos(
         hwnd_, HWND_TOPMOST, 0, 0, 0, 0,
-        SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER |
+        SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE |
         (flag ? SWP_SHOWWINDOW : SWP_HIDEWINDOW));
+}
+
+HFONT Teleprompter::createCurrentWordFont(unsigned height)
+{
+    HFONT hFont = ::CreateFont(
+        height,
+        0,  // average width
+        0,  // escapement
+        0,  // orientation
+        FW_NORMAL,
+        FALSE,  // italic
+        FALSE,  // underline
+        FALSE,  // strikeout
+        ANSI_CHARSET,   // charset
+        OUT_TT_PRECIS,  // output precision
+        CLIP_DEFAULT_PRECIS,    // clipping precision
+        CLEARTYPE_QUALITY,  // output quality
+        DEFAULT_PITCH | FF_DONTCARE,    // pitch and family
+        "Verdana"
+        );
+
+    return hFont;
+}
+
+HFONT Teleprompter::createCompletionFont(unsigned height)
+{
+    HFONT hFont = ::CreateFont(
+        height,
+        0,  // average width
+        0,  // escapement
+        0,  // orientation
+        FW_SEMIBOLD,
+        FALSE,  // italic
+        FALSE,  // underline
+        FALSE,  // strikeout
+        ANSI_CHARSET,   // charset
+        OUT_TT_PRECIS,  // output precision
+        CLIP_DEFAULT_PRECIS,    // clipping precision
+        CLEARTYPE_QUALITY,  // output quality
+        DEFAULT_PITCH | FF_DONTCARE,    // pitch and family
+        "Verdana"
+        );
+
+    return hFont;
 }

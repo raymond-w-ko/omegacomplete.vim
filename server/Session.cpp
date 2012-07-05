@@ -533,7 +533,7 @@ retry_completion:
                 result_list[disambiguate_index].first;
             result += boost::str(boost::format(
                 "{'abbr':'%s','word':'%s'},")
-                % (single_result + " <--") % single_result );
+                % (single_result + " <==") % single_result );
 
             Teleprompter::Instance()->AppendText(
                 single_result + "    <==");
