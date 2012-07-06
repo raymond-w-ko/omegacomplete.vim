@@ -282,6 +282,11 @@ bool Tags::calculateTagInfo(
     {
         tag_info.Location = parent_directory_ + "/" + tag_info.Location;
     }
+#ifdef _WIN32
+    NormalizeToWindowsPathSeparators(tag_info.Location);
+#else
+    NormalizeToUnixPathSeparators(tag_info.Location);
+#endif
 
     size_t index = 2;
     std::string ex;
