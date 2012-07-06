@@ -14,9 +14,9 @@ num_completions_added_(0)
 unsigned int CompletionSet::GetNumCompletions() const
 {
     return AbbrCompletions.size() +
-            TagsAbbrCompletions.size() +
-            PrefixCompletions.size() +
-            TagsPrefixCompletions.size();
+           TagsAbbrCompletions.size() +
+           PrefixCompletions.size() +
+           TagsPrefixCompletions.size();
 }
 
 void CompletionSet::Clear()

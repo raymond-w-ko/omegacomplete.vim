@@ -15,29 +15,18 @@ void Session::GlobalInit()
 {
     QuickMatchKey.resize(CompletionSet::kMaxNumCompletions, ' '),
 
-    QuickMatchKey[0] = 'A';
-    QuickMatchKey[1] = 'S';
-    QuickMatchKey[2] = 'D';
-    QuickMatchKey[3] = 'F';
-    QuickMatchKey[4] = 'G';
-    QuickMatchKey[5] = 'H';
-    QuickMatchKey[6] = 'J';
-    QuickMatchKey[7] = 'K';
-    QuickMatchKey[8] = 'L';
-    QuickMatchKey[9] = ';';
+    QuickMatchKey[0] = '1';
+    QuickMatchKey[1] = '2';
+    QuickMatchKey[2] = '3';
+    QuickMatchKey[3] = '4';
+    QuickMatchKey[4] = '5';
+    QuickMatchKey[5] = '6';
+    QuickMatchKey[6] = '7';
+    QuickMatchKey[7] = '8';
+    QuickMatchKey[8] = '9';
+    QuickMatchKey[9] = '0';
 
-    QuickMatchKey[10] = 'Q';
-    QuickMatchKey[11] = 'W';
-    QuickMatchKey[12] = 'E';
-    QuickMatchKey[13] = 'R';
-    QuickMatchKey[14] = 'T';
-    QuickMatchKey[15] = 'Y';
-    QuickMatchKey[16] = 'U';
-    QuickMatchKey[17] = 'I';
-    QuickMatchKey[18] = 'O';
-    QuickMatchKey[19] = 'P';
-
-    for (unsigned ii = 0; ii < 20; ++ii)
+    for (unsigned ii = 0; ii < 10; ++ii)
     {
         ReverseQuickMatch[QuickMatchKey[ii]] = ii;
     }
@@ -509,7 +498,7 @@ retry_completion:
                     continue;
 
                 result += boost::str(boost::format(
-                    "{'word':'%s','menu':'[%s]'},")
+                    "{'word':'%s','menu':'%s'},")
                     % pair.first % pair.second );
             }
 
@@ -521,7 +510,7 @@ retry_completion:
         foreach (const StringPair& pair, result_list)
         {
             result += boost::str(boost::format(
-                "{'word':'%s','menu':'[%s]'},")
+                "{'word':'%s','menu':'%s'},")
                 % pair.first % pair.second );
         }
             
@@ -583,14 +572,8 @@ std::string Session::getWordToComplete(const std::string& line)
 bool Session::shouldEnableDisambiguateMode(const std::string& word)
 {
     if (word.size() < 2) return false;
-    if ( !LookupTable::IsUpper[ word[word.size() - 1] ] )
+    if ( !LookupTable::IsNumber[ word[word.size() - 1] ] )
         return false;
-
-    for (size_t ii = 0; ii < (word.size() - 1); ++ii)
-    {
-        if ( LookupTable::IsUpper[ word[ii] ] )
-            return false;
-    }
 
     return true;
 }

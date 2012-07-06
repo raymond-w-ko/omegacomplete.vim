@@ -5,6 +5,7 @@
 char LookupTable::IsPartOfWord[256];
 char LookupTable::IsUpper[256];
 char LookupTable::ToLower[256];
+char LookupTable::IsNumber[256];
 
 void LookupTable::GlobalInit()
 {
@@ -20,6 +21,9 @@ void LookupTable::GlobalInit()
         std::string temp(1, static_cast<char>(index));
         boost::algorithm::to_lower(temp);
         LookupTable::ToLower[index] = temp[0];
+
+        LookupTable::IsNumber[index] =
+            LookupTable::isNumber(index) ? 1 : 0;
     }
 }
 
@@ -39,5 +43,11 @@ bool LookupTable::isPartOfWord(char c)
 bool LookupTable::isUpper(char c)
 {
     if (('A' <= c) && (c <= 'Z')) return true;
+    return false;
+}
+
+bool LookupTable::isNumber(char c)
+{
+    if (('0' <= c) && (c <= '9')) return true;
     return false;
 }

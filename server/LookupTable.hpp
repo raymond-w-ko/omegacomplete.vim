@@ -11,6 +11,8 @@ public:
     static char IsUpper[256];
     // the lowercase equivalent of a given letter
     static char ToLower[256];
+    // the lowercase equivalent of a given letter
+    static char IsNumber[256];
 
 private:
     LookupTable();
@@ -19,4 +21,5 @@ private:
 
     static bool isPartOfWord(char c);
     static bool isUpper(char c);
+    static bool isNumber(char c);
 };
