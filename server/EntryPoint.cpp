@@ -26,8 +26,9 @@ int main(int argc, char* argv[])
     Session::GlobalInit();
 
 #ifdef _WIN32
+#ifdef TELEPROMPTER
     Teleprompter::GlobalInit();
-#else
+#endif
 #endif
 
     // where everything starts

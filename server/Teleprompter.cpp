@@ -2,6 +2,8 @@
 
 #include "Teleprompter.hpp"
 
+#ifdef TELEPROMPTER
+
 Teleprompter* Teleprompter::instance_ = NULL;
 
 const char* g_szClassName = "OmegaCompleteTeleprompter";
@@ -311,3 +313,5 @@ HFONT Teleprompter::createCompletionFont(unsigned height)
 
     return hFont;
 }
+
+#endif // TELEPROMPTER

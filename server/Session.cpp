@@ -279,7 +279,9 @@ void Session::processClientMessage()
     else if (command == "hide_teleprompter")
     {
         writeResponse(response);
+#ifdef TELEPROMPTER
         Teleprompter::Instance()->Show(false);
+#endif
     }
     else
     {
@@ -383,7 +385,9 @@ void Session::calculateCompletionCandidates(
     std::string prefix_to_complete = getWordToComplete(line);
     if (prefix_to_complete.empty())
     {
+#ifdef TELEPROMPTER
         Teleprompter::Instance()->Show(false);
+#endif
         return;
     }
 
@@ -485,9 +489,11 @@ retry_completion:
     main_completion_set.FillResults(result_list);
 
     // convert to format that VIM expects, basically a list of dictionaries
+#ifdef TELEPROMPTER
     Teleprompter::Instance()->Show(true);
     Teleprompter::Instance()->Clear();
     Teleprompter::Instance()->SetCurrentWord(prefix_to_complete);
+#endif
 
     result += "[";
     if (disambiguate_mode == false)
@@ -507,7 +513,9 @@ retry_completion:
                     % pair.first % pair.second );
             }
 
+#ifdef TELEPROMPTER
             Teleprompter::Instance()->AppendText(terminus_result_list);
+#endif
         }
 
         foreach (const StringPair& pair, result_list)
@@ -517,7 +525,9 @@ retry_completion:
                 % pair.first % pair.second );
         }
             
+#ifdef TELEPROMPTER
         Teleprompter::Instance()->AppendText(result_list);
+#endif
 
         main_completion_set.FillLevenshteinResults(
             levenshtein_completions,
@@ -535,13 +545,17 @@ retry_completion:
                 "{'abbr':'%s','word':'%s'},")
                 % (single_result + " <==") % single_result );
 
+#ifdef TELEPROMPTER
             Teleprompter::Instance()->AppendText(
                 single_result + "    <==");
+#endif
         }
     }
     result += "]";
 
+#ifdef TELEPROMPTER
     Teleprompter::Instance()->Redraw();
+#endif
 }
 
 

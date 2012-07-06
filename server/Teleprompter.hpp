@@ -1,5 +1,6 @@
 #pragma once
 
+#ifdef TELEPROMPTER
 class Teleprompter
 {
 public:
@@ -47,3 +48,4 @@ private:
     std::string word_;
     std::vector<std::string> text_list_;
 };
+#endif
