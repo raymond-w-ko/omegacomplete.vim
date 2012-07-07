@@ -56,6 +56,9 @@
     <ClCompile Include="..\..\Teleprompter.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\ustring.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Buffer.hpp">
@@ -104,6 +107,9 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Teleprompter.hpp">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ustring.hpp">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

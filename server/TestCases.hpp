@@ -8,4 +8,5 @@ public:
 
 private:
     void TrieNodeTest();
+    void ustringTest();
 };

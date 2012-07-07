@@ -124,6 +124,7 @@
     <ClCompile Include="..\..\Teleprompter.cpp" />
     <ClCompile Include="..\..\TestCases.cpp" />
     <ClCompile Include="..\..\TrieNode.cpp" />
+    <ClCompile Include="..\..\ustring.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Buffer.hpp" />
@@ -142,6 +143,7 @@
     <ClInclude Include="..\..\Teleprompter.hpp" />
     <ClInclude Include="..\..\TestCases.hpp" />
     <ClInclude Include="..\..\TrieNode.hpp" />
+    <ClInclude Include="..\..\ustring.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -10,10 +10,16 @@
 #include "TestCases.hpp"
 #include "TrieNode.hpp"
 #include "GlobalWordSet.hpp"
+#include "ustring.hpp"
 
 TestCases::TestCases()
 {
     std::cout << "running test cases" << std::endl;
+    std::cout << std::endl;
+
+    ustringTest();
+
+    std::cout << std::endl;
 
     TrieNodeTest();
 }
@@ -86,4 +92,12 @@ void TestCases::TrieNodeTest()
     always_assert( root_node.Children.size() == 0 );
     always_assert( root_node.Word.empty() );
 #endif
+}
+
+void TestCases::ustringTest()
+{
+    ustring dummy;
+    std::cout << "runtime check of union size" << std::endl;
+    always_assert( sizeof(dummy.data_.buffer) == sizeof(dummy.data_.pointer) );
+    always_assert( sizeof(dummy) == (2 * sizeof(void*)) );
 }
