@@ -11,71 +11,120 @@ public:
         info_.which = kUsingBuffer;
     }
 
-    ustring(const char* input)
-    {
-        if (input == NULL)
-            return;
-
-        info_.size = ::strlen(input);
-        if (info_.size <= sizeof(void*))
-        {
-            ::memcpy(data_.buffer, input, info_.size);
-            info_.which = kUsingBuffer;
-        }
-        else
-        {
-            data_.pointer = new char[info_.size];
-            ::memcpy(data_.pointer, input, info_.size);
-            info_.which = kUsingPointer;
-        }
-    }
-
     ustring(const std::string& input)
     {
         info_.size = input.size();
 
         if (info_.size == 0)
+        {
+            info_.which = kUsingBuffer;
             return;
+        }
 
         if (info_.size <= sizeof(void*))
         {
-            ::memcpy(data_.buffer, &input[0], info_.size);
+            memcpy(data_.buffer, &input[0], info_.size);
             info_.which = kUsingBuffer;
         }
         else
         {
             data_.pointer = new char[info_.size];
-            ::memcpy(data_.pointer, &input[0], info_.size);
+            memcpy(data_.pointer, &input[0], info_.size);
             info_.which = kUsingPointer;
         }
     }
 
     ustring(const ustring& other)
     {
-        this->info_.which = other.info_.which;
-        this->info_.size = other.info_.size;
+        info_.which = other.info_.which;
+        info_.size = other.info_.size;
 
         if (other.info_.which == kUsingBuffer)
         {
-            ::memcpy(data_.buffer, other.data_.buffer, other.info_.size);
+            memcpy(data_.buffer, other.data_.buffer, other.info_.size);
         }
         else
         {
             data_.pointer = new char[info_.size];
-            ::memcpy(data_.pointer, other.data_.pointer, other.info_.size);
+            memcpy(data_.pointer, other.data_.pointer, other.info_.size);
         }
+    }
+
+    ustring& operator=(const ustring& other)
+    {
+        if (*this != other)
+        {
+            info_.size = other.info_.size;
+
+            if (other.info_.which == kUsingBuffer)
+            {
+                memcpy(data_.buffer, other.data_.buffer, other.info_.size);
+            }
+            else
+            {
+                if (info_.which == kUsingPointer)
+                    delete data_.pointer;
+
+                data_.pointer = new char[info_.size];
+                memcpy(data_.pointer, other.data_.pointer, other.info_.size);
+            }
+
+            info_.which = other.info_.which;
+        }
+
+        return *this;
+    }
+
+    ustring& operator=(const std::string& input)
+    {
+        if (*this != input)
+        {
+            info_.size = input.size();
+
+            if (info_.size == 0)
+            {
+                if (info_.which == kUsingPointer)
+                {
+                    delete data_.pointer;
+                    data_.pointer = NULL;
+                }
+
+                info_.which = kUsingBuffer;
+                return *this;
+            }
+
+            if (info_.size <= sizeof(void*))
+            {
+                memcpy(data_.buffer, &input[0], info_.size);
+                info_.which = kUsingBuffer;
+            }
+            else
+            {
+                if (info_.which == kUsingPointer)
+                    delete data_.pointer;
+
+                data_.pointer = new char[info_.size];
+                memcpy(data_.pointer, &input[0], info_.size);
+                info_.which = kUsingPointer;
+            }
+        }
+
+        return *this;
     }
 
     ~ustring()
     {
-        if (info_.which == kUsingPointer)
+        if (info_.size > 0 && info_.which == kUsingPointer)
+        {
             delete data_.pointer;
+        }
     }
 
     size_t size() const { return info_.size; }
     size_t length() const { return size(); }
+    bool empty() const { return size() == 0; }
 
-    char& operator[](const unsigned index)
+    const char& operator[](const unsigned index)
     {
         if (size() <= sizeof(void*))
             return data_.buffer[index];
@@ -124,6 +173,18 @@ public:
     bool operator!=(const ustring& other) const
     {
         return !(*this == other);
+    }
+
+    void clear()
+    {
+        if (info_.size > 0 && info_.which == kUsingPointer)
+        {
+            delete data_.pointer;
+            data_.pointer = NULL;
+            info_.which = kUsingBuffer;
+        }
+
+        info_.size = 0;
     }
 
 private:
