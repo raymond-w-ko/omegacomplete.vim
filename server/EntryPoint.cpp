@@ -16,6 +16,9 @@ int main(int argc, char* argv[])
 {
 #ifndef _DEBUG
     TestCases tc;
+
+    //_CrtDumpMemoryLeaks();
+    //return 0;
 #endif
 
     // static intializers
