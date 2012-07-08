@@ -10,7 +10,7 @@
 #include "TestCases.hpp"
 #include "TrieNode.hpp"
 #include "GlobalWordSet.hpp"
-#include "ustring.hpp"
+#include "TagsSet.hpp"
 
 TestCases::TestCases()
 {
@@ -18,15 +18,26 @@ TestCases::TestCases()
     std::cout << std::endl;
 
     ustringTest();
-
     std::cout << std::endl;
 
     TrieNodeTest();
+    std::cout << std::endl;
+
+    TagsTest();
+    std::cout << std::endl;
 }
 
 TestCases::~TestCases()
 {
     ;
+}
+
+void TestCases::ustringTest()
+{
+    ustring dummy;
+    std::cout << "runtime check of union size" << std::endl;
+    always_assert( sizeof(dummy.data_.buffer) == sizeof(dummy.data_.pointer) );
+    always_assert( sizeof(dummy) == (2 * sizeof(void*)) );
 }
 
 void TestCases::TrieNodeTest()
@@ -52,7 +63,7 @@ void TestCases::TrieNodeTest()
     input_file.seekg(0, std::ios::beg);
 
     // search time
-    unsigned int num_searches = 64;
+    unsigned int num_searches = 32;
     start_time = ::GetTickCount();
     LevenshteinSearchResults results;
     std::vector<std::string> words;
@@ -94,10 +105,14 @@ void TestCases::TrieNodeTest()
 #endif
 }
 
-void TestCases::ustringTest()
+void TestCases::TagsTest()
 {
-    ustring dummy;
-    std::cout << "runtime check of union size" << std::endl;
-    always_assert( sizeof(dummy.data_.buffer) == sizeof(dummy.data_.pointer) );
-    always_assert( sizeof(dummy) == (2 * sizeof(void*)) );
+    std::cout << "preloading tags files:" << std::endl;
+    std::string current_directory;
+    std::string tags;
+
+    current_directory = "C:\\";
+
+    tags = "C:\\OgreSDK\\OgreSDK_vc9_v1-8-0\\include\\tags";
+    TagsSet::Instance()->CreateOrUpdate(tags, current_directory);
 }

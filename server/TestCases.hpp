@@ -9,4 +9,5 @@ public:
 private:
     void TrieNodeTest();
     void ustringTest();
+    void TagsTest();
 };
