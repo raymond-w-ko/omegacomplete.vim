@@ -1,16 +1,17 @@
-#define BOOST_THREAD_USE_LIB
+#include <stdint.h>
 
 #ifdef _WIN32
-    #ifndef _DEBUG
+    // Debug Mode
+    #ifdef _DEBUG
+        #define _CRTDBG_MAP_ALLOC
+        #include <stdlib.h>
+        #include <crtdbg.h>
+    // Release Mode
+    #else
+        // disable checked iterators for performance reasons
         #define _SECURE_SCL 0
     #endif
-#endif
 
-#include <stdint.h>
-#include <cstdio>
-#include <cstdlib>
-
-#ifdef _WIN32
     #include <winsock2.h>
     #include <windows.h>
 
@@ -19,7 +20,12 @@
     {
         return static_cast<int64_t>(ft.dwHighDateTime) << 32 | ft.dwLowDateTime;
     }
+#else
+        #include <stdlib.h>
+        #include <crtdbg.h>
 #endif
+
+#include <stdio.h>
 
 #include <algorithm>
 #include <iostream>
@@ -33,6 +39,8 @@
 #include <deque>
 #include <set>
 #include <map>
+
+#define BOOST_THREAD_USE_LIB
 
 #include <boost/noncopyable.hpp>
 #include <boost/bind.hpp>
@@ -57,6 +65,8 @@
 #define reverse_foreach BOOST_REVERSE_FOREACH
 
 using namespace boost::asio;
+
+#include "ustring.hpp"
 
 inline void LogAsioError(
     const boost::system::error_code& error,
@@ -97,5 +107,16 @@ inline void NormalizeToWindowsPathSeparators(std::string& pathname)
 typedef boost::shared_ptr<std::string> StringPtr;
 typedef boost::unordered_set<std::string> UnorderedStringSet;
 typedef boost::shared_ptr<UnorderedStringSet> UnorderedStringSetPtr;
+
 typedef std::vector<std::string> StringVector;
 typedef std::pair<std::string, std::string> StringPair;
+
+typedef std::vector<ustring> UstringVector;
+typedef std::pair<ustring, ustring> UstringPair;
+
+#ifdef _WIN32
+    #ifdef _DEBUG
+        #define DEBUG_NEW new(_NORMAL_BLOCK, __FILE__, __LINE__)
+        #define new DEBUG_NEW
+    #endif
+#endif
