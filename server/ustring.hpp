@@ -20,11 +20,13 @@ public:
         if (info_.size <= sizeof(void*))
         {
             ::memcpy(data_.buffer, input, info_.size);
+            info_.which = kUsingBuffer;
         }
         else
         {
             data_.pointer = new char[info_.size];
             ::memcpy(data_.pointer, input, info_.size);
+            info_.which = kUsingPointer;
         }
     }
 
@@ -38,11 +40,13 @@ public:
         if (info_.size <= sizeof(void*))
         {
             ::memcpy(data_.buffer, &input[0], info_.size);
+            info_.which = kUsingBuffer;
         }
         else
         {
             data_.pointer = new char[info_.size];
             ::memcpy(data_.pointer, &input[0], info_.size);
+            info_.which = kUsingPointer;
         }
     }
 
@@ -57,6 +61,7 @@ public:
         }
         else
         {
+            data_.pointer = new char[info_.size];
             ::memcpy(data_.pointer, other.data_.pointer, other.info_.size);
         }
     }
@@ -95,6 +100,30 @@ public:
             hash = hash * 37 + static_cast<size_t>( source[i] );
         }
         return hash;
+    }
+
+    bool operator==(const ustring& other) const
+    {
+        if (info_.size != other.info_.size)
+            return false;
+        if (info_.which != other.info_.which)
+            return false;
+
+        const char* x = info_.size <= sizeof(void*) ?
+            data_.buffer : data_.pointer;
+        const char* y = other.info_.size <= sizeof(void*) ?
+            other.data_.buffer : other.data_.pointer;
+
+        for (size_t i = 0; i < info_.size; ++i)
+            if (x[i] != y[i])
+                return false;
+
+        return true;
+    }
+
+    bool operator!=(const ustring& other) const
+    {
+        return !(*this == other);
     }
 
 private:
