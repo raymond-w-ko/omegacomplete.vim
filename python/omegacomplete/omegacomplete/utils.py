@@ -14,7 +14,7 @@ def safe_recvall(conn):
     while not "\x00" in receive_buffer:
         now = time.time()
 
-        if (math.fabs(now - begin_time) >= 10.0):
+        if (math.fabs(now - begin_time) >= 32.0):
             oc_is_disabled = True
             break
 
