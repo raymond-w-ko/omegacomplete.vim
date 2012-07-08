@@ -14,13 +14,6 @@ static const unsigned short PORT = 31337;
 
 int main(int argc, char* argv[])
 {
-#ifndef _DEBUG
-    TestCases tc;
-
-    //_CrtDumpMemoryLeaks();
-    //return 0;
-#endif
-
     // static intializers
     LookupTable::GlobalInit();
     if (TagsSet::GlobalInit() == false)
@@ -32,6 +25,13 @@ int main(int argc, char* argv[])
 #ifdef TELEPROMPTER
     Teleprompter::GlobalInit();
 #endif
+#endif
+
+#ifndef _DEBUG
+    TestCases tc;
+
+    //_CrtDumpMemoryLeaks();
+    //return 0;
 #endif
 
     // where everything starts
