@@ -59,8 +59,13 @@ void TrieNode::Erase(const std::string& word)
         if (node_list[ii + 1]->Children.size() == 0 &&
             node_list[ii + 1]->Word.empty())
         {
+            auto (&children, node_list[ii]->Children);
             char letter_key = word[ii];
-            node_list[ii]->Children.erase(letter_key);
+
+            node = children[letter_key];
+            delete node;
+
+            children.erase(letter_key);
         }
         else
         {
