@@ -124,7 +124,7 @@ public:
     size_t length() const { return size(); }
     bool empty() const { return size() == 0; }
 
-    const char& operator[](const unsigned index)
+    const char& operator[](const unsigned index) const
     {
         if (size() <= sizeof(void*))
             return data_.buffer[index];
@@ -173,6 +173,19 @@ public:
     bool operator!=(const ustring& other) const
     {
         return !(*this == other);
+    }
+
+    bool operator<(const ustring& other) const
+    {
+        if (this->size() < other.size())
+            return true;
+        if (this->size() > other.size())
+            return false;
+
+        if (this->size() == 0)
+            return false;
+
+        return memcmp(&((*this)[0]), &other[0], size()) < 0;
     }
 
     void clear()
