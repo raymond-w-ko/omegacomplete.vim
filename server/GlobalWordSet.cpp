@@ -8,8 +8,8 @@ static const size_t kMinLengthForLevenshteinCompletion = 4;
 static const size_t kWordSizeCutoffPointForDepthLists = 5;
 static const size_t kMaxDepthPerIndex = 3;
 
-boost::unordered_map<std::string, StringVector> GlobalWordSet::title_case_cache_;
-boost::unordered_map<std::string, StringVector> GlobalWordSet::underscore_cache_;
+boost::unordered_map<String, StringVector> GlobalWordSet::title_case_cache_;
+boost::unordered_map<String, StringVector> GlobalWordSet::underscore_cache_;
 boost::unordered_map<size_t, std::vector<std::vector<size_t> > >
     GlobalWordSet::depth_list_cache_;
 
@@ -69,7 +69,7 @@ void GlobalWordSet::GenerateDepths(
 
 const StringVector* GlobalWordSet::ComputeUnderscore(
     const std::string& word,
-    boost::unordered_map<std::string, StringVector>& underscore_cache)
+    boost::unordered_map<String, StringVector>& underscore_cache)
 {
     // we have already computed this before
     if (Contains(underscore_cache, word) == true) {
@@ -137,7 +137,7 @@ const StringVector* GlobalWordSet::ComputeUnderscore(
 
 const StringVector* GlobalWordSet::ComputeTitleCase(
     const std::string& word,
-    boost::unordered_map<std::string, StringVector>& title_case_cache)
+    boost::unordered_map<String, StringVector>& title_case_cache)
 {
     // we have already computed this before
     if (Contains(title_case_cache, word) == true) {
@@ -230,8 +230,6 @@ WordInfo::~WordInfo()
 }
 
 GlobalWordSet::GlobalWordSet()
-:
-const_words_(words_)
 {
     ;
 }
@@ -252,7 +250,9 @@ void GlobalWordSet::UpdateWord(const std::string& word, int reference_count_delt
     // target WordInfo. If we can't find it, accessing the reference to it means
     // creation, which requires a lock since the data structure internally
     // will change.
-    if (const_words_.find(word) != const_words_.end()) {
+
+    const std::map<String, WordInfo>& const_words = words_;
+    if (Contains(const_words, word) == false) {
         lock_required = true;
     } else {
         lock_required = false;
@@ -280,12 +280,12 @@ void GlobalWordSet::UpdateWord(const std::string& word, int reference_count_delt
     // generate and store abbreviations
     mutex_.lock();
     if (title_cases->size() > 0) {
-        foreach (const std::string& title_case, *title_cases) {
+        foreach (const String& title_case, *title_cases) {
             title_cases_.insert(make_pair(title_case, word));
         }
     }
     if (underscores->size() > 0) {
-        foreach (const std::string& underscore, *underscores) {
+        foreach (const String& underscore, *underscores) {
             underscores_.insert(make_pair(underscore, word));
         }
     }

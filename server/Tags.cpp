@@ -4,8 +4,14 @@
 #include "GlobalWordSet.hpp"
 #include "LookupTable.hpp"
 
-boost::unordered_map<std::string, StringVector> Tags::title_case_cache_;
-boost::unordered_map<std::string, StringVector> Tags::underscore_cache_;
+boost::unordered_map<String, StringVector> Tags::title_case_cache_;
+boost::unordered_map<String, StringVector> Tags::underscore_cache_;
+
+void Tags::ClearGlobalCache()
+{
+    Tags::title_case_cache_.clear();
+    Tags::underscore_cache_.clear();
+}
 
 Tags::Tags()
 :
@@ -110,7 +116,7 @@ void Tags::reparse()
          tag != tags_.end();
          ++tag)
     {
-        const std::string& word = tag->first;
+        const String& word = tag->first;
 
         const StringVector* title_cases = GlobalWordSet::ComputeTitleCase(
             word, title_case_cache_);
@@ -118,12 +124,12 @@ void Tags::reparse()
             word, underscore_cache_);
 
         if (title_cases->size() > 0) {
-            foreach (const std::string& title_case, *title_cases) {
+            foreach (const String& title_case, *title_cases) {
                 title_cases_.insert(std::make_pair(title_case, &word));
             }
         }
         if (underscores->size() > 0) {
-            foreach (const std::string& underscore, *underscores) {
+            foreach (const String& underscore, *underscores) {
                 underscores_.insert(std::make_pair(underscore, &word));
             }
         }

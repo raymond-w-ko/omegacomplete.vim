@@ -13,6 +13,8 @@ struct TagInfo
 class Tags
 {
 public:
+    static void ClearGlobalCache();
+
     Tags();
     Tags(const Tags& other);
     ~Tags();
@@ -41,17 +43,17 @@ private:
         TagInfo& tag_info);
 
 
-    static boost::unordered_map<std::string, StringVector> title_case_cache_;
-    static boost::unordered_map<std::string, StringVector> underscore_cache_;
+    static boost::unordered_map<String, StringVector> title_case_cache_;
+    static boost::unordered_map<String, StringVector> underscore_cache_;
 
     std::string pathname_;
     int64_t last_write_time_;
     std::string parent_directory_;
 
     typedef
-        boost::unordered_multimap<std::string, std::string>::iterator
+        boost::unordered_multimap<String, String>::iterator
         tags_iterator;
-    boost::unordered_multimap<std::string, std::string> tags_;
-    boost::unordered_multimap<std::string, const std::string*> title_cases_;
-    boost::unordered_multimap<std::string, const std::string*> underscores_;
+    boost::unordered_multimap<String, String> tags_;
+    boost::unordered_multimap<String, const String*> title_cases_;
+    boost::unordered_multimap<String, const String*> underscores_;
 };

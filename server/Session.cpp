@@ -499,7 +499,8 @@ retry_completion:
 
                 result += boost::str(boost::format(
                     "{'word':'%s','menu':'%s'},")
-                    % pair.first % pair.second );
+                    % static_cast<std::string>(pair.first)
+                    % static_cast<std::string>(pair.second) );
             }
 
 #ifdef TELEPROMPTER
@@ -511,7 +512,8 @@ retry_completion:
         {
             result += boost::str(boost::format(
                 "{'word':'%s','menu':'%s'},")
-                % pair.first % pair.second );
+                % static_cast<std::string>(pair.first)
+                % static_cast<std::string>(pair.second) );
         }
             
 #ifdef TELEPROMPTER

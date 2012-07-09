@@ -35,6 +35,8 @@ public:
         const std::vector<std::string>& tags_list,
         const std::string& current_directory);
 
+    void Clear();
+
 private:
     TagsSet();
     static TagsSet* instance_;

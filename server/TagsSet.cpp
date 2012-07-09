@@ -169,3 +169,8 @@ std::string TagsSet::ResolveFullPathname(
 
     return full_tags_pathname;
 }
+
+void TagsSet::Clear()
+{
+    tags_list_.clear();
+}

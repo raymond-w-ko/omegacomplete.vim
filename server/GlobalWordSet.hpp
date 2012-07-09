@@ -32,10 +32,10 @@ public:
 
     static const StringVector* ComputeUnderscore(
         const std::string& word,
-        boost::unordered_map<std::string, StringVector>& underscore_cache);
+        boost::unordered_map<String, StringVector>& underscore_cache);
     static const StringVector* ComputeTitleCase(
         const std::string& word,
-        boost::unordered_map<std::string, StringVector>& title_case_cache);
+        boost::unordered_map<String, StringVector>& title_case_cache);
 
     static void LevenshteinSearch(
         const std::string& word,
@@ -70,8 +70,8 @@ public:
         LevenshteinSearchResults& results);
 
 private:
-    static boost::unordered_map<std::string, StringVector> title_case_cache_;
-    static boost::unordered_map<std::string, StringVector> underscore_cache_;
+    static boost::unordered_map<String, StringVector> title_case_cache_;
+    static boost::unordered_map<String, StringVector> underscore_cache_;
 
     static
         boost::unordered_map<size_t, std::vector<std::vector<size_t> > >
@@ -79,10 +79,9 @@ private:
 
     boost::mutex mutex_;
 
-    std::map<std::string, WordInfo> words_;
-    std::map<std::string, WordInfo>& const_words_;
-    boost::unordered_multimap<std::string, std::string> title_cases_;
-    boost::unordered_multimap<std::string, std::string> underscores_;
+    std::map<String, WordInfo> words_;
+    boost::unordered_multimap<String, String> title_cases_;
+    boost::unordered_multimap<String, String> underscores_;
 
     boost::mutex trie_mutex_;
     TrieNode trie_;

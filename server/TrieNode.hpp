@@ -9,7 +9,7 @@ struct TrieNode : public boost::noncopyable
     void Erase(const std::string& word);
     void Clear();
 
-    std::string Word;
+    String Word;
     typedef
         boost::unordered_map<char, TrieNode*>::iterator
         ChildrenIterator;

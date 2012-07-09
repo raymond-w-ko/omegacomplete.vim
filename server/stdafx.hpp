@@ -108,11 +108,11 @@ typedef boost::shared_ptr<std::string> StringPtr;
 typedef boost::unordered_set<std::string> UnorderedStringSet;
 typedef boost::shared_ptr<UnorderedStringSet> UnorderedStringSetPtr;
 
-typedef std::vector<std::string> StringVector;
-typedef std::pair<std::string, std::string> StringPair;
+//typedef std::string String;
+typedef ustring String;
 
-typedef std::vector<ustring> UstringVector;
-typedef std::pair<ustring, ustring> UstringPair;
+typedef std::vector<String> StringVector;
+typedef std::pair<String, String> StringPair;
 
 #ifdef _WIN32
     #ifdef _DEBUG
