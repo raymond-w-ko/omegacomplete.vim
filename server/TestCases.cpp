@@ -114,6 +114,7 @@ void TestCases::TagsTest()
     current_directory = "C:\\";
 
     tags = "C:\\OgreSDK\\OgreSDK_vc9_v1-8-0\\include\\tags";
+    std::cout << tags << std::endl;
     TagsSet::Instance()->CreateOrUpdate(tags, current_directory);
 
     //TagsSet::Instance()->Clear();
