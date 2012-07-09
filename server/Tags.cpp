@@ -175,16 +175,12 @@ void Tags::GetAllWordsWithPrefix(
     const std::string& prefix,
     std::set<std::string>* results)
 {
-    for (tags_iterator tag = tags_.begin();
-         tag != tags_.end();
-         ++tag)
+    auto(iter, tags_.lower_bound(prefix));
+    for (; iter != tags_.end(); ++iter)
     {
-        const std::string& word = tag->first;
-
-        if (boost::starts_with(word, prefix))
-        {
-            results->insert(word);
-        }
+        const std::string& candidate = iter->first;
+        if (boost::starts_with(candidate, prefix) == false) break;
+        results->insert(candidate);
     }
 }
 

@@ -51,9 +51,9 @@ private:
     std::string parent_directory_;
 
     typedef
-        boost::unordered_multimap<String, String>::iterator
+        std::map<String, String>::iterator
         tags_iterator;
-    boost::unordered_multimap<String, String> tags_;
+    std::map<String, String> tags_;
     boost::unordered_multimap<String, const String*> title_cases_;
     boost::unordered_multimap<String, const String*> underscores_;
 };
