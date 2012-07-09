@@ -115,4 +115,7 @@ void TestCases::TagsTest()
 
     tags = "C:\\OgreSDK\\OgreSDK_vc9_v1-8-0\\include\\tags";
     TagsSet::Instance()->CreateOrUpdate(tags, current_directory);
+
+    //TagsSet::Instance()->Clear();
+    //Tags::ClearGlobalCache();
 }
