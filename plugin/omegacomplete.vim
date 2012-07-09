@@ -13,6 +13,9 @@ let s:just_did_insertenter = 0
 
 " initialize this to be safe
 let g:omegacomplete_server_results=[]
+
+" whether teleprompter is active
+let s:teleprompter = 0
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " init
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -199,7 +202,9 @@ function <SID>OnInsertEnter()
 endfunction
 
 function <SID>OnInsertLeave()
-    exe 'py oc_send_command("hide_teleprompter 1")'
+    if (s:teleprompter != 0)
+        exe 'py oc_send_command("hide_teleprompter 1")'
+    endif
 endfunction
 
 function <SID>OnFocusLost()
@@ -302,7 +307,9 @@ PYTHON
 endfunction
 
 function omegacomplete#UseFirstEntryOfPopup()
-    exe 'py oc_send_command("hide_teleprompter 1")'
+    if (s:teleprompter != 0)
+        exe 'py oc_send_command("hide_teleprompter 1")'
+    endif
 
     if pumvisible()
         return "\<C-n>\<C-y>"
