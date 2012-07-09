@@ -55,7 +55,20 @@ private:
 
     void asyncReadHeader();
     void handleReadHeader(const boost::system::error_code& error);
-    void writeResponse(std::string& response);
+    void writeResponse(const std::string& response);
+
+    void cmdCurrentBuffer(StringPtr argument);
+    void cmdCurrentLine(StringPtr argument);
+    void cmdCursorPosition(StringPtr argument);
+    void cmdBufferContents(StringPtr argument);
+    void cmdComplete(StringPtr argument);
+    void cmdFreeBuffer(StringPtr argument);
+    void cmdCurrentDirectory(StringPtr argument);
+    void cmdCurrentTags(StringPtr argument);
+    void cmdTaglistTags(StringPtr argument);
+    void cmdVimTaglistFunction(StringPtr argument);
+    void cmdPrune(StringPtr argument);
+    void cmdHideTeleprompter(StringPtr argument);
 
     ////////////////////////////////////////////////////////////////////////////
     // OmegaComplete Core
@@ -90,6 +103,7 @@ private:
     // read based on a header length
     unsigned char request_header_[4];
     std::string request_body_;
+    std::map<String, boost::function<void (StringPtr)> > command_dispatcher_;
 
     ////////////////////////////////////////////////////////////////////////////
     // OmegaComplete Core

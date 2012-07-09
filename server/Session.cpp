@@ -40,6 +40,65 @@ connection_number_(connection_ticket_++),
 is_quitting_(0),
 prev_input_(3)
 {
+    command_dispatcher_["current_buffer"] = boost::bind(
+        &Session::cmdCurrentBuffer,
+        boost::ref(*this),
+        _1);
+
+    command_dispatcher_["current_line"] = boost::bind(
+        &Session::cmdCurrentLine,
+        boost::ref(*this),
+        _1);
+
+    command_dispatcher_["cursor_position"] = boost::bind(
+        &Session::cmdCursorPosition,
+        boost::ref(*this),
+        _1);
+
+    command_dispatcher_["buffer_contents"] = boost::bind(
+        &Session::cmdBufferContents,
+        boost::ref(*this),
+        _1);
+
+    command_dispatcher_["complete"] = boost::bind(
+        &Session::cmdComplete,
+        boost::ref(*this),
+        _1);
+
+    command_dispatcher_["free_buffer"] = boost::bind(
+        &Session::cmdFreeBuffer,
+        boost::ref(*this),
+        _1);
+
+    command_dispatcher_["current_directory"] = boost::bind(
+        &Session::cmdCurrentDirectory,
+        boost::ref(*this),
+        _1);
+
+    command_dispatcher_["current_tags"] = boost::bind(
+        &Session::cmdCurrentTags,
+        boost::ref(*this),
+        _1);
+
+    command_dispatcher_["taglist_tags"] = boost::bind(
+        &Session::cmdTaglistTags,
+        boost::ref(*this),
+        _1);
+
+    command_dispatcher_["vim_taglist_function"] = boost::bind(
+        &Session::cmdVimTaglistFunction,
+        boost::ref(*this),
+        _1);
+
+    command_dispatcher_["prune"] = boost::bind(
+        &Session::cmdPrune,
+        boost::ref(*this),
+        _1);
+
+    command_dispatcher_["hide_teleprompter"] = boost::bind(
+        &Session::cmdHideTeleprompter,
+        boost::ref(*this),
+        _1);
 }
 
 Session::~Session()
@@ -135,159 +194,185 @@ void Session::processClientMessage()
         request.begin() + index + 1, request.end());
 
     //std::cout << command << " " << *argument << "$" << std::endl;
-
-    std::string response = "ACK";
-
-    if (false) { }
-    else if (command == "current_buffer")
-    {
-        writeResponse(response);
-
-        current_buffer_ = boost::lexical_cast<unsigned>(*argument);
-        if (Contains(buffers_, current_buffer_) == false)
-        {
-            buffers_[current_buffer_].Init(this, current_buffer_);
-        }
-    }
-    else if (command == "current_line")
-    {
-        writeResponse(response);
-
-        current_line_ = *argument;
-    }
-    // assumes that above is called immediately before
-    else if (command == "cursor_position")
-    {
-        writeResponse(response);
-
-        std::vector<std::string> position;
-        boost::split(
-            position,
-            *argument,
-            boost::is_any_of(" "),
-            boost::token_compress_on);
-        unsigned x = boost::lexical_cast<unsigned>(position[0]);
-        unsigned y = boost::lexical_cast<unsigned>(position[1]);
-        cursor_pos_.first = x; cursor_pos_.second = y;
-
-        buffers_[current_buffer_].CalculateCurrentWordOfCursor(
-            current_line_,
-            cursor_pos_);
-    }
-    else if (command == "buffer_contents")
-    {
-        writeResponse(response);
-
-        ParseJob job;
-        job.BufferNumber = current_buffer_;
-        job.Contents = argument;
-        queueParseJob(job);
-    }
-    else if (command == "complete")
-    {
-        //Stopwatch watch; watch.Start();
-
-        response.clear();
-        response.reserve(1024);
-        calculateCompletionCandidates(*argument, response);
-        //std::cout << response << std::endl;
-        writeResponse(response);
-
-        //watch.Stop(); std::cout << "complete: "; watch.PrintResultMilliseconds();
-    }
-    else if (command == "free_buffer")
-    {
-        writeResponse(response);
-
-        // make sure job queue is empty before we can delete buffer
-        while (true) {
-            job_queue_mutex_.lock();
-            if (job_queue_.size() == 0) {
-                break;
-            }
-            job_queue_mutex_.unlock();
-        }
-
-        buffers_mutex_.lock();
-        buffers_.erase(boost::lexical_cast<unsigned>(*argument));
-        buffers_mutex_.unlock();
-        job_queue_mutex_.unlock();
-    }
-    else if (command == "current_directory")
-    {
-        current_directory_ = *argument;
-
-        writeResponse(response);
-    }
-    else if (command == "current_tags")
-    {
-        current_tags_.clear();
-
-        std::vector<std::string> tags_list;
-        boost::split(tags_list, *argument,
-                     boost::is_any_of(","), boost::token_compress_on);
-        foreach (const std::string& tags, tags_list)
-        {
-            if (tags.size() == 0) continue;
-
-            TagsSet::Instance()->CreateOrUpdate(tags, current_directory_);
-            current_tags_.push_back(tags);
-        }
-
-        writeResponse(response);
-    }
-    else if (command == "taglist_tags")
-    {
-        taglist_tags_.clear();
-
-        std::vector<std::string> tags_list;
-        boost::split(tags_list, *argument,
-                     boost::is_any_of(","), boost::token_compress_on);
-        foreach (const std::string& tags, tags_list)
-        {
-            if (tags.size() == 0) continue;
-
-            TagsSet::Instance()->CreateOrUpdate(tags, current_directory_);
-            taglist_tags_.push_back(tags);
-        }
-
-        writeResponse(response);
-    }
-    else if (command == "vim_taglist_function")
-    {
-        response = TagsSet::Instance()->VimTaglistFunction(
-            *argument, taglist_tags_, current_directory_);
-        writeResponse(response);
-    }
-    else if (command == "prune") {
-        writeResponse(response);
-
-        unsigned count = WordSet.Prune();
-        //std::cout << count << " words pruned" << std::endl;
-    }
-    else if (command == "hide_teleprompter")
-    {
-        writeResponse(response);
-#ifdef TELEPROMPTER
-        Teleprompter::Instance()->Show(false);
-#endif
-    }
-    else
+    
+    auto(iter, command_dispatcher_.find(command));
+    if (iter == command_dispatcher_.end())
     {
         std::cout << boost::str(boost::format(
             "unknown command %s %s") % command % *argument);
 
-        writeResponse(response);
+        writeResponse("ACK");
+    }
+    else
+    {
+        iter->second(argument);
     }
 }
 
-void Session::writeResponse(std::string& response)
+void Session::cmdCurrentBuffer(StringPtr argument)
+{
+    writeResponse("ACK");
+
+    current_buffer_ = boost::lexical_cast<unsigned>(*argument);
+    if (Contains(buffers_, current_buffer_) == false)
+    {
+        buffers_[current_buffer_].Init(this, current_buffer_);
+    }
+}
+
+void Session::cmdCurrentLine(StringPtr argument)
+{
+    writeResponse("ACK");
+
+    current_line_ = *argument;
+}
+
+void Session::cmdCursorPosition(StringPtr argument)
+{
+    writeResponse("ACK");
+
+    std::vector<std::string> position;
+    boost::split(
+        position,
+        *argument,
+        boost::is_any_of(" "),
+        boost::token_compress_on);
+    unsigned x = boost::lexical_cast<unsigned>(position[0]);
+    unsigned y = boost::lexical_cast<unsigned>(position[1]);
+    cursor_pos_.first = x; cursor_pos_.second = y;
+
+    buffers_[current_buffer_].CalculateCurrentWordOfCursor(
+        current_line_,
+        cursor_pos_);
+}
+
+void Session::cmdBufferContents(StringPtr argument)
+{
+    writeResponse("ACK");
+
+    ParseJob job;
+    job.BufferNumber = current_buffer_;
+    job.Contents = argument;
+    queueParseJob(job);
+}
+
+void Session::cmdComplete(StringPtr argument)
+{
+    //Stopwatch watch; watch.Start();
+
+    std::string response;
+    response.reserve(1024);
+    calculateCompletionCandidates(*argument, response);
+
+    writeResponse(response);
+
+    //watch.Stop(); std::cout << "complete: "; watch.PrintResultMilliseconds();
+}
+
+void Session::cmdFreeBuffer(StringPtr argument)
+{
+    writeResponse("ACK");
+
+    // make sure job queue is empty before we can delete buffer
+    while (true) {
+        job_queue_mutex_.lock();
+        if (job_queue_.size() == 0) {
+            break;
+        }
+        job_queue_mutex_.unlock();
+    }
+
+    buffers_mutex_.lock();
+    buffers_.erase(boost::lexical_cast<unsigned>(*argument));
+    buffers_mutex_.unlock();
+    job_queue_mutex_.unlock();
+}
+
+void Session::cmdCurrentDirectory(StringPtr argument)
+{
+    writeResponse("ACK");
+
+    current_directory_ = *argument;
+}
+
+void Session::cmdCurrentTags(StringPtr argument)
+{
+    current_tags_.clear();
+
+    std::vector<std::string> tags_list;
+    boost::split(tags_list, *argument,
+                    boost::is_any_of(","), boost::token_compress_on);
+    foreach (const std::string& tags, tags_list)
+    {
+        if (tags.size() == 0) continue;
+
+        TagsSet::Instance()->CreateOrUpdate(tags, current_directory_);
+        current_tags_.push_back(tags);
+    }
+
+    // block server ACK until above is done
+    writeResponse("ACK");
+}
+
+void Session::cmdTaglistTags(StringPtr argument)
+{
+    taglist_tags_.clear();
+
+    std::vector<std::string> tags_list;
+    boost::split(tags_list, *argument,
+                    boost::is_any_of(","), boost::token_compress_on);
+    foreach (const std::string& tags, tags_list)
+    {
+        if (tags.size() == 0) continue;
+
+        TagsSet::Instance()->CreateOrUpdate(tags, current_directory_);
+        taglist_tags_.push_back(tags);
+    }
+
+    // block server ACK until above is done
+    writeResponse("ACK");
+}
+
+void Session::cmdVimTaglistFunction(StringPtr argument)
+{
+    std::string response = TagsSet::Instance()->VimTaglistFunction(
+        *argument, taglist_tags_, current_directory_);
+
+    writeResponse(response);
+}
+
+void Session::cmdPrune(StringPtr argument)
+{
+    writeResponse("ACK");
+
+    unsigned words_pruned = WordSet.Prune();
+    //std::cout << count << " words pruned" << std::endl;
+}
+
+void Session::cmdHideTeleprompter(StringPtr argument)
+{
+    writeResponse("ACK");
+
+#ifdef TELEPROMPTER
+        Teleprompter::Instance()->Show(false);
+#endif
+}
+
+void Session::writeResponse(const std::string& response)
 {
     // write response
-    response.resize(response.size() + 1, '\0');
     async_write(
         socket_,
         buffer(&response[0], response.size()),
+        boost::bind(
+            &Session::handleWriteResponse,
+            this,
+            placeholders::error));
+
+    std::string null_byte(1, '\0');
+    async_write(
+        socket_,
+        buffer(&null_byte[0], null_byte.size()),
         boost::bind(
             &Session::handleWriteResponse,
             this,
