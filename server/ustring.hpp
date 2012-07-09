@@ -52,7 +52,7 @@ public:
 
     ustring& operator=(const ustring& other)
     {
-        if (*this != other)
+        if (this != &other)
         {
             info_.size = other.info_.size;
 
@@ -77,36 +77,33 @@ public:
 
     ustring& operator=(const std::string& input)
     {
-        if (*this != input)
+        info_.size = input.size();
+
+        if (info_.size == 0)
         {
-            info_.size = input.size();
-
-            if (info_.size == 0)
+            if (info_.which == kUsingPointer)
             {
-                if (info_.which == kUsingPointer)
-                {
-                    delete data_.pointer;
-                    data_.pointer = NULL;
-                }
-
-                info_.which = kUsingBuffer;
-                return *this;
+                delete data_.pointer;
+                data_.pointer = NULL;
             }
 
-            if (info_.size <= sizeof(void*))
-            {
-                memcpy(data_.buffer, &input[0], info_.size);
-                info_.which = kUsingBuffer;
-            }
-            else
-            {
-                if (info_.which == kUsingPointer)
-                    delete data_.pointer;
+            info_.which = kUsingBuffer;
+            return *this;
+        }
 
-                data_.pointer = new char[info_.size];
-                memcpy(data_.pointer, &input[0], info_.size);
-                info_.which = kUsingPointer;
-            }
+        if (info_.size <= sizeof(void*))
+        {
+            memcpy(data_.buffer, &input[0], info_.size);
+            info_.which = kUsingBuffer;
+        }
+        else
+        {
+            if (info_.which == kUsingPointer)
+                delete data_.pointer;
+
+            data_.pointer = new char[info_.size];
+            memcpy(data_.pointer, &input[0], info_.size);
+            info_.which = kUsingPointer;
         }
 
         return *this;
