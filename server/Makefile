@@ -15,9 +15,24 @@ BOOST_SUFFIX=
 LDFLAGS =
 LDFLAGS += -lboost_system$(BOOST_SUFFIX) -lboost_thread$(BOOST_SUFFIX)
 
-SOURCES = EntryPoint.cpp Server.cpp Session.cpp Participant.cpp Room.cpp
-SOURCES += Buffer.cpp TrieNode.cpp LookupTable.cpp CompletionSet.cpp
-SOURCES += Tags.cpp TagsSet.cpp GlobalWordSet.cpp stdafx.cpp TestCases.cpp
+SOURCES =
+SOURCES += Algorithm.cpp
+SOURCES += Buffer.cpp
+SOURCES += CompletionSet.cpp
+SOURCES += EntryPoint.cpp
+SOURCES += GlobalWordSet.cpp
+SOURCES += LookupTable.cpp
+SOURCES += Participant.cpp
+SOURCES += Room.cpp
+SOURCES += Server.cpp
+SOURCES += Session.cpp
+SOURCES += Tags.cpp
+SOURCES += stdafx.cpp
+SOURCES += TagsSet.cpp
+SOURCES += Teleprompter.cpp
+SOURCES += TestCases.cpp
+SOURCES += TrieNode.cpp
+SOURCES += ustring.cpp
 
 HEADERS = $(SOURCES:.cpp=.hpp)
 OBJECTS = $(SOURCES:.cpp=.o)

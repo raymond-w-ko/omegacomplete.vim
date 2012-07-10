@@ -188,6 +188,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\..\Algorithm.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\Buffer.cpp"
 				>
 			</File>
@@ -252,11 +256,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\Teleprompter.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\TestCases.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\TrieNode.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\ustring.cpp"
 				>
 			</File>
 		</Filter>
@@ -265,6 +277,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\..\Algorithm.hpp"
+				>
+			</File>
 			<File
 				RelativePath="..\..\Buffer.hpp"
 				>
@@ -318,11 +334,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\Teleprompter.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\TestCases.hpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\TrieNode.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\ustring.hpp"
 				>
 			</File>
 		</Filter>
