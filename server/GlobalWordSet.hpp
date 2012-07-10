@@ -16,27 +16,6 @@ struct WordInfo
 class GlobalWordSet : public boost::noncopyable
 {
 public:
-
-    static void GlobalInit();
-
-    // digit_upper_bound is of the form [1, digit_upper_bound]
-    // no side effects
-    static void ResolveCarries(
-        std::vector<size_t>& indices,
-        size_t digit_upper_bound);
-    // no side effects
-    static void GenerateDepths(
-        const unsigned num_indices,
-        const unsigned depth,
-        std::vector<std::vector<size_t> >& depth_list);
-
-    static const StringVector* ComputeUnderscore(
-        const std::string& word,
-        boost::unordered_map<String, StringVector>& underscore_cache);
-    static const StringVector* ComputeTitleCase(
-        const std::string& word,
-        boost::unordered_map<String, StringVector>& title_case_cache);
-
     static void LevenshteinSearch(
         const std::string& word,
         int max_cost,
@@ -70,13 +49,6 @@ public:
         LevenshteinSearchResults& results);
 
 private:
-    static boost::unordered_map<String, StringVector> title_case_cache_;
-    static boost::unordered_map<String, StringVector> underscore_cache_;
-
-    static
-        boost::unordered_map<size_t, std::vector<std::vector<size_t> > >
-        depth_list_cache_;
-
     boost::mutex mutex_;
 
     std::map<String, WordInfo> words_;

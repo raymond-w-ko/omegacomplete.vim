@@ -11,6 +11,7 @@
 #include "TrieNode.hpp"
 #include "GlobalWordSet.hpp"
 #include "TagsSet.hpp"
+#include "Algorithm.hpp"
 
 TestCases::TestCases()
 {
@@ -118,5 +119,5 @@ void TestCases::TagsTest()
     TagsSet::Instance()->CreateOrUpdate(tags, current_directory);
 
     //TagsSet::Instance()->Clear();
-    //Tags::ClearGlobalCache();
+    //Algorithm::ClearGlobalCache();
 }

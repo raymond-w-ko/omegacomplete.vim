@@ -3,15 +3,7 @@
 #include "Tags.hpp"
 #include "GlobalWordSet.hpp"
 #include "LookupTable.hpp"
-
-boost::unordered_map<String, StringVector> Tags::title_case_cache_;
-boost::unordered_map<String, StringVector> Tags::underscore_cache_;
-
-void Tags::ClearGlobalCache()
-{
-    Tags::title_case_cache_.clear();
-    Tags::underscore_cache_.clear();
-}
+#include "Algorithm.hpp"
 
 Tags::Tags()
 :
@@ -118,10 +110,8 @@ void Tags::reparse()
     {
         const String& word = tag->first;
 
-        const StringVector* title_cases = GlobalWordSet::ComputeTitleCase(
-            word, title_case_cache_);
-        const StringVector* underscores = GlobalWordSet::ComputeUnderscore(
-            word, underscore_cache_);
+        StringVectorPtr title_cases = Algorithm::ComputeTitleCase(word);
+        StringVectorPtr underscores = Algorithm::ComputeUnderscore(word);
 
         if (title_cases->size() > 0) {
             foreach (const String& title_case, *title_cases) {

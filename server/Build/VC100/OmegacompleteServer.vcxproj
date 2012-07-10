@@ -106,6 +106,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Algorithm.cpp" />
     <ClCompile Include="..\..\Buffer.cpp" />
     <ClCompile Include="..\..\CompletionSet.cpp" />
     <ClCompile Include="..\..\EntryPoint.cpp" />
@@ -127,6 +128,7 @@
     <ClCompile Include="..\..\ustring.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Algorithm.hpp" />
     <ClInclude Include="..\..\Buffer.hpp" />
     <ClInclude Include="..\..\CompletionSet.hpp" />
     <ClInclude Include="..\..\EntryPoint.hpp" />

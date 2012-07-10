@@ -13,8 +13,6 @@ struct TagInfo
 class Tags
 {
 public:
-    static void ClearGlobalCache();
-
     Tags();
     Tags(const Tags& other);
     ~Tags();
@@ -41,10 +39,6 @@ private:
         const std::string& line,
         std::string& tag_name,
         TagInfo& tag_info);
-
-
-    static boost::unordered_map<String, StringVector> title_case_cache_;
-    static boost::unordered_map<String, StringVector> underscore_cache_;
 
     std::string pathname_;
     int64_t last_write_time_;

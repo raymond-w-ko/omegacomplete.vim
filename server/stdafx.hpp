@@ -59,6 +59,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
 #include <boost/typeof/typeof.hpp>
+#include <boost/thread/locks.hpp>
 
 #define auto BOOST_AUTO
 #define foreach BOOST_FOREACH
@@ -112,6 +113,7 @@ typedef std::string String;
 //typedef ustring String;
 
 typedef std::vector<String> StringVector;
+typedef boost::shared_ptr<StringVector> StringVectorPtr;
 typedef std::pair<String, String> StringPair;
 
 #ifdef _WIN32
