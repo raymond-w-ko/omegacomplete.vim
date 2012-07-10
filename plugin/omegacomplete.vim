@@ -32,6 +32,8 @@ function s:Init()
     nnoremap <silent> A A<C-r>=<SID>FeedPopup()<CR>
     nnoremap <silent> R R<C-r>=<SID>FeedPopup()<CR>
 
+    command OmegaCompleteFlushServerCaches :call <SID>FlushServerCaches()
+
     " find and load the omegacomplete Python code
 python << PYTHON
 import vim
@@ -316,6 +318,10 @@ function omegacomplete#UseFirstEntryOfPopup()
     else
         return "\<Tab>"
     endif
+endfunction
+
+function <SID>FlushServerCaches()
+    exe 'py oc_send_command("flush_caches 1")'
 endfunction
 
 " do initialization

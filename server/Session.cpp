@@ -6,6 +6,7 @@
 #include "LookupTable.hpp"
 #include "CompletionSet.hpp"
 #include "Teleprompter.hpp"
+#include "Algorithm.hpp"
 
 unsigned int Session::connection_ticket_ = 0;
 std::vector<char> Session::QuickMatchKey;
@@ -97,6 +98,11 @@ prev_input_(3)
 
     command_dispatcher_["hide_teleprompter"] = boost::bind(
         &Session::cmdHideTeleprompter,
+        boost::ref(*this),
+        _1);
+
+    command_dispatcher_["flush_caches"] = boost::bind(
+        &Session::cmdFlushCaches,
         boost::ref(*this),
         _1);
 }
@@ -356,6 +362,14 @@ void Session::cmdHideTeleprompter(StringPtr argument)
 #ifdef TELEPROMPTER
         Teleprompter::Instance()->Show(false);
 #endif
+}
+
+void Session::cmdFlushCaches(StringPtr argument)
+{
+    TagsSet::Instance()->Clear();
+    Algorithm::ClearGlobalCache();
+
+    writeResponse("ACK");
 }
 
 void Session::writeResponse(const std::string& response)

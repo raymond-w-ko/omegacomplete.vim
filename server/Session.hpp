@@ -69,6 +69,7 @@ private:
     void cmdVimTaglistFunction(StringPtr argument);
     void cmdPrune(StringPtr argument);
     void cmdHideTeleprompter(StringPtr argument);
+    void cmdFlushCaches(StringPtr argument);
 
     ////////////////////////////////////////////////////////////////////////////
     // OmegaComplete Core

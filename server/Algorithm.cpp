@@ -221,6 +221,9 @@ const StringVector* Algorithm::ComputeTitleCaseCached(
 
 void Algorithm::ClearGlobalCache()
 {
+    boost::lock_guard<boost::mutex> guard1(underscore_mutex_);
+    boost::lock_guard<boost::mutex> guard2(title_case_mutex_);
+
     Algorithm::title_case_cache_.clear();
     Algorithm::underscore_cache_.clear();
 }
