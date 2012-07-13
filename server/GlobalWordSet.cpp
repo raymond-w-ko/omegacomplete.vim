@@ -69,15 +69,11 @@ void GlobalWordSet::UpdateWord(const std::string& word, int reference_count_delt
 
     // generate and store abbreviations
     mutex_.lock();
-    if (title_cases->size() > 0) {
-        foreach (const String& title_case, *title_cases) {
-            title_cases_.insert(make_pair(title_case, word));
-        }
+    foreach (const String& title_case, *title_cases) {
+        abbreviations_.insert(make_pair(title_case, word));
     }
-    if (underscores->size() > 0) {
-        foreach (const String& underscore, *underscores) {
-            underscores_.insert(make_pair(underscore, word));
-        }
+    foreach (const String& underscore, *underscores) {
+        abbreviations_.insert(make_pair(underscore, word));
     }
     mutex_.unlock();
 
@@ -110,16 +106,9 @@ void GlobalWordSet::GetAbbrCompletions(
 {
     mutex_.lock();
 
-    auto(bounds1, title_cases_.equal_range(prefix));
-    auto(iter, bounds1.first);
-    for (iter = bounds1.first; iter != bounds1.second; ++iter) {
-        const std::string& candidate = iter->second;
-        if (words_[candidate].ReferenceCount == 0) continue;
-        completions->insert(candidate);
-    }
-
-    auto(bounds2, underscores_.equal_range(prefix));
-    for (iter = bounds2.first; iter != bounds2.second; ++iter) {
+    auto(bounds, abbreviations_.equal_range(prefix));
+    auto(iter, bounds.first);
+    for (; iter != bounds.second; ++iter) {
         const std::string& candidate = iter->second;
         if (words_[candidate].ReferenceCount == 0) continue;
         completions->insert(candidate);
@@ -145,14 +134,15 @@ unsigned GlobalWordSet::Prune()
     foreach (const std::string& word, to_be_pruned) {
         mutex_.lock();
         words_.erase(word);
-        // this actually can't be reliably used since it can caused
+        // this actually can't be reliably used since it can cause
         // the removal of abbreviations that are still valid.
         // e.g.: if we have if we have 'foo_bar' and 'fizz_buzz', they
         // both map to 'fb' but if all traces of foo_bar disappear,
         // then it will remove 'fb' even though 'fizz_buzz' -> 'fb'
         // is still valid.
         // The proper way to fix this is to add reference counts to
-        // these also, but it might not be necessary.
+        // these also, but having some dangling strings in memory should
+        // still be okay
         /*
         foreach (const std::string& w, *ComputeTitleCase(word)) {
             title_cases_.erase(w);

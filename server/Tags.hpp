@@ -48,6 +48,5 @@ private:
         std::map<String, String>::iterator
         tags_iterator;
     std::map<String, String> tags_;
-    boost::unordered_multimap<String, const String*> title_cases_;
-    boost::unordered_multimap<String, const String*> underscores_;
+    boost::unordered_multimap<String, const String*> abbreviations_;
 };

@@ -67,8 +67,7 @@ Tags::Tags(const Tags& other)
     parent_directory_ = other.parent_directory_;
 
     tags_ = other.tags_;
-    title_cases_ = other.title_cases_;
-    underscores_ = other.underscores_;
+    abbreviations_ = other.abbreviations_;
 }
 
 Tags::~Tags()
@@ -79,8 +78,7 @@ Tags::~Tags()
 void Tags::reparse()
 {
     tags_.clear();
-    title_cases_.clear();
-    underscores_.clear();
+    abbreviations_.clear();
 
     std::ifstream file(pathname_.c_str());
     unsigned line_num = 0;
@@ -113,15 +111,11 @@ void Tags::reparse()
         StringVectorPtr title_cases = Algorithm::ComputeTitleCase(word);
         StringVectorPtr underscores = Algorithm::ComputeUnderscore(word);
 
-        if (title_cases->size() > 0) {
-            foreach (const String& title_case, *title_cases) {
-                title_cases_.insert(std::make_pair(title_case, &word));
-            }
+        foreach (const String& title_case, *title_cases) {
+            abbreviations_.insert(std::make_pair(title_case, &word));
         }
-        if (underscores->size() > 0) {
-            foreach (const String& underscore, *underscores) {
-                underscores_.insert(std::make_pair(underscore, &word));
-            }
+        foreach (const String& underscore, *underscores) {
+            abbreviations_.insert(std::make_pair(underscore, &word));
         }
     }
 }
@@ -180,15 +174,9 @@ void Tags::GetAbbrCompletions(
 {
     if (prefix.length() < 2) return;
 
-    auto(bounds1, title_cases_.equal_range(prefix));
-    auto(ii, bounds1.first);
-    for (ii = bounds1.first; ii != bounds1.second; ++ii)
-    {
-        results->insert(*ii->second);
-    }
-
-    auto(bounds2, underscores_.equal_range(prefix));
-    for (ii = bounds2.first; ii != bounds2.second; ++ii)
+    auto(bounds, abbreviations_.equal_range(prefix));
+    auto(ii, bounds.first);
+    for (; ii != bounds.second; ++ii)
     {
         results->insert(*ii->second);
     }

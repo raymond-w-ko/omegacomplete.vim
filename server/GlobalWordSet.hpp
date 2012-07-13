@@ -52,8 +52,7 @@ private:
     boost::mutex mutex_;
 
     std::map<String, WordInfo> words_;
-    boost::unordered_multimap<String, String> title_cases_;
-    boost::unordered_multimap<String, String> underscores_;
+    boost::unordered_multimap<String, String> abbreviations_;
 
     boost::mutex trie_mutex_;
     TrieNode trie_;
