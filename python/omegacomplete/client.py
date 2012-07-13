@@ -91,3 +91,21 @@ def oc_send_current_buffer():
 
     reply = safe_recvall(oc_conn)
     return reply
+
+def oc_send_current_buffer2():
+    global oc_is_disabled
+    if oc_is_disabled:
+        return
+
+    global oc_conn
+
+    command = "buffer_contents "
+    buffer_contents = vim.eval("contents")
+    data_length = struct.pack("=I", len(command) + len(buffer_contents))
+
+    raw_sendall(oc_conn, data_length)
+    raw_sendall(oc_conn, command)
+    raw_sendall(oc_conn, buffer_contents)
+
+    reply = safe_recvall(oc_conn)
+    return reply

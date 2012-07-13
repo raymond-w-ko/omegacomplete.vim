@@ -105,6 +105,13 @@ function s:UnmapForMappingDriven()
     let s:keys_mapping_driven = []
 endfunction
 
+function s:SendCurrentBuffer()
+    let contents = join(getline(1, line('$')), '\n')
+    python << PYTHON
+oc_send_current_buffer2()
+PYTHON
+endfunction
+
 function <SID>FeedPopup()
     " disable when paste mode is active
     if &paste
@@ -131,7 +138,7 @@ function <SID>FeedPopup()
 
     " send server contents of the entire buffer in case reparse is needed
     if (s:just_did_insertenter != 1)
-        exe 'py oc_send_current_buffer()'
+        call s:SendCurrentBuffer()
     endif
     let s:just_did_insertenter = 0
 
@@ -179,7 +186,7 @@ function <SID>NormalModeSyncBuffer()
     endif
 
     exe 'py oc_send_command("current_buffer ' . current_buffer_number . '")'
-    exe 'py oc_send_current_buffer()'
+    call s:SendCurrentBuffer()
 endfunction
 
 " When we don't want a buffer loaded in memory in VIM, we can 'delete' the

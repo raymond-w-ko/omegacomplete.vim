@@ -4,7 +4,7 @@
 #include "LookupTable.hpp"
 
 static const size_t kWordSizeCutoffPointForDepthLists = 5;
-static const size_t kMaxDepthPerIndex = 4;
+static const size_t kMaxDepthPerIndex = 3;
 boost::unordered_map<size_t, std::vector<std::vector<size_t> > >
     Algorithm::depth_list_cache_;
 
