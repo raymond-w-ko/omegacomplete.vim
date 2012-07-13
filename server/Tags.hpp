@@ -45,8 +45,8 @@ private:
     std::string parent_directory_;
 
     typedef
-        std::map<String, String>::iterator
+        std::multimap<String, String>::iterator
         tags_iterator;
-    std::map<String, String> tags_;
+    std::multimap<String, String> tags_;
     boost::unordered_multimap<String, const String*> abbreviations_;
 };

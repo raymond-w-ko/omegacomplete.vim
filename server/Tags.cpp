@@ -102,11 +102,14 @@ void Tags::reparse()
         tags_.insert( make_pair(tag_name, line) );
     }
 
+    std::string prev_word;
     for (tags_iterator tag = tags_.begin();
          tag != tags_.end();
          ++tag)
     {
         const String& word = tag->first;
+        if (word == prev_word)
+            continue;
 
         StringVectorPtr title_cases = Algorithm::ComputeTitleCase(word);
         StringVectorPtr underscores = Algorithm::ComputeUnderscore(word);
@@ -117,6 +120,8 @@ void Tags::reparse()
         foreach (const String& underscore, *underscores) {
             abbreviations_.insert(std::make_pair(underscore, &word));
         }
+
+        prev_word = word;
     }
 }
 
