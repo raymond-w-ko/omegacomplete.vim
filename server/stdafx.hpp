@@ -105,12 +105,16 @@ inline void NormalizeToWindowsPathSeparators(std::string& pathname)
     boost::replace_all(pathname, "/", "\\");
 }
 
-typedef boost::shared_ptr<std::string> StringPtr;
-typedef boost::unordered_set<std::string> UnorderedStringSet;
-typedef boost::shared_ptr<UnorderedStringSet> UnorderedStringSetPtr;
-
 typedef std::string String;
 //typedef ustring String;
+
+typedef boost::shared_ptr<String> StringPtr;
+
+typedef std::set<String> StringSet;
+typedef boost::shared_ptr<StringSet> StringSetPtr;
+
+typedef boost::unordered_set<String> UnorderedStringSet;
+typedef boost::shared_ptr<UnorderedStringSet> UnorderedStringSetPtr;
 
 typedef std::vector<String> StringVector;
 typedef boost::shared_ptr<StringVector> StringVectorPtr;

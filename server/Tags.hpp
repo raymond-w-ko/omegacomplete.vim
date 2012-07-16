@@ -5,9 +5,9 @@ struct TagInfo
     std::string Location;
     std::string Ex;
     typedef
-        boost::unordered_map<std::string, std::string>::iterator
+        std::map<String, String>::iterator
         InfoIterator;
-    boost::unordered_map<std::string, std::string> Info;
+    std::map<String, String> Info;
 };
 
 class Tags
@@ -48,5 +48,5 @@ private:
         std::multimap<String, String>::iterator
         tags_iterator;
     std::multimap<String, String> tags_;
-    boost::unordered_multimap<String, const String*> abbreviations_;
+    std::map<String, const String*> abbreviations_;
 };

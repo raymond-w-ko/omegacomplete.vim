@@ -443,7 +443,7 @@ try_get_next_job:
                           << "skipping this job" << std::endl;
                 continue;
             }
-            buffers_[job.BufferNumber].ReplaceContents(job.Contents);
+            buffers_[job.BufferNumber].ReplaceContentsWith(job.Contents);
             buffers_mutex_.unlock();
 
             did_prune = false;

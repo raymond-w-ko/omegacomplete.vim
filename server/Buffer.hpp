@@ -9,7 +9,7 @@ class Buffer
 public:
     static void TokenizeContentsIntoKeywords(
         StringPtr contents,
-        UnorderedStringSetPtr words);
+        StringSetPtr words);
 
     Buffer();
     ~Buffer();
@@ -18,7 +18,7 @@ public:
     bool operator==(const Buffer& other);
     unsigned GetBufferId() const;
 
-    void ReplaceContents(StringPtr new_contents);
+    void ReplaceContentsWith(StringPtr new_contents);
 
     void CalculateCurrentWordOfCursor(
         const std::string& line,
@@ -31,7 +31,7 @@ private:
     // the buffer's contents
     StringPtr contents_;
     // set of all unique words generated from this buffer's contents
-    UnorderedStringSetPtr words_;
+    StringSetPtr words_;
     // what word the the cursor in this buffer is currently in
     std::string current_cursor_word_;
 };

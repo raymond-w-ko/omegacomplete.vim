@@ -44,5 +44,5 @@ private:
     static std::string win32_system_drive_;
 #endif
 
-    boost::unordered_map<std::string, Tags> tags_list_;
+    std::map<String, Tags> tags_list_;
 };

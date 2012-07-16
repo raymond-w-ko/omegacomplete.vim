@@ -39,7 +39,7 @@ unsigned Buffer::GetBufferId() const
     return buffer_id_;
 }
 
-void Buffer::ReplaceContents(StringPtr new_contents)
+void Buffer::ReplaceContentsWith(StringPtr new_contents)
 {
     // null pointer passed in
     if (!new_contents) return;
@@ -48,7 +48,7 @@ void Buffer::ReplaceContents(StringPtr new_contents)
     // new content we replace with is the exact samething
     if (contents_ && *contents_ == *new_contents) return;
 
-    UnorderedStringSetPtr new_words = boost::make_shared<UnorderedStringSet>();
+    StringSetPtr new_words = boost::make_shared<StringSet>();
     Buffer::TokenizeContentsIntoKeywords(new_contents, new_words);
 
     if (!contents_) {
@@ -94,7 +94,7 @@ void Buffer::ReplaceContents(StringPtr new_contents)
 
 void Buffer::TokenizeContentsIntoKeywords(
     StringPtr contents,
-    UnorderedStringSetPtr words)
+    StringSetPtr words)
 {
     const std::string& text = *contents;
     size_t contents_size = text.size();
