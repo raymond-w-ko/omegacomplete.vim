@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TrieNode.hpp"
+#include "CompleteItem.hpp"
 
 typedef std::map< int, std::set<std::string> > LevenshteinSearchResults;
 

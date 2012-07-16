@@ -118,5 +118,8 @@
     <ClInclude Include="..\..\Algorithm.hpp">
       <Filter>Header</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\CompleteItem.hpp">
+      <Filter>Header</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

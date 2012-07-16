@@ -697,20 +697,16 @@ void Session::fillCompletionSet(
     this->WordSet.GetAbbrCompletions(
         prefix_to_complete,
         &completion_set.AbbrCompletions);
-    completion_set.AbbrCompletions.erase(prefix_to_complete);
 
     TagsSet::Instance()->GetAbbrCompletions(
         prefix_to_complete, current_tags_, current_directory_,
         &completion_set.TagsAbbrCompletions);
-    completion_set.TagsAbbrCompletions.erase(prefix_to_complete);
 
     this->WordSet.GetPrefixCompletions(
         prefix_to_complete,
         &completion_set.PrefixCompletions);
-    completion_set.PrefixCompletions.erase(prefix_to_complete);
 
     TagsSet::Instance()->GetAllWordsWithPrefix(
         prefix_to_complete, current_tags_, current_directory_,
         &completion_set.TagsPrefixCompletions);
-    completion_set.TagsPrefixCompletions.erase(prefix_to_complete);
 }

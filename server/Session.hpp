@@ -4,6 +4,7 @@
 #include "Buffer.hpp"
 #include "GlobalWordSet.hpp"
 #include "CompletionSet.hpp"
+#include "CompleteItem.hpp"
 
 struct ParseJob
 {
