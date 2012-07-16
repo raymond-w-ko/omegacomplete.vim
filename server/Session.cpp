@@ -421,6 +421,7 @@ void Session::workerThreadLoop()
     while (true)
     {
 #ifdef _WIN32
+        // this is in milliseconds
         ::Sleep(1);
 #else
         ::usleep(1 * 1000);
