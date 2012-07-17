@@ -50,5 +50,5 @@ private:
         std::multimap<String, String>::iterator
         tags_iterator;
     std::multimap<String, String> tags_;
-    std::map<String, const String*> abbreviations_;
+    std::multimap<String, const String*> abbreviations_;
 };
