@@ -65,12 +65,12 @@ struct CompleteItem
 
     bool operator<(const CompleteItem& other) const
     {
-        return this->Word < other.Word;
+        return Word < other.Word;
     }
 
     bool operator==(const CompleteItem& other) const
     {
-        return this->Word == other.Word;
+        return Word == other.Word;
     }
 
     std::string SerializeToVimDict() const
