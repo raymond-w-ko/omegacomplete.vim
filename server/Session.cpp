@@ -714,6 +714,9 @@ void Session::fillCompletionSet(
     completion_set.PrefixCompletions.erase(repeat);
     completion_set.TagsPrefixCompletions.erase(repeat);
 
+    if (banned_words == NULL)
+        return;
+
     foreach (const CompleteItem& completion, *banned_words)
     {
         completion_set.AbbrCompletions.erase(completion);
