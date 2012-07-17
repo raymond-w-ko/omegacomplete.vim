@@ -53,7 +53,7 @@ private:
     boost::mutex mutex_;
 
     std::map<String, WordInfo> words_;
-    boost::unordered_multimap<String, String> abbreviations_;
+    std::multimap<String, String> abbreviations_;
 
     boost::mutex trie_mutex_;
     TrieNode trie_;
