@@ -82,7 +82,7 @@ void GlobalWordSet::UpdateWord(const std::string& word, int reference_count_delt
 
 void GlobalWordSet::GetPrefixCompletions(
     const std::string& prefix,
-    std::set<std::string>* completions)
+    std::set<CompleteItem>* completions)
 {
     mutex_.lock();
 
@@ -94,6 +94,7 @@ void GlobalWordSet::GetPrefixCompletions(
         if (boost::starts_with(candidate, prefix) == false) break;
         if (wi.ReferenceCount == 0) continue;
 
+        CompleteItem completion(candidate);
         completions->insert(candidate);
     }
 
@@ -102,7 +103,7 @@ void GlobalWordSet::GetPrefixCompletions(
 
 void GlobalWordSet::GetAbbrCompletions(
     const std::string& prefix,
-    std::set<std::string>* completions)
+    std::set<CompleteItem>* completions)
 {
     mutex_.lock();
 
@@ -111,7 +112,8 @@ void GlobalWordSet::GetAbbrCompletions(
     for (; iter != bounds.second; ++iter) {
         const std::string& candidate = iter->second;
         if (words_[candidate].ReferenceCount == 0) continue;
-        completions->insert(candidate);
+        CompleteItem completion(candidate);
+        completions->insert(completion);
     }
 
     mutex_.unlock();

@@ -39,11 +39,11 @@ public:
 
     void GetPrefixCompletions(
         const std::string& prefix,
-        std::set<std::string>* completions);
+        std::set<CompleteItem>* completions);
 
     void GetAbbrCompletions(
         const std::string& prefix,
-        std::set<std::string>* completions);
+        std::set<CompleteItem>* completions);
 
     void GetLevenshteinCompletions(
         const std::string& prefix,

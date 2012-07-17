@@ -40,9 +40,68 @@ struct CompleteItem
         ;
     }
 
+    CompleteItem(const std::string& word)
+    :
+    Word(word),
+    Icase(false),
+    Dup(false),
+    Empty(false)
+    {
+        ;
+    }
+
+    CompleteItem(const CompleteItem& other)
+    :
+    Word(other.Word),
+    Abbr(other.Abbr),
+    Menu(other.Menu),
+    Info(other.Info),
+    Kind(other.Kind),
+    Icase(other.Icase),
+    Dup(other.Dup),
+    Empty(other.Empty)
+    {
+    }
+
     bool operator<(const CompleteItem& other) const
     {
         return this->Word < other.Word;
+    }
+
+    bool operator==(const CompleteItem& other) const
+    {
+        return this->Word == other.Word;
+    }
+
+    std::string SerializeToVimDict() const
+    {
+        if (Word.empty())
+            return "";
+
+        std::string result;
+        result += "{";
+
+        result += boost::str(boost::format("'word':'%s',") % Word);
+
+        if (!Abbr.empty())
+            result += boost::str(boost::format("'abbr':'%s',") % Abbr);
+        if (!Menu.empty())
+            result += boost::str(boost::format("'menu':'%s',") % Menu);
+        if (!Info.empty())
+            result += boost::str(boost::format("'info':'%s',") % Info);
+        if (!Kind.empty())
+            result += boost::str(boost::format("'kind':'%s',") % Kind);
+
+        if (Icase)
+            result += "'icase':1,";
+        if (Dup)
+            result += "'dup':1,";
+        if (Empty)
+            result += "'empty':1,";
+
+        result += "},";
+
+        return result;
     }
 };
 

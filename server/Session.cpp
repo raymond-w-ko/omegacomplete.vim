@@ -267,7 +267,7 @@ void Session::cmdComplete(StringPtr argument)
     //Stopwatch watch; watch.Start();
 
     std::string response;
-    response.reserve(1024);
+    response.reserve(8192);
     calculateCompletionCandidates(*argument, response);
 
     writeResponse(response);
@@ -277,8 +277,6 @@ void Session::cmdComplete(StringPtr argument)
 
 void Session::cmdFreeBuffer(StringPtr argument)
 {
-    writeResponse("ACK");
-
     // make sure job queue is empty before we can delete buffer
     while (true) {
         job_queue_mutex_.lock();
@@ -292,6 +290,9 @@ void Session::cmdFreeBuffer(StringPtr argument)
     buffers_.erase(boost::lexical_cast<unsigned>(*argument));
     buffers_mutex_.unlock();
     job_queue_mutex_.unlock();
+
+    // block until buffer is deleted
+    writeResponse("ACK");
 }
 
 void Session::cmdCurrentDirectory(StringPtr argument)
@@ -374,23 +375,19 @@ void Session::cmdFlushCaches(StringPtr argument)
 
 void Session::writeResponse(const std::string& response)
 {
-    // write response
-    async_write(
+    // note that we MUST perform synchronous writes. if async_write() is used
+    // instead it is possible that writing large responses (e.g. > 65536 bytes)
+    // takes multiple background async_write()s and the NULL character gets
+    // written before we are done writing the actual response!
+
+    boost::asio::write(
         socket_,
-        buffer(&response[0], response.size()),
-        boost::bind(
-            &Session::handleWriteResponse,
-            this,
-            placeholders::error));
+        buffer(&response[0], response.size()));
 
     std::string null_byte(1, '\0');
-    async_write(
+    boost::asio::write(
         socket_,
-        buffer(&null_byte[0], null_byte.size()),
-        boost::bind(
-            &Session::handleWriteResponse,
-            this,
-            placeholders::error));
+        buffer(&null_byte[0], null_byte.size()));
 
     asyncReadHeader();
 }
@@ -521,7 +518,7 @@ retry_completion:
     // encountered an invalid disambiguation, abort and retry normally
     // as though it was not intended
     //
-    // for example, shouldE would falsely trigger 'disambiguate_mode'
+    // for example, should2 would falsely trigger 'disambiguate_mode'
     // but we probably want to try it as a regular prefix completion
     if (disambiguate_mode &&
         disambiguate_index >= 0 &&
@@ -545,8 +542,8 @@ retry_completion:
             levenshtein_completions);
     }
 
-    std::vector<StringPair> result_list;
-    std::vector<StringPair> terminus_result_list;
+    std::vector<CompleteItem> result_list;
+    std::vector<CompleteItem> terminus_result_list;
 
     if (terminus_mode)
     {
@@ -567,11 +564,11 @@ retry_completion:
 
     if (terminus_mode)
     {
-        foreach (const StringPair& pair, terminus_result_list)
+        foreach (const CompleteItem& completion, terminus_result_list)
         {
-            const std::string& word = pair.first;
+            const std::string& word = completion.Word;
             if (word[word.size() - 1] == '_')
-                main_completion_set.AddBannedWord(pair.first);
+                main_completion_set.AddBannedWord(word);
         }
     }
 
@@ -589,18 +586,15 @@ retry_completion:
     {
         if (terminus_mode)
         {
-            foreach (const StringPair& pair, terminus_result_list)
+            foreach (const CompleteItem& completion, terminus_result_list)
             {
-                const std::string& word = pair.first;
+                const std::string& word = completion.Word;
                 if (word[ word.size() - 1 ] != '_')
                     continue;
                 if (word == prefix_to_complete)
                     continue;
 
-                result += boost::str(boost::format(
-                    "{'word':'%s','menu':'%s'},")
-                    % static_cast<std::string>(pair.first)
-                    % static_cast<std::string>(pair.second) );
+                result += completion.SerializeToVimDict();
             }
 
 #ifdef TELEPROMPTER
@@ -608,12 +602,9 @@ retry_completion:
 #endif
         }
 
-        foreach (const StringPair& pair, result_list)
+        foreach (const CompleteItem& completion, result_list)
         {
-            result += boost::str(boost::format(
-                "{'word':'%s','menu':'%s'},")
-                % static_cast<std::string>(pair.first)
-                % static_cast<std::string>(pair.second) );
+            result += completion.SerializeToVimDict();
         }
             
 #ifdef TELEPROMPTER
@@ -630,11 +621,9 @@ retry_completion:
         // make sure we actually have a result, or we crash
         if (result_list.size() > disambiguate_index)
         {
-            const std::string& single_result =
-                result_list[disambiguate_index].first;
-            result += boost::str(boost::format(
-                "{'abbr':'%s','word':'%s'},")
-                % (single_result + " <==") % single_result );
+            CompleteItem single_result = result_list[disambiguate_index];
+            single_result.Abbr = single_result.Word + " <==";
+            result += single_result.SerializeToVimDict();
 
 #ifdef TELEPROMPTER
             Teleprompter::Instance()->AppendText(
@@ -710,8 +699,9 @@ void Session::fillCompletionSet(
         prefix_to_complete, current_tags_, current_directory_,
         &completion_set.TagsPrefixCompletions);
 
-    completion_set.AbbrCompletions.erase(prefix_to_complete);
-    completion_set.TagsAbbrCompletions.erase(prefix_to_complete);
-    completion_set.PrefixCompletions.erase(prefix_to_complete);
-    completion_set.TagsPrefixCompletions.erase(prefix_to_complete);
+    CompleteItem repeat(prefix_to_complete);
+    completion_set.AbbrCompletions.erase(repeat);
+    completion_set.TagsAbbrCompletions.erase(repeat);
+    completion_set.PrefixCompletions.erase(repeat);
+    completion_set.TagsPrefixCompletions.erase(repeat);
 }

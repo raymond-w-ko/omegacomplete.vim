@@ -98,7 +98,7 @@ void TagsSet::GetAllWordsWithPrefix(
     const std::string& prefix,
     const std::vector<std::string>& tags_list,
     const std::string& current_directory,
-    std::set<std::string>* results)
+    std::set<CompleteItem>* results)
 {
     foreach (std::string tags, tags_list)
     {
@@ -113,7 +113,7 @@ void TagsSet::GetAbbrCompletions(
     const std::string& prefix,
     const std::vector<std::string>& tags_list,
     const std::string& current_directory,
-    std::set<std::string>* results)
+    std::set<CompleteItem>* results)
 {
     foreach (std::string tags, tags_list)
     {

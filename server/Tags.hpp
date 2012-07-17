@@ -1,5 +1,7 @@
 #pragma once
 
+#include "CompleteItem.hpp"
+
 struct TagInfo
 {
     std::string Location;
@@ -22,11 +24,11 @@ public:
 
     void GetAllWordsWithPrefix(
         const std::string& prefix,
-        std::set<std::string>* results);
+        std::set<CompleteItem>* results);
 
     void GetAbbrCompletions(
         const std::string& prefix,
-        std::set<std::string>* results);
+        std::set<CompleteItem>* results);
 
     void VimTaglistFunction(
         const std::string& word,

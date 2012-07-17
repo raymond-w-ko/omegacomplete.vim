@@ -27,27 +27,32 @@ void CompletionSet::Clear()
     TagsPrefixCompletions.clear();
 }
 
-void CompletionSet::FillResults(std::vector<StringPair>& result_list)
+void CompletionSet::FillResults(std::vector<CompleteItem>& result_list)
 {
-    addWordsToResults(AbbrCompletions, result_list);
-    addWordsToResults(TagsAbbrCompletions, result_list);
-    addWordsToResults(PrefixCompletions, result_list);
-    addWordsToResults(TagsPrefixCompletions, result_list);
+    addCompletionsToResults(AbbrCompletions, result_list);
+    addCompletionsToResults(TagsAbbrCompletions, result_list);
+    addCompletionsToResults(PrefixCompletions, result_list);
+    addCompletionsToResults(TagsPrefixCompletions, result_list);
 }
 
-void CompletionSet::addWordsToResults(
-    const std::set<std::string>& words,
-    std::vector<StringPair>& result_list)
+void CompletionSet::addCompletionsToResults(
+    const std::set<CompleteItem>& completions,
+    std::vector<CompleteItem>& result_list)
 {
-    foreach (const std::string& word, words)
+    foreach (CompleteItem completion, completions)
     {
         if (num_completions_added_ >= kMaxNumCompletions) break;
+        const std::string& word = completion.Word;
         if (Contains(added_words_, word) == true) continue;
 
-        result_list.push_back(std::make_pair(
-            word,
-            boost::lexical_cast<std::string>(
-                Session::QuickMatchKey[num_completions_added_++]) ));
+        if (Session::QuickMatchKey[num_completions_added_] != ' ' &&
+            completion.Menu.empty())
+        {
+            completion.Menu = boost::lexical_cast<std::string>(
+                Session::QuickMatchKey[num_completions_added_]);
+        }
+        result_list.push_back(completion);
+        num_completions_added_++;
 
         added_words_.insert(word);
     }

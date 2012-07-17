@@ -162,20 +162,32 @@ void Tags::VimTaglistFunction(
 
 void Tags::GetAllWordsWithPrefix(
     const std::string& prefix,
-    std::set<std::string>* results)
+    std::set<CompleteItem>* results)
 {
     auto(iter, tags_.lower_bound(prefix));
     for (; iter != tags_.end(); ++iter)
     {
         const std::string& candidate = iter->first;
+        const std::string& line = iter->second;
         if (boost::starts_with(candidate, prefix) == false) break;
+
+        CompleteItem completion(candidate);
+        TagInfo tag_info;
+        std::string dummy;
+        calculateTagInfo(line, dummy, tag_info);
+        completion.Dup = true;
+        if (Contains(tag_info.Info, "kind"))
+        {
+            completion.Kind = tag_info.Info["kind"];
+            std::cout << completion.Kind << std::endl;
+        }
         results->insert(candidate);
     }
 }
 
 void Tags::GetAbbrCompletions(
     const std::string& prefix,
-    std::set<std::string>* results)
+    std::set<CompleteItem>* results)
 {
     if (prefix.length() < 2) return;
 
@@ -183,7 +195,8 @@ void Tags::GetAbbrCompletions(
     auto(ii, bounds.first);
     for (; ii != bounds.second; ++ii)
     {
-        results->insert(*ii->second);
+        CompleteItem completion(*ii->second);
+        results->insert(completion);
     }
 }
 

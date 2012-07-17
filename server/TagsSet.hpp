@@ -1,5 +1,6 @@
 #pragma once
 
+#include "CompleteItem.hpp"
 #include "Tags.hpp"
 
 class TagsSet : public boost::noncopyable
@@ -22,13 +23,13 @@ public:
         const std::string& prefix,
         const std::vector<std::string>& tags_list,
         const std::string& current_directory,
-        std::set<std::string>* results);
+        std::set<CompleteItem>* results);
 
     void GetAbbrCompletions(
         const std::string& prefix,
         const std::vector<std::string>& tags_list,
         const std::string& current_directory,
-        std::set<std::string>* results);
+        std::set<CompleteItem>* results);
 
     std::string VimTaglistFunction(
         const std::string& word,
