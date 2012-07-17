@@ -488,6 +488,7 @@ void Session::calculateCompletionCandidates(
     bool disambiguate_mode = shouldEnableDisambiguateMode(prefix_to_complete);
     char disambiguate_letter = 0;
     unsigned disambiguate_index = UINT_MAX;
+    String orig_disambiguate_prefix;
     if (terminus_mode)
     {
         terminus_prefix = prefix_to_complete;
@@ -495,6 +496,8 @@ void Session::calculateCompletionCandidates(
     }
     else if (disambiguate_mode)
     {
+        orig_disambiguate_prefix = prefix_to_complete;
+
         disambiguate_letter = prefix_to_complete[ prefix_to_complete.size() - 1 ];
 
         prefix_to_complete.resize( prefix_to_complete.size() - 1 );
@@ -513,7 +516,12 @@ retry_completion:
         always_assert(disambiguate_mode == false);
         fillCompletionSet(terminus_prefix, terminus_completion_set);
     }
-    fillCompletionSet(prefix_to_complete, main_completion_set);
+    std::vector<CompleteItem> banned_words;
+    if (disambiguate_mode)
+    {
+        banned_words.push_back(orig_disambiguate_prefix);
+    }
+    fillCompletionSet(prefix_to_complete, main_completion_set, &banned_words);
 
     // encountered an invalid disambiguation, abort and retry normally
     // as though it was not intended
@@ -681,7 +689,8 @@ bool Session::shouldEnableTerminusMode(const std::string& word)
 
 void Session::fillCompletionSet(
     const std::string& prefix_to_complete,
-    CompletionSet& completion_set)
+    CompletionSet& completion_set,
+    const std::vector<CompleteItem>* banned_words)
 {
     this->WordSet.GetAbbrCompletions(
         prefix_to_complete,
@@ -704,4 +713,12 @@ void Session::fillCompletionSet(
     completion_set.TagsAbbrCompletions.erase(repeat);
     completion_set.PrefixCompletions.erase(repeat);
     completion_set.TagsPrefixCompletions.erase(repeat);
+
+    foreach (const CompleteItem& completion, *banned_words)
+    {
+        completion_set.AbbrCompletions.erase(completion);
+        completion_set.TagsAbbrCompletions.erase(completion);
+        completion_set.PrefixCompletions.erase(completion);
+        completion_set.TagsPrefixCompletions.erase(completion);
+    }
 }

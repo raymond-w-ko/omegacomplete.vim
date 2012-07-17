@@ -95,7 +95,8 @@ private:
     bool shouldEnableTerminusMode(const std::string& word);
     void fillCompletionSet(
         const std::string& prefix_to_complete,
-        CompletionSet& completion_set);
+        CompletionSet& completion_set,
+        const std::vector<CompleteItem>* banned_words = NULL);
 
     ip::tcp::socket socket_;
     Room& room_;
