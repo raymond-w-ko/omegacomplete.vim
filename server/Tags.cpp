@@ -172,16 +172,7 @@ void Tags::GetAllWordsWithPrefix(
         if (boost::starts_with(candidate, prefix) == false) break;
 
         CompleteItem completion(candidate);
-        TagInfo tag_info;
-        std::string dummy;
-        calculateTagInfo(line, dummy, tag_info);
-        completion.Dup = true;
-        if (Contains(tag_info.Info, "kind"))
-        {
-            completion.Kind = tag_info.Info["kind"];
-            std::cout << completion.Kind << std::endl;
-        }
-        results->insert(candidate);
+        results->insert(completion);
     }
 }
 
