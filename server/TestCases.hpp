@@ -10,4 +10,5 @@ private:
     void TrieNodeTest();
     void ustringTest();
     void TagsTest();
+    void ClangTest();
 };

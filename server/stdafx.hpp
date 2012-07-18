@@ -65,7 +65,7 @@
 #define foreach BOOST_FOREACH
 #define reverse_foreach BOOST_REVERSE_FOREACH
 
-//#include <clang-c/Index.h>
+#include <clang-c/Index.h>
 
 #include "ustring.hpp"
 

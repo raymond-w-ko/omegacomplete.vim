@@ -26,6 +26,9 @@ TestCases::TestCases()
 
     TagsTest();
     std::cout << std::endl;
+
+    ClangTest();
+    std::cout << std::endl;
 }
 
 TestCases::~TestCases()
@@ -120,4 +123,18 @@ void TestCases::TagsTest()
 
     //TagsSet::Instance()->Clear();
     //Algorithm::ClearGlobalCache();
+}
+
+void TestCases::ClangTest()
+{
+    std::cout << "checking to see if libclang/clang.dll works" << std::endl;
+
+    int argc = 1;
+    char* argv[] = {"--version"};
+
+    CXIndex index = clang_createIndex(0, 0);
+    CXTranslationUnit tu = clang_parseTranslationUnit(
+        index, 0, argv, argc, 0, 0, CXTranslationUnit_None);
+    clang_disposeTranslationUnit(tu);
+    clang_disposeIndex(index);
 }
