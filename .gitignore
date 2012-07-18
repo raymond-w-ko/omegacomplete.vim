@@ -14,3 +14,7 @@ root.dir
 *.exe
 ipch/
 *.opensdf
+*.def
+*.exp
+*.lib
+*.tmp
