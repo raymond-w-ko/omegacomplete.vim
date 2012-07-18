@@ -7,7 +7,9 @@ Server::~Server()
     ;
 }
 
-Server::Server(io_service& io_service, const ip::tcp::endpoint& endpoint)
+Server::Server(
+    boost::asio::io_service& io_service,
+    const boost::asio::ip::tcp::endpoint& endpoint)
 :
 io_service_(io_service),
 acceptor_(io_service, endpoint)
@@ -24,7 +26,7 @@ void Server::startAccept()
             &Server::handleAccept,
             this,
             new_session,
-            placeholders::error));
+            boost::asio::placeholders::error));
 }
 
 void Server::handleAccept(

@@ -5,7 +5,9 @@
 class Server
 {
 public:
-    Server(io_service& io_service, const ip::tcp::endpoint& endpoint);
+    Server( 
+        boost::asio::io_service& io_service,
+        const boost::asio::ip::tcp::endpoint& endpoint);
     ~Server();
     
 private:
@@ -14,8 +16,8 @@ private:
         SessionPtr session,
         const boost::system::error_code& error);
 
-    io_service& io_service_;
-    ip::tcp::acceptor acceptor_;
+    boost::asio::io_service& io_service_;
+    boost::asio::ip::tcp::acceptor acceptor_;
     Room room_;
 };
 

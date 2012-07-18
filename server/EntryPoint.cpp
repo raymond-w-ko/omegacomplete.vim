@@ -35,10 +35,10 @@ int main(int argc, char* argv[])
 #endif
 
     // where everything starts
-    io_service io_service;
+    boost::asio::io_service io_service;
     std::vector<ServerPtr> servers;
-    ip::tcp::endpoint endpoint(
-        ip::address::from_string(ADDRESS),
+    boost::asio::ip::tcp::endpoint endpoint(
+        boost::asio::ip::address::from_string(ADDRESS),
         PORT);
     std::cout << boost::str(boost::format(
         "listening on %s:%hu\n")

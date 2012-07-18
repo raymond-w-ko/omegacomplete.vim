@@ -35,10 +35,10 @@ public:
     static std::vector<char> QuickMatchKey;
     static boost::unordered_map<char, unsigned> ReverseQuickMatch;
 
-    Session(io_service& io_service, Room& room);
+    Session(boost::asio::io_service& io_service, Room& room);
     ~Session();
 
-    ip::tcp::socket& Socket()
+    boost::asio::ip::tcp::socket& Socket()
     {
         return socket_;
     }
@@ -98,11 +98,11 @@ private:
         CompletionSet& completion_set,
         const std::vector<CompleteItem>* banned_words = NULL);
 
-    ip::tcp::socket socket_;
+    boost::asio::ip::tcp::socket socket_;
     Room& room_;
     unsigned int connection_number_;
     // used when reading up to a NULL char as a delimiter
-    streambuf request_;
+    boost::asio::streambuf request_;
     // read based on a header length
     unsigned char request_header_[4];
     std::string request_body_;

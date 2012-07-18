@@ -33,7 +33,7 @@ void Session::GlobalInit()
     }
 }
 
-Session::Session(io_service& io_service, Room& room)
+Session::Session(boost::asio::io_service& io_service, Room& room)
 :
 socket_(io_service),
 room_(room),
@@ -123,7 +123,7 @@ void Session::Start()
         this);
 
     std::cout << "session started, connection number: " << connection_number_ << "\n";
-    socket_.set_option(ip::tcp::no_delay(true));
+    socket_.set_option(boost::asio::ip::tcp::no_delay(true));
     room_.Join(shared_from_this());
 
     asyncReadHeader();
@@ -133,11 +133,11 @@ void Session::asyncReadHeader()
 {
     async_read(
         socket_,
-        buffer(request_header_, 4),
+        boost::asio::buffer(request_header_, 4),
         boost::bind(
             &Session::handleReadHeader,
             this,
-            placeholders::error));
+            boost::asio::placeholders::error));
 }
 
 void Session::handleReadHeader(const boost::system::error_code& error)
@@ -156,11 +156,11 @@ void Session::handleReadHeader(const boost::system::error_code& error)
 
     async_read(
         socket_,
-        buffer(&request_body_[0], body_size),
+        boost::asio::buffer(&request_body_[0], body_size),
         boost::bind(
             &Session::handleReadRequest,
             this,
-            placeholders::error));
+            boost::asio::placeholders::error));
 }
 
 void Session::handleReadRequest(const boost::system::error_code& error)
@@ -382,12 +382,12 @@ void Session::writeResponse(const std::string& response)
 
     boost::asio::write(
         socket_,
-        buffer(&response[0], response.size()));
+        boost::asio::buffer(&response[0], response.size()));
 
     std::string null_byte(1, '\0');
     boost::asio::write(
         socket_,
-        buffer(&null_byte[0], null_byte.size()));
+        boost::asio::buffer(&null_byte[0], null_byte.size()));
 
     asyncReadHeader();
 }
