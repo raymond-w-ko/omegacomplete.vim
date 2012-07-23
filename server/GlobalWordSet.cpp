@@ -138,23 +138,30 @@ unsigned GlobalWordSet::Prune()
     foreach (const std::string& word, to_be_pruned) {
         mutex_.lock();
         words_.erase(word);
-        // this actually can't be reliably used since it can cause
-        // the removal of abbreviations that are still valid.
-        // e.g.: if we have if we have 'foo_bar' and 'fizz_buzz', they
-        // both map to 'fb' but if all traces of foo_bar disappear,
-        // then it will remove 'fb' even though 'fizz_buzz' -> 'fb'
-        // is still valid.
-        // The proper way to fix this is to add reference counts to
-        // these also, but having some dangling strings in memory should
-        // still be okay
-        /*
-        foreach (const std::string& w, *ComputeTitleCase(word)) {
-            title_cases_.erase(w);
+        foreach (const std::string& w, *Algorithm::ComputeTitleCase(word)) {
+            auto (bounds, abbreviations_.equal_range(w));
+            auto (iter, bounds.first);
+            for (; iter != bounds.second; ++iter)
+            {
+                if (iter->second == word)
+                {
+                    abbreviations_.erase(iter);
+                    break;
+                }
+            }
         }
-        foreach (const std::string& w, *ComputeUnderscore(word)) {
-            underscores_.erase(w);
+        foreach (const std::string& w, *Algorithm::ComputeUnderscore(word)) {
+            auto (bounds, abbreviations_.equal_range(w));
+            auto (iter, bounds.first);
+            for (; iter != bounds.second; ++iter)
+            {
+                if (iter->second == word)
+                {
+                    abbreviations_.erase(iter);
+                    break;
+                }
+            }
         }
-        */
         mutex_.unlock();
 
         trie_mutex_.lock();
