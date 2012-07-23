@@ -9,7 +9,7 @@ class Buffer
 public:
     static void TokenizeContentsIntoKeywords(
         StringPtr contents,
-        StringSetPtr words);
+        StringIntMapPtr words);
 
     Buffer();
     ~Buffer();
@@ -31,7 +31,7 @@ private:
     // the buffer's contents
     StringPtr contents_;
     // set of all unique words generated from this buffer's contents
-    StringSetPtr words_;
+    StringIntMapPtr words_;
     // what word the the cursor in this buffer is currently in
     std::string current_cursor_word_;
 };

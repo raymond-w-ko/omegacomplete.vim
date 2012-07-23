@@ -95,7 +95,9 @@ void GlobalWordSet::GetPrefixCompletions(
         if (wi.ReferenceCount == 0) continue;
 
         CompleteItem completion(candidate);
-        completions->insert(candidate);
+        completion.Menu = boost::str(boost::format("[%d Counts]")
+            % wi.ReferenceCount);
+        completions->insert(completion);
     }
 
     mutex_.unlock();

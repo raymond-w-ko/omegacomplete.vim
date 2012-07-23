@@ -45,11 +45,11 @@ void CompletionSet::addCompletionsToResults(
         const std::string& word = completion.Word;
         if (Contains(added_words_, word) == true) continue;
 
-        if (Session::QuickMatchKey[num_completions_added_] != ' ' &&
-            completion.Menu.empty())
+        if (Session::QuickMatchKey[num_completions_added_] != ' ')
         {
             completion.Menu = boost::lexical_cast<std::string>(
-                Session::QuickMatchKey[num_completions_added_]);
+                Session::QuickMatchKey[num_completions_added_]) +
+                "    " + completion.Menu;
         }
         result_list.push_back(completion);
         num_completions_added_++;

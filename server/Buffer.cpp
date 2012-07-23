@@ -16,8 +16,10 @@ Buffer::~Buffer()
     if (parent_ == NULL) return;
     if (words_ == NULL) return;
 
-    foreach (const std::string& word, *words_) {
-        parent_->WordSet.UpdateWord(word, -1);
+    auto(i, words_->begin());
+    for (; i != words_->end(); ++i)
+    {
+        parent_->WordSet.UpdateWord(i->first, -i->second);
     }
 }
 
@@ -48,42 +50,72 @@ void Buffer::ReplaceContentsWith(StringPtr new_contents)
     // new content we replace with is the exact samething
     if (contents_ && *contents_ == *new_contents) return;
 
-    StringSetPtr new_words = boost::make_shared<StringSet>();
+    StringIntMapPtr new_words =
+        boost::make_shared<StringIntMap>();
     Buffer::TokenizeContentsIntoKeywords(new_contents, new_words);
 
     if (!contents_) {
         // easy first case, just increment reference count for each word
-        foreach (const std::string& word, *new_words) {
-            parent_->WordSet.UpdateWord(word, 1);
+        auto(i, new_words->begin());
+        for (; i != new_words->end(); ++i)
+        {
+            parent_->WordSet.UpdateWord(i->first, +i->second);
         }
     } else {
-        // otherwise we have to a slow calculation of words to add and words
-        // to remove
-        // since this happens in a background thread, it is okay
-        std::vector<std::string> to_be_removed;
-        std::vector<std::string> to_be_added;
+        // otherwise we have to a slow calculation of words to add and words to
+        // remove. since this happens in a background thread, it is okay
+        StringIntMap to_be_removed;
+        StringIntMap to_be_added;
+        StringIntMap to_be_changed;
 
-        // calculated words to be removed, by checking lack of existsnce
-        // in new_words set
-        foreach (const std::string& word, *words_) {
-            if (Contains(*new_words, word) == false) {
-                to_be_removed.push_back(word);
-            }
+        // calculated words to be removed, by checking lack of existsnce in
+        // new_words set
+        auto(i, words_->begin());
+        for (; i != words_->end(); ++i)
+        {
+            const std::string& word = i->first;
+            const int ref_count = i->second;
+            if (!Contains(*new_words, word))
+                to_be_removed[word] += ref_count;
         }
 
-        // calcule words to be added, by checking checking lack of existence
-        // in the old set
-        foreach (const std::string& word, *new_words) {
-            if (Contains(*words_, word) == false) {
-                to_be_added.push_back(word);
-            }
+        // calcule words to be added, by checking checking lack of existence in
+        // the old set
+        auto(j, new_words->begin());
+        for (; j != new_words->end(); ++j)
+        {
+            const std::string& word = j->first;
+            const int ref_count = j->second;
+            if (!Contains(*words_, word))
+                to_be_added[word] += ref_count;
         }
 
-        foreach (const std::string& word, to_be_added) {
-            parent_->WordSet.UpdateWord(word, 1);
+        auto(k, words_->begin());
+        for (; k != words_->end(); ++k)
+        {
+            const std::string& word = k->first;
+            const int ref_count = k->second;
+            if (Contains(*new_words, word))
+                to_be_changed[word] += (*new_words)[word] - ref_count;
         }
-        foreach (const std::string& word, to_be_removed) {
-            parent_->WordSet.UpdateWord(word, -1);
+
+        for (StringIntMapConstIter iter = to_be_added.cbegin();
+             iter != to_be_added.cend();
+             ++iter)
+        {
+            parent_->WordSet.UpdateWord(iter->first, +iter->second);
+        }
+        for (StringIntMapConstIter iter = to_be_removed.cbegin();
+             iter != to_be_removed.cend();
+             ++iter)
+        {
+            parent_->WordSet.UpdateWord(iter->first, -iter->second);
+        }
+        for (StringIntMapConstIter iter = to_be_changed.cbegin();
+             iter != to_be_changed.cend();
+             ++iter)
+        {
+            parent_->WordSet.UpdateWord(iter->first,  iter->second);
         }
     }
 
@@ -94,7 +126,7 @@ void Buffer::ReplaceContentsWith(StringPtr new_contents)
 
 void Buffer::TokenizeContentsIntoKeywords(
     StringPtr contents,
-    StringSetPtr words)
+    StringIntMapPtr words)
 {
     const std::string& text = *contents;
     size_t contents_size = text.size();
@@ -104,7 +136,8 @@ void Buffer::TokenizeContentsIntoKeywords(
         // this will be what is considered a word
         // I guess we have unicode stuff we are screwed :
         char c = text[ii];
-        if (!LookupTable::IsPartOfWord[c]) continue;
+        if (!LookupTable::IsPartOfWord[c])
+            continue;
 
         // we have found the beginning of the word, loop until
         // we reach the end or we find a non world character
@@ -120,7 +153,7 @@ void Buffer::TokenizeContentsIntoKeywords(
         std::string word(
             text.begin() + ii,
             text.begin() + jj);
-        (*words).insert(word);
+        (*words)[word]++;
 
         // for loop will autoincrement
         ii = jj;

@@ -116,6 +116,13 @@ typedef boost::shared_ptr<StringSet> StringSetPtr;
 typedef boost::unordered_set<String> UnorderedStringSet;
 typedef boost::shared_ptr<UnorderedStringSet> UnorderedStringSetPtr;
 
+typedef boost::unordered_map<String, int> UnorderedStringIntMap;
+typedef boost::shared_ptr<UnorderedStringIntMap> UnorderedStringIntMapPtr;
+typedef std::map<String, int> StringIntMap;
+typedef std::map<String, int>::iterator StringIntMapIter;
+typedef std::map<String, int>::const_iterator StringIntMapConstIter;
+typedef boost::shared_ptr<StringIntMap> StringIntMapPtr;
+
 typedef std::vector<String> StringVector;
 typedef boost::shared_ptr<StringVector> StringVectorPtr;
 typedef std::pair<String, String> StringPair;
