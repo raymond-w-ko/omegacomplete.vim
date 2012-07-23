@@ -172,7 +172,7 @@ void Tags::GetAllWordsWithPrefix(
         if (boost::starts_with(candidate, prefix) == false) break;
 
         CompleteItem completion(candidate);
-        completion.Menu = "    [Tags]";
+        completion.Menu = "        [Tags]";
         results->insert(completion);
     }
 }
@@ -188,7 +188,7 @@ void Tags::GetAbbrCompletions(
     for (; ii != bounds.second; ++ii)
     {
         CompleteItem completion(*ii->second);
-        completion.Menu = "    [Tags]";
+        completion.Menu = "        [Tags]";
         results->insert(completion);
     }
 }

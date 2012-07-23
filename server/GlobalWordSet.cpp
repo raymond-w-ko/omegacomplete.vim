@@ -95,7 +95,7 @@ void GlobalWordSet::GetPrefixCompletions(
         if (wi.ReferenceCount == 0) continue;
 
         CompleteItem completion(candidate);
-        completion.Menu = boost::str(boost::format("    [%d Counts]")
+        completion.Menu = boost::str(boost::format("        [%d Counts]")
             % wi.ReferenceCount);
         completions->insert(completion);
     }
@@ -117,7 +117,7 @@ void GlobalWordSet::GetAbbrCompletions(
         if (wi.ReferenceCount == 0) continue;
 
         CompleteItem completion(candidate);
-        completion.Menu = boost::str(boost::format("    [%d Counts]")
+        completion.Menu = boost::str(boost::format("        [%d Counts]")
             % wi.ReferenceCount);
         completions->insert(completion);
     }
