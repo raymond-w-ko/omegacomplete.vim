@@ -95,7 +95,7 @@ void GlobalWordSet::GetPrefixCompletions(
         if (wi.ReferenceCount == 0) continue;
 
         CompleteItem completion(candidate);
-        completion.Menu = boost::str(boost::format("[%d Counts]")
+        completion.Menu = boost::str(boost::format("    [%d Counts]")
             % wi.ReferenceCount);
         completions->insert(completion);
     }
@@ -113,8 +113,12 @@ void GlobalWordSet::GetAbbrCompletions(
     auto(iter, bounds.first);
     for (; iter != bounds.second; ++iter) {
         const std::string& candidate = iter->second;
-        if (words_[candidate].ReferenceCount == 0) continue;
+        const WordInfo& wi = words_[candidate];
+        if (wi.ReferenceCount == 0) continue;
+
         CompleteItem completion(candidate);
+        completion.Menu = boost::str(boost::format("    [%d Counts]")
+            % wi.ReferenceCount);
         completions->insert(completion);
     }
 

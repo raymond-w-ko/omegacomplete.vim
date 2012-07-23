@@ -49,7 +49,7 @@ void CompletionSet::addCompletionsToResults(
         {
             completion.Menu = boost::lexical_cast<std::string>(
                 Session::QuickMatchKey[num_completions_added_]) +
-                "    " + completion.Menu;
+                " " + completion.Menu;
         }
         result_list.push_back(completion);
         num_completions_added_++;
