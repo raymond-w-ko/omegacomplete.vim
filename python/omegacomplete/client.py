@@ -82,7 +82,7 @@ def oc_send_current_buffer():
     global oc_conn
 
     command = "buffer_contents "
-    buffer_contents = '\n'.join(vim.current.buffer)
+    buffer_contents = '\n'.join(vim.eval("getline(1, '$')"))
     data_length = struct.pack("=I", len(command) + len(buffer_contents))
 
     raw_sendall(oc_conn, data_length)

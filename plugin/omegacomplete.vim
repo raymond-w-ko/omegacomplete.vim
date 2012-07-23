@@ -106,9 +106,8 @@ function s:UnmapForMappingDriven()
 endfunction
 
 function s:SendCurrentBuffer()
-    let contents = join(getline(1, line('$')), "\n")
     python << PYTHON
-oc_send_current_buffer2()
+oc_send_current_buffer()
 PYTHON
 endfunction
 
