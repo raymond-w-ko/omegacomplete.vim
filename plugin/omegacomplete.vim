@@ -161,14 +161,12 @@ else:
     vim.command('let g:omegacomplete_server_results=' + oc_server_result)
 EOF
 
-    " try to show popup menu
     if (len(g:omegacomplete_server_results) == 0)
-        call feedkeys("\<C-x>\<C-u>", 'n')
-        return ''
+        " try to show popup menu, but fail and reset completion status
+        return "\<C-x>\<C-u>"
     else
         " show actual popup
-        call feedkeys("\<C-x>\<C-u>\<C-p>", 'n')
-        return ''
+        return "\<C-x>\<C-u>\<C-p>"
     endif
 endfunction
 
@@ -179,8 +177,19 @@ endfunction
 function <SID>NormalModeSyncBuffer()
     let current_buffer_number = <SID>GetCurrentBufferNumber()
     let current_buffer_name = bufname('%') 
+    let current_path = expand('%:p')
+
+    if (match(current_path, '\v.vim73\/doc') != -1)
+        echom current_path
+        return
+    endif
+
+    " help breaks omegacomplete by causing to forever remain
+    if &ft == 'help'
+        return
+    endif
     " don't process these special buffers from other plugins
-    if (match(current_buffer_name, '\v(GoToFile|ControlP)') != -1)
+    if (match(current_buffer_name, '\v(GoToFile|ControlP|__Scratch__)') != -1)
         return
     endif
 
