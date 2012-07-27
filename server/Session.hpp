@@ -71,6 +71,7 @@ private:
     void cmdPrune(StringPtr argument);
     void cmdHideTeleprompter(StringPtr argument);
     void cmdFlushCaches(StringPtr argument);
+    void cmdIsCorrectionsOnly(StringPtr argument);
 
     ////////////////////////////////////////////////////////////////////////////
     // OmegaComplete Core
@@ -127,5 +128,6 @@ private:
     std::vector<std::string> current_tags_;
     std::vector<std::string> taglist_tags_;
     std::vector<std::string> prev_input_;
+    bool is_corrections_only_;
 };
 typedef boost::shared_ptr<Session> SessionPtr;

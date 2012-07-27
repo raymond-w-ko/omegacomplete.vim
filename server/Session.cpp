@@ -39,7 +39,8 @@ socket_(io_service),
 room_(room),
 connection_number_(connection_ticket_++),
 is_quitting_(0),
-prev_input_(3)
+prev_input_(3),
+is_corrections_only_(false)
 {
     command_dispatcher_["current_buffer"] = boost::bind(
         &Session::cmdCurrentBuffer,
@@ -103,6 +104,11 @@ prev_input_(3)
 
     command_dispatcher_["flush_caches"] = boost::bind(
         &Session::cmdFlushCaches,
+        boost::ref(*this),
+        _1);
+
+    command_dispatcher_["is_corrections_only"] = boost::bind(
+        &Session::cmdIsCorrectionsOnly,
         boost::ref(*this),
         _1);
 }
@@ -373,6 +379,12 @@ void Session::cmdFlushCaches(StringPtr argument)
     writeResponse("ACK");
 }
 
+void Session::cmdIsCorrectionsOnly(StringPtr argument)
+{
+    const std::string& response = is_corrections_only_ ? "1" : "0";
+    writeResponse(response);
+}
+
 void Session::writeResponse(const std::string& response)
 {
     // note that we MUST perform synchronous writes. if async_write() is used
@@ -544,10 +556,17 @@ retry_completion:
 
     // only if we have no completions do we try to Levenshtein distance completion
     LevenshteinSearchResults levenshtein_completions;
-    if (main_completion_set.GetNumCompletions() == 0) {
+    if (main_completion_set.GetNumCompletions() == 0)
+    {
         WordSet.GetLevenshteinCompletions(
             prefix_to_complete,
             levenshtein_completions);
+
+        is_corrections_only_ = true;
+    }
+    else
+    {
+        is_corrections_only_ = false;
     }
 
     std::vector<CompleteItem> result_list;

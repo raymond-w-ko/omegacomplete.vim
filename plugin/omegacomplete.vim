@@ -165,6 +165,23 @@ EOF
         " try to show popup menu, but fail and reset completion status
         return "\<C-x>\<C-u>"
     else
+        exe 'py is_corrections_only = oc_send_command("is_corrections_only ?")'
+        let is_corrections_only=0
+python << EOF
+if is_corrections_only == '0':
+    vim.command('let is_corrections_only=0')
+else:
+    vim.command('let is_corrections_only=1')
+EOF
+        if (is_corrections_only)
+            echom "correction"
+            hi Pmenu guifg=#ffff00 guibg=#373700 ctermfg=bg ctermbg=245 gui=none cterm=none
+            hi PmenuSel guifg=#373700 guibg=#ffff00 ctermfg=fg ctermbg=24 gui=none cterm=none
+        else
+            echom "completion"
+            hi Pmenu guifg=#00ff00 guibg=#003700 ctermfg=bg ctermbg=245 gui=none cterm=none
+            hi PmenuSel guifg=#003700 guibg=#00ff00 ctermfg=fg ctermbg=24 gui=none cterm=none
+        endif
         " show actual popup
         return "\<C-x>\<C-u>\<C-p>"
     endif
