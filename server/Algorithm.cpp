@@ -170,21 +170,6 @@ const StringVector* Algorithm::ComputeTitleCaseCached(
     if (indices_size <= 1)
         return &title_case_cache_[word];
 
-    for (size_t depth = 1; depth < (2 + 1); ++depth) {
-        std::string abbr;
-        for (size_t ii = 0; ii < indices.size(); ++ii) {
-            size_t index = indices[ii];
-            size_t next_index =
-                (ii + 1) < indices_size ? indices[ii + 1] : word.size();
-            for (size_t cur_depth = 0; cur_depth < depth; ++cur_depth) {
-                if ((index + cur_depth) >= next_index)
-                    break;
-                abbr += LookupTable::ToLower[word[index + cur_depth]];
-            }
-        }
-        title_case_cache_[word].push_back(abbr);
-    }
-
     // if the number of indices is >= the cutoff point, then just grab the
     // letter at each index
     if (indices_size >= kWordSizeCutoffPointForDepthLists) {
@@ -319,21 +304,6 @@ StringVectorPtr Algorithm::ComputeTitleCase(
     // abbreviation
     if (indices_size <= 1)
         return results;
-
-    for (size_t depth = 1; depth < (2 + 1); ++depth) {
-        std::string abbr;
-        for (size_t ii = 0; ii < indices.size(); ++ii) {
-            size_t index = indices[ii];
-            size_t next_index =
-                (ii + 1) < indices_size ? indices[ii + 1] : word.size();
-            for (size_t cur_depth = 0; cur_depth < depth; ++cur_depth) {
-                if ((index + cur_depth) >= next_index)
-                    break;
-                abbr += LookupTable::ToLower[word[index + cur_depth]];
-            }
-        }
-        results->push_back(abbr);
-    }
 
     // if the number of indices is >= the cutoff point, then just grab the
     // letter at each index
