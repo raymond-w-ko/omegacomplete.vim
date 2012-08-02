@@ -174,11 +174,9 @@ else:
     vim.command('let is_corrections_only=1')
 EOF
         if (is_corrections_only)
-            echom "correction"
             hi Pmenu guifg=#ffff00 guibg=#373700 ctermfg=bg ctermbg=245 gui=none cterm=none
             hi PmenuSel guifg=#373700 guibg=#ffff00 ctermfg=fg ctermbg=24 gui=none cterm=none
         else
-            echom "completion"
             hi Pmenu guifg=#00ff00 guibg=#003700 ctermfg=bg ctermbg=245 gui=none cterm=none
             hi PmenuSel guifg=#003700 guibg=#00ff00 ctermfg=fg ctermbg=24 gui=none cterm=none
         endif
@@ -197,7 +195,6 @@ function <SID>NormalModeSyncBuffer()
     let current_path = expand('%:p')
 
     if (match(current_path, '\v.vim73\/doc') != -1)
-        echom current_path
         return
     endif
 
@@ -206,7 +203,8 @@ function <SID>NormalModeSyncBuffer()
         return
     endif
     " don't process these special buffers from other plugins
-    if (match(current_buffer_name, '\v(GoToFile|ControlP|__Scratch__)') != -1)
+    if (match(current_buffer_name,
+            \ '\v(GoToFile|ControlP|__Scratch__|__Gundo__|__Gundo_Preview__)') != -1)
         return
     endif
 
