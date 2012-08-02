@@ -24,7 +24,7 @@ public:
         LevenshteinSearchResults& results);
 
     static void LevenshteinSearchRecursive(
-        TrieNode* node,
+        const TrieNode& node,
         char letter,
         const std::string& word,
         const std::vector<int>& previous_row,

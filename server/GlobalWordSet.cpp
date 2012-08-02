@@ -210,7 +210,7 @@ void GlobalWordSet::LevenshteinSearch(
         TrieNode* next_node = iter->second;
 
         GlobalWordSet::LevenshteinSearchRecursive(
-            next_node,
+            *next_node,
             letter,
             word,
             current_row,
@@ -222,7 +222,7 @@ void GlobalWordSet::LevenshteinSearch(
 // translated from Python code provided by
 // http://stevehanov.ca/blog/index.php?id=114
 void GlobalWordSet::LevenshteinSearchRecursive(
-    TrieNode* node,
+    const TrieNode& node,
     char letter,
     const std::string& word,
     const std::vector<int>& previous_row,
@@ -255,24 +255,24 @@ void GlobalWordSet::LevenshteinSearchRecursive(
     // maximum cost, and there is a word in this trie node, then add it.
     size_t last_index = current_row.size() - 1;
     if ( (current_row[last_index] <= max_cost) &&
-         (node->Word.length() > 0) )
+         (node.Word.length() > 0) )
     {
-        results[ current_row[last_index] ].insert(node->Word);
+        results[ current_row[last_index] ].insert(node.Word);
     }
 
     // if any entries in the row are less than the maximum cost, then
     // recursively search each branch of the trie
     if (*std::min_element(current_row.begin(), current_row.end()) <= max_cost)
     {
-        for (TrieNode::ChildrenConstIterator iter = node->Children.begin();
-            iter != node->Children.end();
+        for (TrieNode::ChildrenConstIterator iter = node.Children.cbegin();
+            iter != node.Children.cend();
             ++iter)
         {
             char letter = iter->first;
             TrieNode* next_node = iter->second;
 
             LevenshteinSearchRecursive(
-                next_node,
+                *next_node,
                 letter,
                 word,
                 current_row,
