@@ -127,6 +127,10 @@ typedef std::vector<String> StringVector;
 typedef boost::shared_ptr<StringVector> StringVectorPtr;
 typedef std::pair<String, String> StringPair;
 
+typedef std::pair<unsigned, String> UnsignedStringPair;
+typedef std::vector<UnsignedStringPair> UnsignedStringPairVector;
+typedef boost::shared_ptr<UnsignedStringPairVector> UnsignedStringPairVectorPtr;
+
 #ifdef _WIN32
     #ifdef _DEBUG
         #define DEBUG_NEW new(_NORMAL_BLOCK, __FILE__, __LINE__)

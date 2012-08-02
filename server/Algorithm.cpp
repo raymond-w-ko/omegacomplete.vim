@@ -2,6 +2,7 @@
 
 #include "Algorithm.hpp"
 #include "LookupTable.hpp"
+#include "CompletionPriorities.hpp"
 
 static const size_t kWordSizeCutoffPointForDepthLists = 5;
 static const size_t kMaxDepthPerIndex = 3;
@@ -213,10 +214,11 @@ void Algorithm::ClearGlobalCache()
     Algorithm::underscore_cache_.clear();
 }
 
-StringVectorPtr Algorithm::ComputeUnderscore(
+UnsignedStringPairVectorPtr Algorithm::ComputeUnderscore(
     const std::string& word)
 {
-    StringVectorPtr results = boost::make_shared<StringVector>();
+    UnsignedStringPairVectorPtr results =
+        boost::make_shared<UnsignedStringPairVector>();
 
     const size_t word_size = word.size();
 
@@ -248,7 +250,7 @@ StringVectorPtr Algorithm::ComputeUnderscore(
         abbr.reserve(kWordSizeCutoffPointForDepthLists);
         foreach (size_t index, indices)
             abbr += LookupTable::ToLower[word[index]];
-        results->push_back(abbr);
+        results->push_back(std::make_pair(kPrioritySinglesAbbreviation, abbr));
     }
     // generate various abbreviations based on depth permutations
     else {
@@ -270,17 +272,20 @@ StringVectorPtr Algorithm::ComputeUnderscore(
                     abbr += LookupTable::ToLower[c];
                 }
             }
-            results->push_back(abbr);
+            unsigned priority = abbr.size() <= indices.size() ?
+                kPrioritySinglesAbbreviation : kPrioritySubsequenceAbbreviation;
+            results->push_back(std::make_pair(priority, abbr));
         }
     }
 
     return results;
 }
 
-StringVectorPtr Algorithm::ComputeTitleCase(
+UnsignedStringPairVectorPtr Algorithm::ComputeTitleCase(
     const std::string& word)
 {
-    StringVectorPtr results = boost::make_shared<StringVector>();
+    UnsignedStringPairVectorPtr results =
+        boost::make_shared<UnsignedStringPairVector>();
 
     const size_t word_size = word.size();
 
@@ -312,7 +317,7 @@ StringVectorPtr Algorithm::ComputeTitleCase(
         abbr.reserve(kWordSizeCutoffPointForDepthLists);
         foreach (size_t index, indices)
             abbr += LookupTable::ToLower[word[index]];
-        results->push_back(abbr);
+        results->push_back(std::make_pair(kPrioritySinglesAbbreviation, abbr));
     }
     // generate various abbreviations based on depth permutations
     else {
@@ -332,7 +337,9 @@ StringVectorPtr Algorithm::ComputeTitleCase(
                     abbr += LookupTable::ToLower[c];
                 }
             }
-            results->push_back(abbr);
+            unsigned priority = abbr.size() <= indices.size() ?
+                kPrioritySinglesAbbreviation : kPrioritySubsequenceAbbreviation;
+            results->push_back(std::make_pair(priority, abbr));
         }
     }
 

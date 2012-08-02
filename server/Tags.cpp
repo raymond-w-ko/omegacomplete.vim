@@ -4,6 +4,7 @@
 #include "GlobalWordSet.hpp"
 #include "LookupTable.hpp"
 #include "Algorithm.hpp"
+#include "CompletionPriorities.hpp"
 
 Tags::Tags()
 :
@@ -111,14 +112,28 @@ void Tags::reparse()
         if (word == prev_word)
             continue;
 
-        StringVectorPtr title_cases = Algorithm::ComputeTitleCase(word);
-        StringVectorPtr underscores = Algorithm::ComputeUnderscore(word);
+        UnsignedStringPairVectorPtr title_cases = Algorithm::ComputeTitleCase(word);
+        UnsignedStringPairVectorPtr underscores = Algorithm::ComputeUnderscore(word);
 
-        foreach (const String& title_case, *title_cases) {
-            abbreviations_.insert(std::make_pair(title_case, &word));
+        foreach (const UnsignedStringPair& title_case, *title_cases) {
+            AbbreviationInfo ai(title_case.first, word);
+
+            if (ai.Weight == kPrioritySinglesAbbreviation)
+                ai.Weight = kPriorityTagsSinglesAbbreviation;
+            else if (ai.Weight == kPrioritySubsequenceAbbreviation)
+                ai.Weight = kPriorityTagsSubsequenceAbbreviation;
+
+            abbreviations_.insert(make_pair(title_case.second, ai));
         }
-        foreach (const String& underscore, *underscores) {
-            abbreviations_.insert(std::make_pair(underscore, &word));
+        foreach (const UnsignedStringPair& underscore, *underscores) {
+            AbbreviationInfo ai(underscore.first, word);
+
+            if (ai.Weight == kPrioritySinglesAbbreviation)
+                ai.Weight = kPriorityTagsSinglesAbbreviation;
+            else if (ai.Weight == kPrioritySubsequenceAbbreviation)
+                ai.Weight = kPriorityTagsSubsequenceAbbreviation;
+
+            abbreviations_.insert(make_pair(underscore.second, ai));
         }
 
         prev_word = word;
@@ -184,10 +199,11 @@ void Tags::GetAbbrCompletions(
     if (prefix.length() < 2) return;
 
     auto(bounds, abbreviations_.equal_range(prefix));
-    auto(ii, bounds.first);
-    for (; ii != bounds.second; ++ii)
+    auto(iter, bounds.first);
+    for (; iter != bounds.second; ++iter)
     {
-        CompleteItem completion(*ii->second);
+        const AbbreviationInfo& candidate = iter->second;
+        CompleteItem completion(candidate.Word, candidate.Weight);
         completion.Menu = "        [Tags]";
         results->insert(completion);
     }

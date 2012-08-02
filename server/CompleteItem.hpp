@@ -2,6 +2,10 @@
 
 struct CompleteItem
 {
+    unsigned Weight;
+
+    // VIM specific portin
+
     // word that will be inserted
     String Word;
     // how it will look like
@@ -33,6 +37,7 @@ struct CompleteItem
 
     CompleteItem()
     :
+    Weight(0),
     Icase(false),
     Dup(false),
     Empty(false)
@@ -42,6 +47,18 @@ struct CompleteItem
 
     CompleteItem(const std::string& word)
     :
+    Weight(0),
+    Word(word),
+    Icase(false),
+    Dup(false),
+    Empty(false)
+    {
+        ;
+    }
+
+    CompleteItem(const std::string& word, unsigned weight)
+    :
+    Weight(weight),
     Word(word),
     Icase(false),
     Dup(false),
@@ -52,6 +69,7 @@ struct CompleteItem
 
     CompleteItem(const CompleteItem& other)
     :
+    Weight(other.Weight),
     Word(other.Word),
     Abbr(other.Abbr),
     Menu(other.Menu),
@@ -65,12 +83,18 @@ struct CompleteItem
 
     bool operator<(const CompleteItem& other) const
     {
-        return Word < other.Word;
+        if (Weight < other.Weight)
+            return true;
+        else if (Weight > other.Weight)
+            return false;
+        else
+            return Word < other.Word;
     }
 
     bool operator==(const CompleteItem& other) const
     {
-        return Word == other.Word;
+        return (Weight == other.Weight) &&
+               (Word == other.Word);
     }
 
     std::string SerializeToVimDict() const

@@ -35,6 +35,18 @@ public:
         std::stringstream& ss);
 
 private:
+    struct AbbreviationInfo
+    {
+        AbbreviationInfo()
+            : Weight(0) { }
+        AbbreviationInfo(unsigned weight, const std::string& word)
+            : Weight(weight), Word(word) { }
+        ~AbbreviationInfo() { }
+
+        unsigned Weight;
+        std::string Word;
+    };
+
     bool calculateParentDirectory();
     void reparse();
     bool calculateTagInfo(
@@ -50,5 +62,5 @@ private:
         std::multimap<String, String>::iterator
         tags_iterator;
     std::multimap<String, String> tags_;
-    std::multimap<String, const String*> abbreviations_;
+    std::multimap<String, AbbreviationInfo> abbreviations_;
 };

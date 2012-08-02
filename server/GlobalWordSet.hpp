@@ -50,10 +50,22 @@ public:
         LevenshteinSearchResults& results);
 
 private:
+    struct AbbreviationInfo
+    {
+        AbbreviationInfo()
+            : Weight(0) { }
+        AbbreviationInfo(unsigned weight, const std::string& word)
+            : Weight(weight), Word(word) { }
+        ~AbbreviationInfo() { }
+
+        unsigned Weight;
+        std::string Word;
+    };
+
     boost::mutex mutex_;
 
     std::map<String, WordInfo> words_;
-    std::multimap<String, String> abbreviations_;
+    std::multimap<String, AbbreviationInfo> abbreviations_;
 
     boost::mutex trie_mutex_;
     TrieNode trie_;

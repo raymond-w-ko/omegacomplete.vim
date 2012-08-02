@@ -22,9 +22,9 @@ public:
         const std::string& word);
     static void ClearGlobalCache();
 
-    static StringVectorPtr ComputeUnderscore(
+    static UnsignedStringPairVectorPtr ComputeUnderscore(
         const std::string& word);
-    static StringVectorPtr ComputeTitleCase(
+    static UnsignedStringPairVectorPtr ComputeTitleCase(
         const std::string& word);
 
 private:
