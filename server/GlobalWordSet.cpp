@@ -31,53 +31,39 @@ GlobalWordSet::~GlobalWordSet()
 
 void GlobalWordSet::UpdateWord(const std::string& word, int reference_count_delta)
 {
-    // the following below, while not being totally safe and correct, this done
-    // this minimize any potential latency.
-    bool lock_required;
+    boost::unique_lock<boost::mutex> lock(mutex_);
 
-    // if we can find the WordInfo struct that means we don't need a lock since
-    // we are doing a read only operation on words_ to find the location of the
-    // target WordInfo. If we can't find it, accessing the reference to it means
-    // creation, which requires a lock since the data structure internally
-    // will change.
-
-    const std::map<String, WordInfo>& const_words = words_;
-    if (Contains(const_words, word) == false) {
-        lock_required = true;
-    } else {
-        lock_required = false;
-    }
-
-    if (lock_required) mutex_.lock();
     WordInfo& wi = words_[word];
-    if (lock_required) mutex_.unlock();
+    // used for creating a const& to save memory
+    auto(entry, words_.find(word));
+    const std::string& persistent_word = entry->first;
 
     // this is not locked, which means that reads can be out of date, but
     // I don't care since I want performance.
     wi.ReferenceCount += reference_count_delta;
 
-    if (wi.ReferenceCount <= 0) return;
+    if (wi.ReferenceCount <= 0)
+        return;
 
     trie_mutex_.lock();
     trie_.Insert(word);
     trie_mutex_.unlock();
 
-    if (wi.GeneratedAbbreviations) return;
+    if (wi.GeneratedAbbreviations)
+        return;
 
     UnsignedStringPairVectorPtr title_cases = Algorithm::ComputeTitleCase(word);
     UnsignedStringPairVectorPtr underscores = Algorithm::ComputeUnderscore(word);
 
     // generate and store abbreviations
-    mutex_.lock();
     foreach (const UnsignedStringPair& title_case, *title_cases) {
-        AbbreviationInfo ai(title_case.first, word);
+        AbbreviationInfo ai(title_case.first, persistent_word);
         abbreviations_.insert(make_pair(title_case.second, ai));
     }
     foreach (const UnsignedStringPair& underscore, *underscores) {
-        AbbreviationInfo ai(underscore.first, word);
+        AbbreviationInfo ai(underscore.first, persistent_word);
         abbreviations_.insert(make_pair(underscore.second, ai));
     }
-    mutex_.unlock();
 
     wi.GeneratedAbbreviations = true;
 }
@@ -86,7 +72,7 @@ void GlobalWordSet::GetPrefixCompletions(
     const std::string& prefix,
     std::set<CompleteItem>* completions)
 {
-    mutex_.lock();
+    boost::unique_lock<boost::mutex> lock(mutex_);
 
     auto(iter, words_.lower_bound(prefix));
     for (; iter != words_.end(); ++iter) {
@@ -101,15 +87,13 @@ void GlobalWordSet::GetPrefixCompletions(
             % wi.ReferenceCount);
         completions->insert(completion);
     }
-
-    mutex_.unlock();
 }
 
 void GlobalWordSet::GetAbbrCompletions(
     const std::string& prefix,
     std::set<CompleteItem>* completions)
 {
-    mutex_.lock();
+    boost::unique_lock<boost::mutex> lock(mutex_);
 
     auto(bounds, abbreviations_.equal_range(prefix));
     auto(iter, bounds.first);
@@ -123,54 +107,67 @@ void GlobalWordSet::GetAbbrCompletions(
             % wi.ReferenceCount);
         completions->insert(completion);
     }
-
-    mutex_.unlock();
 }
 
 unsigned GlobalWordSet::Prune()
 {
-    mutex_.lock();
+    boost::unique_lock<boost::mutex> lock(mutex_);
 
+    // simply just looping through words_ and removing things might cause
+    // iterator invalidation, so be safe and built a set of things to remove
     std::vector<std::string> to_be_pruned;
     auto(iter, words_.begin());
-    for (; iter != words_.end(); ++iter) {
-        if (iter->second.ReferenceCount > 0) continue;
+    for (; iter != words_.end(); ++iter)
+    {
+        if (iter->second.ReferenceCount > 0)
+            continue;
 
         to_be_pruned.push_back(iter->first);
     }
 
-    mutex_.unlock();
-
     foreach (const std::string& word, to_be_pruned) {
-        mutex_.lock();
+        foreach (const UnsignedStringPair& w,
+                 *Algorithm::ComputeTitleCase(word))
+        {
+            auto (bounds, abbreviations_.equal_range(w.second));
+            auto (iter, bounds.first);
+            while (iter != bounds.second)
+            {
+                if (iter->second.Word == word)
+                {
+                    abbreviations_.erase(iter++);
+
+                    // there should only ever be one (abbr, word), so we can
+                    // try to delete the next abbreviation immediately
+                    break;
+                }
+                else
+                    ++iter;
+            }
+        }
+        foreach (const UnsignedStringPair& w,
+                 *Algorithm::ComputeUnderscore(word))
+        {
+            auto (bounds, abbreviations_.equal_range(w.second));
+            auto (iter, bounds.first);
+            while (iter != bounds.second)
+            {
+                if (iter->second.Word == word)
+                {
+                    abbreviations_.erase(iter++);
+
+                    // there should only ever be one (abbr, word), so we can
+                    // try to delete the next abbreviation immediately
+                    break;
+                }
+                else
+                    ++iter;
+            }
+        }
+        
+        // we must erase the things that contains a const& to the word before
+        // removing the actual word for safety reasons
         words_.erase(word);
-        foreach (const UnsignedStringPair& w,
-                 *Algorithm::ComputeTitleCase(word)) {
-            auto (bounds, abbreviations_.equal_range(w.second));
-            auto (iter, bounds.first);
-            for (; iter != bounds.second; ++iter)
-            {
-                if (iter->second.Word == word)
-                {
-                    abbreviations_.erase(iter);
-                    break;
-                }
-            }
-        }
-        foreach (const UnsignedStringPair& w,
-                 *Algorithm::ComputeUnderscore(word)) {
-            auto (bounds, abbreviations_.equal_range(w.second));
-            auto (iter, bounds.first);
-            for (; iter != bounds.second; ++iter)
-            {
-                if (iter->second.Word == word)
-                {
-                    abbreviations_.erase(iter);
-                    break;
-                }
-            }
-        }
-        mutex_.unlock();
 
         trie_mutex_.lock();
         trie_.Erase(word);

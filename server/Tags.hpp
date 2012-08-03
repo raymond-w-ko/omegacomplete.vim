@@ -37,14 +37,12 @@ public:
 private:
     struct AbbreviationInfo
     {
-        AbbreviationInfo()
-            : Weight(0) { }
-        AbbreviationInfo(unsigned weight, const std::string* word)
+        AbbreviationInfo(unsigned weight, const std::string& word)
             : Weight(weight), Word(word) { }
         ~AbbreviationInfo() { }
 
         unsigned Weight;
-        const std::string* Word;
+        const std::string& Word;
     };
 
     bool calculateParentDirectory();

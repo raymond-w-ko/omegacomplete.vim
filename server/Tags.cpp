@@ -116,7 +116,7 @@ void Tags::reparse()
         UnsignedStringPairVectorPtr underscores = Algorithm::ComputeUnderscore(word);
 
         foreach (const UnsignedStringPair& title_case, *title_cases) {
-            AbbreviationInfo ai(title_case.first, &word);
+            AbbreviationInfo ai(title_case.first, word);
 
             if (ai.Weight == kPrioritySinglesAbbreviation)
                 ai.Weight = kPriorityTagsSinglesAbbreviation;
@@ -126,7 +126,7 @@ void Tags::reparse()
             abbreviations_.insert(make_pair(title_case.second, ai));
         }
         foreach (const UnsignedStringPair& underscore, *underscores) {
-            AbbreviationInfo ai(underscore.first, &word);
+            AbbreviationInfo ai(underscore.first, word);
 
             if (ai.Weight == kPrioritySinglesAbbreviation)
                 ai.Weight = kPriorityTagsSinglesAbbreviation;
@@ -203,7 +203,7 @@ void Tags::GetAbbrCompletions(
     for (; iter != bounds.second; ++iter)
     {
         const AbbreviationInfo& candidate = iter->second;
-        CompleteItem completion(*candidate.Word, candidate.Weight);
+        CompleteItem completion(candidate.Word, candidate.Weight);
         completion.Menu = "        [Tags]";
         results->insert(completion);
     }
