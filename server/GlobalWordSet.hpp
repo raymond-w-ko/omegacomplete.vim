@@ -52,14 +52,14 @@ public:
 private:
     struct AbbreviationInfo
     {
-        AbbreviationInfo(unsigned weight, const std::string& word)
+        AbbreviationInfo(unsigned weight, const std::string word)
             : Weight(weight), Word(word) { }
         AbbreviationInfo(const AbbreviationInfo& other)
             : Weight(other.Weight), Word(other.Word) { }
         ~AbbreviationInfo() { }
 
         unsigned Weight;
-        const std::string& Word;
+        const std::string Word;
     };
 
     boost::mutex mutex_;
