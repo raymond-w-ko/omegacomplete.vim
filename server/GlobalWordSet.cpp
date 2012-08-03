@@ -35,7 +35,7 @@ void GlobalWordSet::UpdateWord(const std::string& word, int reference_count_delt
 
     WordInfo& wi = words_[word];
     // used for creating a const& to save memory
-    auto(entry, words_.find(word));
+    const std::map<String, WordInfo>::iterator& entry = words_.find(word);
     const std::string& persistent_word = entry->first;
 
     // this is not locked, which means that reads can be out of date, but
@@ -100,7 +100,8 @@ void GlobalWordSet::GetAbbrCompletions(
     for (; iter != bounds.second; ++iter) {
         const AbbreviationInfo& candidate = iter->second;
         const WordInfo& wi = words_[candidate.Word];
-        if (wi.ReferenceCount == 0) continue;
+        if (wi.ReferenceCount == 0)
+            continue;
 
         CompleteItem completion(candidate.Word, candidate.Weight);
         completion.Menu = boost::str(boost::format("        [%d Counts]")
@@ -134,13 +135,7 @@ unsigned GlobalWordSet::Prune()
             while (iter != bounds.second)
             {
                 if (iter->second.Word == word)
-                {
                     abbreviations_.erase(iter++);
-
-                    // there should only ever be one (abbr, word), so we can
-                    // try to delete the next abbreviation immediately
-                    break;
-                }
                 else
                     ++iter;
             }
@@ -153,13 +148,7 @@ unsigned GlobalWordSet::Prune()
             while (iter != bounds.second)
             {
                 if (iter->second.Word == word)
-                {
                     abbreviations_.erase(iter++);
-
-                    // there should only ever be one (abbr, word), so we can
-                    // try to delete the next abbreviation immediately
-                    break;
-                }
                 else
                     ++iter;
             }

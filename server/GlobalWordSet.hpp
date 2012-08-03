@@ -54,6 +54,8 @@ private:
     {
         AbbreviationInfo(unsigned weight, const std::string& word)
             : Weight(weight), Word(word) { }
+        AbbreviationInfo(const AbbreviationInfo& other)
+            : Weight(other.Weight), Word(other.Word) { }
         ~AbbreviationInfo() { }
 
         unsigned Weight;
