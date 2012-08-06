@@ -8,6 +8,18 @@
 
 struct ParseJob
 {
+    ParseJob(unsigned buffer_number, const StringPtr& contents)
+    :
+    BufferNumber(buffer_number),
+    Contents(contents)
+    { }
+
+    ParseJob(const ParseJob& other)
+    :
+    BufferNumber(other.BufferNumber),
+    Contents(other.Contents)
+    { }
+
     unsigned BufferNumber;
     StringPtr Contents;
 };

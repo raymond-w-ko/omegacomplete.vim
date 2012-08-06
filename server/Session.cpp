@@ -43,74 +43,46 @@ prev_input_(3),
 is_corrections_only_(false)
 {
     command_dispatcher_["current_buffer"] = boost::bind(
-        &Session::cmdCurrentBuffer,
-        boost::ref(*this),
-        _1);
+        &Session::cmdCurrentBuffer, boost::ref(*this), _1);
 
     command_dispatcher_["current_line"] = boost::bind(
-        &Session::cmdCurrentLine,
-        boost::ref(*this),
-        _1);
+        &Session::cmdCurrentLine, boost::ref(*this), _1);
 
     command_dispatcher_["cursor_position"] = boost::bind(
-        &Session::cmdCursorPosition,
-        boost::ref(*this),
-        _1);
+        &Session::cmdCursorPosition, boost::ref(*this), _1);
 
     command_dispatcher_["buffer_contents"] = boost::bind(
-        &Session::cmdBufferContents,
-        boost::ref(*this),
-        _1);
+        &Session::cmdBufferContents, boost::ref(*this), _1);
 
     command_dispatcher_["complete"] = boost::bind(
-        &Session::cmdComplete,
-        boost::ref(*this),
-        _1);
+        &Session::cmdComplete, boost::ref(*this), _1);
 
     command_dispatcher_["free_buffer"] = boost::bind(
-        &Session::cmdFreeBuffer,
-        boost::ref(*this),
-        _1);
+        &Session::cmdFreeBuffer, boost::ref(*this), _1);
 
     command_dispatcher_["current_directory"] = boost::bind(
-        &Session::cmdCurrentDirectory,
-        boost::ref(*this),
-        _1);
+        &Session::cmdCurrentDirectory, boost::ref(*this), _1);
 
     command_dispatcher_["current_tags"] = boost::bind(
-        &Session::cmdCurrentTags,
-        boost::ref(*this),
-        _1);
+        &Session::cmdCurrentTags, boost::ref(*this), _1);
 
     command_dispatcher_["taglist_tags"] = boost::bind(
-        &Session::cmdTaglistTags,
-        boost::ref(*this),
-        _1);
+        &Session::cmdTaglistTags, boost::ref(*this), _1);
 
     command_dispatcher_["vim_taglist_function"] = boost::bind(
-        &Session::cmdVimTaglistFunction,
-        boost::ref(*this),
-        _1);
+        &Session::cmdVimTaglistFunction, boost::ref(*this), _1);
 
     command_dispatcher_["prune"] = boost::bind(
-        &Session::cmdPrune,
-        boost::ref(*this),
-        _1);
+        &Session::cmdPrune, boost::ref(*this), _1);
 
     command_dispatcher_["hide_teleprompter"] = boost::bind(
-        &Session::cmdHideTeleprompter,
-        boost::ref(*this),
-        _1);
+        &Session::cmdHideTeleprompter, boost::ref(*this), _1);
 
     command_dispatcher_["flush_caches"] = boost::bind(
-        &Session::cmdFlushCaches,
-        boost::ref(*this),
-        _1);
+        &Session::cmdFlushCaches, boost::ref(*this), _1);
 
     command_dispatcher_["is_corrections_only"] = boost::bind(
-        &Session::cmdIsCorrectionsOnly,
-        boost::ref(*this),
-        _1);
+        &Session::cmdIsCorrectionsOnly, boost::ref(*this), _1);
 }
 
 Session::~Session()
@@ -262,9 +234,7 @@ void Session::cmdBufferContents(StringPtr argument)
 {
     writeResponse("ACK");
 
-    ParseJob job;
-    job.BufferNumber = current_buffer_;
-    job.Contents = argument;
+    ParseJob job(current_buffer_, argument);
     queueParseJob(job);
 }
 
@@ -425,7 +395,6 @@ void Session::queueParseJob(ParseJob job)
 void Session::workerThreadLoop()
 {
     bool did_prune = false;
-    ParseJob job;
 
     while (true)
     {
@@ -441,7 +410,7 @@ void Session::workerThreadLoop()
 try_get_next_job:
         job_queue_mutex_.lock();
         if (job_queue_.size() > 0) {
-            job = job_queue_.front();
+            ParseJob job(job_queue_.front());
             job_queue_.pop_front();
             job_queue_mutex_.unlock();
 

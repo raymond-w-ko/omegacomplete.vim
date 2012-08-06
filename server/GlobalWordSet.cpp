@@ -6,19 +6,6 @@
 static const int kLevenshteinMaxCost = 2;
 static const size_t kMinLengthForLevenshteinCompletion = 4;
 
-WordInfo::WordInfo()
-:
-ReferenceCount(0),
-GeneratedAbbreviations(false)
-{
-    ;
-}
-
-WordInfo::~WordInfo()
-{
-    ;
-}
-
 GlobalWordSet::GlobalWordSet()
 {
     ;
@@ -34,14 +21,7 @@ void GlobalWordSet::UpdateWord(const std::string& word, int reference_count_delt
     boost::unique_lock<boost::mutex> lock(mutex_);
 
     WordInfo& wi = words_[word];
-    // used for creating a const& to save memory
-    const std::map<String, WordInfo>::iterator& entry = words_.find(word);
-    const std::string& persistent_word = entry->first;
-
-    // this is not locked, which means that reads can be out of date, but
-    // I don't care since I want performance.
     wi.ReferenceCount += reference_count_delta;
-
     if (wi.ReferenceCount <= 0)
         return;
 
@@ -57,11 +37,11 @@ void GlobalWordSet::UpdateWord(const std::string& word, int reference_count_delt
 
     // generate and store abbreviations
     foreach (const UnsignedStringPair& title_case, *title_cases) {
-        AbbreviationInfo ai(title_case.first, persistent_word);
+        AbbreviationInfo ai(title_case.first, word);
         abbreviations_.insert(make_pair(title_case.second, ai));
     }
     foreach (const UnsignedStringPair& underscore, *underscores) {
-        AbbreviationInfo ai(underscore.first, persistent_word);
+        AbbreviationInfo ai(underscore.first, word);
         abbreviations_.insert(make_pair(underscore.second, ai));
     }
 
