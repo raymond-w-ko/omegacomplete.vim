@@ -347,7 +347,19 @@ function omegacomplete#UseFirstEntryOfPopup()
     if pumvisible()
         return "\<C-n>\<C-y>"
     else
-        return "\<Tab>"
+        let line = getline('.')
+        let index = col('.') - 2
+        if (index <= 0)
+            return "\<Tab>"
+        elseif (line[index] == '.')
+            return <SID>FeedPopup()
+        elseif (index >= 2 && line[index - 1] == '-' && line[index] == '>')
+            return <SID>FeedPopup()
+        elseif (index >= 2 && line[index - 1] == ':' && line[index] == ':')
+            return <SID>FeedPopup()
+        else
+            return "\<Tab>"
+        endif
     endif
 endfunction
 

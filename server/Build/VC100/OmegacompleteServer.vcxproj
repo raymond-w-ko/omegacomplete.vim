@@ -93,6 +93,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);HAVE_RECENT_BOOST_LIBRARY</PreprocessorDefinitions>
+      <AdditionalOptions>/Zm128 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>C:\Boost\stage\lib;$(ProjectDir)Libs\clang;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>

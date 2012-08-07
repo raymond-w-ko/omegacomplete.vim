@@ -3,12 +3,22 @@
 class ClangCompleter
 {
 public:
+    static bool AtCompletionPoint(
+        const std::string& line,
+        const FileLocation& location);
+
     ClangCompleter();
     ~ClangCompleter();
 
     void Init();
 
-    void CreateOrUpdate(std::string absolute_path, StringPtr contents);
+    void CreateOrUpdate(const std::string& absolute_path, StringPtr contents);
+    bool DoCompletion(
+        const std::string& absolute_path,
+        const std::string& current_line,
+        const FileLocation& location,
+        StringPtr contents,
+        std::string& result);
 
 private:
     struct ParseJob
@@ -29,7 +39,7 @@ private:
         StringPtr Contents;
     };
 
-    void createOrUpdate(std::string absolute_path, StringPtr contents);
+    void createOrUpdate(const std::string& absolute_path, StringPtr contents);
     const StringVectorPtr getProjectOptions(std::string absolute_path);
     void workerThreadLoop();
 
@@ -38,7 +48,6 @@ private:
 
     boost::mutex job_queue_mutex_;
     std::deque<ParseJob> job_queue_;
-
 
     CXIndex index_;
     boost::mutex translation_units_mutex_;

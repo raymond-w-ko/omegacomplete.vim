@@ -1,5 +1,6 @@
 #include "stdafx.hpp"
 
+#include "Stopwatch.hpp"
 #include "ClangCompleter.hpp"
 
 ClangCompleter::ClangCompleter()
@@ -15,6 +16,10 @@ void ClangCompleter::Init()
     int exclude_declarations_from_pch = 0;
     int display_diagnostics = 1;
     index_ = clang_createIndex(exclude_declarations_from_pch, display_diagnostics);
+
+    clang_CXIndex_setGlobalOptions(
+        index_,
+        CXGlobalOpt_ThreadBackgroundPriorityForAll);
 
     worker_thread_ = boost::thread(
         &ClangCompleter::workerThreadLoop,
@@ -40,7 +45,7 @@ ClangCompleter::~ClangCompleter()
 void ClangCompleter::workerThreadLoop()
 {
 #ifdef _WIN32
-    ::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_IDLE);
+    ::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_LOWEST);
 #else
 #endif
 
@@ -85,7 +90,8 @@ try_get_next_job:
     }
 }
 
-void ClangCompleter::CreateOrUpdate(std::string absolute_path, StringPtr contents)
+void ClangCompleter::CreateOrUpdate(
+    const std::string& absolute_path, StringPtr contents)
 {
     ParseJob job(absolute_path, contents);    
     job_queue_mutex_.lock();
@@ -93,7 +99,8 @@ void ClangCompleter::CreateOrUpdate(std::string absolute_path, StringPtr content
     job_queue_mutex_.unlock();
 }
 
-void ClangCompleter::createOrUpdate(std::string absolute_path, StringPtr contents)
+void ClangCompleter::createOrUpdate(
+    const std::string& absolute_path, StringPtr contents)
 {
     if (!boost::ends_with(absolute_path, ".cpp"))
         return;
@@ -116,14 +123,13 @@ void ClangCompleter::createOrUpdate(std::string absolute_path, StringPtr content
     files[0].Contents = &((*contents)[0]);
     files[0].Length = contents->size();
 
-
     auto (iter, translation_units_.find(absolute_path));
     if (iter == translation_units_.end())
     {
         std::cout << "attempting to create a translation unit for: "
-                  << absolute_path << std::endl;
+                  << absolute_path << "..." << std::endl;
 
-        unsigned flags = CXTranslationUnit_PrecompiledPreamble;
+        unsigned flags = clang_defaultEditingTranslationUnitOptions();
 
         CXTranslationUnit tu = clang_parseTranslationUnit(
             index_,
@@ -150,7 +156,9 @@ void ClangCompleter::createOrUpdate(std::string absolute_path, StringPtr content
         // reparse ourselves.
         
         // this is the only flag
-        flags = CXReparse_None;
+        std::cout << "attempting inital reparse..." << std::endl;
+
+        flags = clang_defaultReparseOptions(tu);
         int ret = clang_reparseTranslationUnit(
             tu,
             1, files,
@@ -166,7 +174,10 @@ void ClangCompleter::createOrUpdate(std::string absolute_path, StringPtr content
     }
     else
     {
-        unsigned flags = CXReparse_None;
+        return;
+
+        CXTranslationUnit tu = iter->second;
+        unsigned flags = clang_defaultReparseOptions(tu);
 
         int ret = clang_reparseTranslationUnit(
             iter->second,
@@ -178,7 +189,8 @@ void ClangCompleter::createOrUpdate(std::string absolute_path, StringPtr content
         }
         else
         {
-            std::cout << "failed to reparse file: " << absolute_path << std::endl;
+            std::cout << "deleting translation unit because failed to reparse file: "
+                      << absolute_path << std::endl;
 
             clang_disposeTranslationUnit(iter->second);
             translation_units_.erase(absolute_path);
@@ -234,4 +246,121 @@ const StringVectorPtr ClangCompleter::getProjectOptions(std::string absolute_pat
     options_cache_[absolute_path] = results;
 
     return results;
+}
+
+bool ClangCompleter::DoCompletion(
+    const std::string& absolute_path,
+    const std::string& current_line,
+    const FileLocation& location,
+    StringPtr contents,
+    std::string& result)
+{
+    if (!AtCompletionPoint(current_line, location))
+        return false;
+
+    std::cout << "trying clang completion" << std::endl;
+
+retry:
+    job_queue_mutex_.lock();
+    if (job_queue_.size() > 0)
+    {
+        job_queue_mutex_.unlock();
+#ifdef _WIN32
+        // this is in milliseconds
+        ::Sleep(1);
+#else
+        ::usleep(1 * 1000);
+#endif
+        goto retry;
+    }
+
+    using namespace boost::gregorian;
+    using namespace boost::posix_time;
+    ptime begin = microsec_clock::universal_time();
+
+    always_assert(job_queue_.size() == 0);
+
+    boost::unique_lock<boost::mutex> lock(translation_units_mutex_);
+
+    auto(iter, translation_units_.find(absolute_path));
+    always_assert(iter != translation_units_.end());
+    CXTranslationUnit tu = iter->second;
+
+    job_queue_mutex_.unlock();
+
+    CXUnsavedFile files[1];
+    files[0].Filename = absolute_path.c_str();
+    files[0].Contents = &((*contents)[0]);
+    files[0].Length = contents->size();
+
+    CXCodeCompleteResults* clang_results = clang_codeCompleteAt(
+        tu,
+        absolute_path.c_str(),
+        location.Line, location.Column + 1,
+        files, 1,
+        clang_defaultCodeCompleteOptions());
+
+    if (!clang_results)
+    {
+        return false;
+    }
+
+    std::vector<std::string> completions;
+    for (unsigned i = 0; i < clang_results->NumResults; ++i)
+    {
+        CXCompletionResult completion = clang_results->Results[i];
+        CXCursorKind cursor = completion.CursorKind;
+        CXCompletionString completion_string = completion.CompletionString;
+
+        unsigned num_chunks = clang_getNumCompletionChunks(completion_string);
+
+        for (unsigned j = 0; j < num_chunks; ++j)
+        {
+            CXCompletionChunkKind kind = clang_getCompletionChunkKind(
+                completion_string, j);
+
+            if (kind != CXCompletionChunk_TypedText)
+                continue;
+
+            CXString string = clang_getCompletionChunkText(
+                completion_string,
+                j);
+            const char* text = clang_getCString(string);
+
+            std::string strText(text);
+            completions.push_back(strText);
+            
+            clang_disposeString(string);
+        }
+    }
+
+    clang_disposeCodeCompleteResults(clang_results);
+
+    ptime end = microsec_clock::universal_time();
+    time_duration delta = end - begin;
+    std::cout << "clang: "
+              << delta.total_seconds() << "." << delta.fractional_seconds()
+              << std::endl;
+
+    return true;
+}
+
+bool ClangCompleter::AtCompletionPoint(
+    const std::string& line,
+    const FileLocation& location)
+{
+    int i = location.Column - 1;
+    if (i <= 0)
+        return false;
+
+    if (line[i] == '.')
+        return true;
+
+    if (i >= 2 && line[i - 1] == '-' && line [i] == '>')
+        return true;
+
+    if (i >= 2 && line[i - 1] == ':' && line [i] == ':')
+        return true;
+
+    return false;
 }

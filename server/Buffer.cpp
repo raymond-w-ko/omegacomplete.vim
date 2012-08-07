@@ -162,16 +162,16 @@ void Buffer::TokenizeContentsIntoKeywords(
 
 void Buffer::CalculateCurrentWordOfCursor(
     const std::string& line,
-    const std::pair<unsigned, unsigned> pos)
+    const FileLocation& pos)
 {
-    int end_bound = pos.second;
+    int end_bound = pos.Column;
     while (LookupTable::IsPartOfWord[line[end_bound]] &&
            end_bound < static_cast<int>(line.size()))
     {
         end_bound++;
     }
 
-    int begin_bound = pos.second - 1;
+    int begin_bound = pos.Column - 1;
     while ( begin_bound >= 0 &&
             LookupTable::IsPartOfWord[line[begin_bound]] )
     {

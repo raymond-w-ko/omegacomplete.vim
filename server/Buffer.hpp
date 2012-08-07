@@ -22,7 +22,7 @@ public:
 
     void CalculateCurrentWordOfCursor(
         const std::string& line,
-        const std::pair<unsigned, unsigned> pos);
+        const FileLocation& pos);
 
 private:
     Session* parent_;

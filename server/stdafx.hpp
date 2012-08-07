@@ -61,6 +61,8 @@
 #include <boost/typeof/typeof.hpp>
 #include <boost/thread/locks.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #define auto BOOST_AUTO
 #define foreach BOOST_FOREACH
@@ -105,6 +107,12 @@ inline void NormalizeToWindowsPathSeparators(std::string& pathname)
 {
     boost::replace_all(pathname, "/", "\\");
 }
+
+struct FileLocation
+{
+    unsigned Line;
+    unsigned Column;
+};
 
 typedef std::string String;
 //typedef ustring String;

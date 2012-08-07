@@ -99,6 +99,9 @@ private:
         const std::string& line,
         std::string& result);
     std::string getWordToComplete(const std::string& line);
+    void genericKeywordCompletion(
+        const std::string& line,
+        std::string& result);
 
     void addWordsToResults(
         const std::set<std::string>& words,
@@ -138,11 +141,15 @@ private:
     unsigned current_buffer_id_;
     std::string current_buffer_absolute_path_;
     std::string current_line_;
-    std::pair<unsigned, unsigned> cursor_pos_;
+    FileLocation cursor_pos_;
+    StringPtr current_contents_;
+
     std::string current_directory_;
     std::vector<std::string> current_tags_;
     std::vector<std::string> taglist_tags_;
+
     std::vector<std::string> prev_input_;
+
     bool is_corrections_only_;
 
     ClangCompleter clang_;

@@ -235,7 +235,7 @@ void Session::cmdCursorPosition(StringPtr argument)
         boost::token_compress_on);
     unsigned x = boost::lexical_cast<unsigned>(position[0]);
     unsigned y = boost::lexical_cast<unsigned>(position[1]);
-    cursor_pos_.first = x; cursor_pos_.second = y;
+    cursor_pos_.Line = x; cursor_pos_.Column = y;
 
     buffers_[current_buffer_id_].CalculateCurrentWordOfCursor(
         current_line_,
@@ -246,10 +246,12 @@ void Session::cmdBufferContents(StringPtr argument)
 {
     writeResponse("ACK");
 
-    ParseJob job(current_buffer_id_, argument);
+    current_contents_ = argument;
+
+    ParseJob job(current_buffer_id_, current_contents_);
     queueParseJob(job);
 
-    clang_.CreateOrUpdate(current_buffer_absolute_path_, argument);
+    clang_.CreateOrUpdate(current_buffer_absolute_path_, current_contents_);
 }
 
 void Session::cmdComplete(StringPtr argument)
@@ -468,6 +470,27 @@ try_get_next_job:
 }
 
 void Session::calculateCompletionCandidates(
+    const std::string& line,
+    std::string& result)
+{
+    if (boost::ends_with(current_buffer_absolute_path_, ".cpp"))
+    {
+        bool successful = clang_.DoCompletion(
+            current_buffer_absolute_path_,
+            line,
+            cursor_pos_,
+            current_contents_,
+            result);
+
+        genericKeywordCompletion(line, result);
+    }
+    else
+    {
+        genericKeywordCompletion(line, result);
+    }
+}
+
+void Session::genericKeywordCompletion(
     const std::string& line,
     std::string& result)
 {
