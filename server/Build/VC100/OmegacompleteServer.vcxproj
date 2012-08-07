@@ -110,6 +110,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\Algorithm.cpp" />
     <ClCompile Include="..\..\Buffer.cpp" />
+    <ClCompile Include="..\..\ClangCompleter.cpp" />
     <ClCompile Include="..\..\CompletionSet.cpp" />
     <ClCompile Include="..\..\EntryPoint.cpp" />
     <ClCompile Include="..\..\GlobalWordSet.cpp" />
@@ -132,6 +133,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\Algorithm.hpp" />
     <ClInclude Include="..\..\Buffer.hpp" />
+    <ClInclude Include="..\..\ClangCompleter.hpp" />
     <ClInclude Include="..\..\CompleteItem.hpp" />
     <ClInclude Include="..\..\CompletionSet.hpp" />
     <ClInclude Include="..\..\EntryPoint.hpp" />

@@ -118,8 +118,8 @@ function <SID>FeedPopup()
     endif
     
     " let server know what is the current buffer
-    let current_buffer_number = <SID>GetCurrentBufferNumber()
-    exe 'py oc_send_command("current_buffer ' . current_buffer_number . '")'
+    let buffer_number = <SID>GetCurrentBufferNumber()
+    exe 'py oc_send_command("current_buffer_id ' . buffer_number . '")'
 
     " check if plugin has disabled itself because of connection problems
     " we can only do this only after 1 oc_send_command() has occurred
@@ -190,11 +190,11 @@ endfunction
 " switching windows and need it to be synced with the server in case you
 " added or deleted lines
 function <SID>NormalModeSyncBuffer()
-    let current_buffer_number = <SID>GetCurrentBufferNumber()
-    let current_buffer_name = bufname('%') 
-    let current_path = expand('%:p')
+    let buffer_number = <SID>GetCurrentBufferNumber()
+    let buffer_name = bufname('%') 
+    let absolute_path = expand('%:p')
 
-    if (match(current_path, '\v.vim73\/doc') != -1)
+    if (match(absolute_path, '\v.vim73\/doc') != -1)
         return
     endif
 
@@ -203,12 +203,13 @@ function <SID>NormalModeSyncBuffer()
         return
     endif
     " don't process these special buffers from other plugins
-    if (match(current_buffer_name,
+    if (match(buffer_name,
             \ '\v(GoToFile|ControlP|__Scratch__|__Gundo__|__Gundo_Preview__)') != -1)
         return
     endif
 
-    exe 'py oc_send_command("current_buffer ' . current_buffer_number . '")'
+    exe 'py oc_send_command("current_buffer_id ' . buffer_number . '")'
+    exe 'py oc_send_command("current_buffer_absolute_path ' . absolute_path . '")'
     call s:SendCurrentBuffer()
 endfunction
 
@@ -216,8 +217,8 @@ endfunction
 " buffer. This must be reflected on the server, otherwise we get completions
 " that we no longer want.
 function <SID>OnBufDelete()
-    let current_buffer_number = expand('<abuf>')
-    exe 'py oc_send_command("free_buffer ' . current_buffer_number . '")'
+    let buffer_number = expand('<abuf>')
+    exe 'py oc_send_command("free_buffer ' . buffer_number . '")'
 endfunction
 
 " When we are leaving buffer (either by opening another buffer, switching

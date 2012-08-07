@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
 #endif
 
 #ifndef _DEBUG
-    TestCases tc;
+    //TestCases tc;
 
     //_CrtDumpMemoryLeaks();
     //return 0;

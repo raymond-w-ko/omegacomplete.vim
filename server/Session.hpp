@@ -5,24 +5,7 @@
 #include "GlobalWordSet.hpp"
 #include "CompletionSet.hpp"
 #include "CompleteItem.hpp"
-
-struct ParseJob
-{
-    ParseJob(unsigned buffer_number, const StringPtr& contents)
-    :
-    BufferNumber(buffer_number),
-    Contents(contents)
-    { }
-
-    ParseJob(const ParseJob& other)
-    :
-    BufferNumber(other.BufferNumber),
-    Contents(other.Contents)
-    { }
-
-    unsigned BufferNumber;
-    StringPtr Contents;
-};
+#include "ClangCompleter.hpp"
 
 class Session
 :
@@ -60,6 +43,24 @@ public:
     GlobalWordSet WordSet;
 
 private:
+    struct ParseJob
+    {
+        ParseJob(unsigned buffer_number, const StringPtr& contents)
+        :
+        BufferNumber(buffer_number),
+        Contents(contents)
+        { }
+
+        ParseJob(const ParseJob& other)
+        :
+        BufferNumber(other.BufferNumber),
+        Contents(other.Contents)
+        { }
+
+        unsigned BufferNumber;
+        StringPtr Contents;
+    };
+
     ////////////////////////////////////////////////////////////////////////////
     // boost::asio
     ////////////////////////////////////////////////////////////////////////////
@@ -70,7 +71,8 @@ private:
     void handleReadHeader(const boost::system::error_code& error);
     void writeResponse(const std::string& response);
 
-    void cmdCurrentBuffer(StringPtr argument);
+    void cmdCurrentBufferId(StringPtr argument);
+    void cmdCurrentBufferAbsolutePath(StringPtr argument);
     void cmdCurrentLine(StringPtr argument);
     void cmdCursorPosition(StringPtr argument);
     void cmdBufferContents(StringPtr argument);
@@ -133,7 +135,8 @@ private:
     boost::mutex job_queue_mutex_;
     std::deque<ParseJob> job_queue_;
 
-    unsigned current_buffer_;
+    unsigned current_buffer_id_;
+    std::string current_buffer_absolute_path_;
     std::string current_line_;
     std::pair<unsigned, unsigned> cursor_pos_;
     std::string current_directory_;
@@ -141,5 +144,7 @@ private:
     std::vector<std::string> taglist_tags_;
     std::vector<std::string> prev_input_;
     bool is_corrections_only_;
+
+    ClangCompleter clang_;
 };
 typedef boost::shared_ptr<Session> SessionPtr;

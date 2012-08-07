@@ -62,6 +62,9 @@
     <ClCompile Include="..\..\Algorithm.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\ClangCompleter.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Buffer.hpp">
@@ -119,6 +122,9 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\..\CompleteItem.hpp">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ClangCompleter.hpp">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

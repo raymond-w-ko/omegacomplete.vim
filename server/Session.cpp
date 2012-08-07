@@ -42,8 +42,11 @@ is_quitting_(0),
 prev_input_(3),
 is_corrections_only_(false)
 {
-    command_dispatcher_["current_buffer"] = boost::bind(
-        &Session::cmdCurrentBuffer, boost::ref(*this), _1);
+    command_dispatcher_["current_buffer_id"] = boost::bind(
+        &Session::cmdCurrentBufferId, boost::ref(*this), _1);
+
+    command_dispatcher_["current_buffer_absolute_path"] = boost::bind(
+        &Session::cmdCurrentBufferAbsolutePath, boost::ref(*this), _1);
 
     command_dispatcher_["current_line"] = boost::bind(
         &Session::cmdCurrentLine, boost::ref(*this), _1);
@@ -99,6 +102,8 @@ void Session::Start()
     worker_thread_ = boost::thread(
         &Session::workerThreadLoop,
         this);
+
+    clang_.Init();
 
     std::cout << "session started, connection number: " << connection_number_ << "\n";
     socket_.set_option(boost::asio::ip::tcp::no_delay(true));
@@ -193,15 +198,22 @@ void Session::processClientMessage()
     }
 }
 
-void Session::cmdCurrentBuffer(StringPtr argument)
+void Session::cmdCurrentBufferId(StringPtr argument)
 {
     writeResponse("ACK");
 
-    current_buffer_ = boost::lexical_cast<unsigned>(*argument);
-    if (Contains(buffers_, current_buffer_) == false)
+    current_buffer_id_ = boost::lexical_cast<unsigned>(*argument);
+    if (Contains(buffers_, current_buffer_id_) == false)
     {
-        buffers_[current_buffer_].Init(this, current_buffer_);
+        buffers_[current_buffer_id_].Init(this, current_buffer_id_);
     }
+}
+
+void Session::cmdCurrentBufferAbsolutePath(StringPtr argument)
+{
+    writeResponse("ACK");
+
+    current_buffer_absolute_path_ = *argument;
 }
 
 void Session::cmdCurrentLine(StringPtr argument)
@@ -225,7 +237,7 @@ void Session::cmdCursorPosition(StringPtr argument)
     unsigned y = boost::lexical_cast<unsigned>(position[1]);
     cursor_pos_.first = x; cursor_pos_.second = y;
 
-    buffers_[current_buffer_].CalculateCurrentWordOfCursor(
+    buffers_[current_buffer_id_].CalculateCurrentWordOfCursor(
         current_line_,
         cursor_pos_);
 }
@@ -234,8 +246,10 @@ void Session::cmdBufferContents(StringPtr argument)
 {
     writeResponse("ACK");
 
-    ParseJob job(current_buffer_, argument);
+    ParseJob job(current_buffer_id_, argument);
     queueParseJob(job);
+
+    clang_.CreateOrUpdate(current_buffer_absolute_path_, argument);
 }
 
 void Session::cmdComplete(StringPtr argument)
@@ -394,6 +408,11 @@ void Session::queueParseJob(ParseJob job)
 
 void Session::workerThreadLoop()
 {
+#ifdef _WIN32
+    ::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_BELOW_NORMAL);
+#else
+#endif
+
     bool did_prune = false;
 
     while (true)
@@ -404,19 +423,22 @@ void Session::workerThreadLoop()
 #else
         ::usleep(1 * 1000);
 #endif
-        if (is_quitting_ == 1) break;
+        if (is_quitting_ == 1)
+            break;
 
         // pop off the next job
 try_get_next_job:
         job_queue_mutex_.lock();
-        if (job_queue_.size() > 0) {
+        if (job_queue_.size() > 0)
+        {
             ParseJob job(job_queue_.front());
             job_queue_.pop_front();
             job_queue_mutex_.unlock();
 
             // do the job
             buffers_mutex_.lock();
-            if (Contains(buffers_, job.BufferNumber) == false) {
+            if (Contains(buffers_, job.BufferNumber) == false)
+            {
                 std::cout << "buffer " << job.BufferNumber
                           << "no longer exists! "
                           << "skipping this job" << std::endl;
@@ -427,11 +449,12 @@ try_get_next_job:
 
             did_prune = false;
 
-            // try and see if there is something queued up
-            // if so, then immediately process it,
-            // don't go to sleep
+            // try and see if there is something queued up if so, then
+            // immediately process it, don't go to sleep
             goto try_get_next_job;
-        } else {
+        }
+        else
+        {
             job_queue_mutex_.unlock();
 
             if (did_prune == false) {
@@ -441,7 +464,6 @@ try_get_next_job:
 
             continue;
         }
-
     }
 }
 

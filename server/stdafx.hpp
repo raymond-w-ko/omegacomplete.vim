@@ -60,6 +60,7 @@
 #include <boost/foreach.hpp>
 #include <boost/typeof/typeof.hpp>
 #include <boost/thread/locks.hpp>
+#include <boost/filesystem.hpp>
 
 #define auto BOOST_AUTO
 #define foreach BOOST_FOREACH
