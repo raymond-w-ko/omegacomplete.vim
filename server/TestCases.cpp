@@ -127,7 +127,7 @@ void TestCases::TagsTest()
 
 void TestCases::ClangTest()
 {
-    std::cout << "checking to see if libclang/clang.dll works" << std::endl;
+    std::cout << "checking to see if libclang/libclang.dll works" << std::endl;
 
     int argc = 1;
     char* argv[] = {"--version"};

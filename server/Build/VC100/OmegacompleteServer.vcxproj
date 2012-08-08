@@ -66,11 +66,11 @@
       <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);HAVE_RECENT_BOOST_LIBRARY</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>C:\Boost\stage\lib;$(ProjectDir)Libs\clang;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Boost\stage\lib;$(ProjectDir)Libs\libclang;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalDependencies>clang.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libclang.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -96,13 +96,13 @@
       <AdditionalOptions>/Zm128 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>C:\Boost\stage\lib;$(ProjectDir)Libs\clang;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Boost\stage\lib;$(ProjectDir)Libs\libclang;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalDependencies>clang.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libclang.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy $(TargetPath) $(ProjectDir)\..\..\$(TargetFileName)</Command>
