@@ -14,6 +14,19 @@ let s:just_did_insertenter = 0
 " initialize this to be safe
 let g:omegacomplete_server_results=[]
 
+if !exists("g:omegacomplete_normal_hi_cmds")
+    let g:omegacomplete_normal_hi_cmds=[
+        \ "hi Pmenu guifg=#ffff00 guibg=#373700 gui=none",
+        \ "hi PmenuSel guifg=#373700 guibg=#ffff00 gui=none",
+        \ ]
+endif
+if !exists("g:omegacomplete_corrections_hi_cmds")
+    let g:omegacomplete_corrections_hi_cmds=[
+        \ "hi Pmenu guifg=#00ff00 guibg=#003700 gui=none",
+        \ "hi PmenuSel guifg=#003700 guibg=#00ff00 gui=none",
+        \ ]
+endif
+
 " whether teleprompter is active
 let s:teleprompter = 0
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -174,11 +187,13 @@ else:
     vim.command('let is_corrections_only=1')
 EOF
         if (is_corrections_only)
-            hi Pmenu guifg=#ffff00 guibg=#373700 ctermfg=bg ctermbg=245 gui=none cterm=none
-            hi PmenuSel guifg=#373700 guibg=#ffff00 ctermfg=fg ctermbg=24 gui=none cterm=none
+            for cmd in g:omegacomplete_normal_hi_cmds
+                exe cmd
+            endfor
         else
-            hi Pmenu guifg=#00ff00 guibg=#003700 ctermfg=bg ctermbg=245 gui=none cterm=none
-            hi PmenuSel guifg=#003700 guibg=#00ff00 ctermfg=fg ctermbg=24 gui=none cterm=none
+            for cmd in g:omegacomplete_corrections_hi_cmds
+                exe cmd
+            endfor
         endif
         " show actual popup
         return "\<C-x>\<C-u>\<C-p>"

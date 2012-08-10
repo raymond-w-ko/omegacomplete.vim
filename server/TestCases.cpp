@@ -38,7 +38,8 @@ TestCases::~TestCases()
 
 void TestCases::ustringTest()
 {
-    ustring<8> dummy("test123");
+    std::cout << "checking ustring<8>" << std::endl;
+    ustring<8> dummy("lelouch");
 }
 
 void TestCases::TrieNodeTest()
