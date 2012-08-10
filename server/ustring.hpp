@@ -1,5 +1,6 @@
 #pragma once
 
+template <int N>
 class ustring
 {
 public:
@@ -21,7 +22,7 @@ public:
             return;
         }
 
-        if (info_.size <= sizeof(void*))
+        if (info_.size <= N)
         {
             memcpy(data_.buffer, &input[0], info_.size);
             info_.which = kUsingBuffer;
@@ -91,7 +92,7 @@ public:
             return *this;
         }
 
-        if (info_.size <= sizeof(void*))
+        if (info_.size <= N)
         {
             memcpy(data_.buffer, &input[0], info_.size);
             info_.which = kUsingBuffer;
@@ -123,7 +124,7 @@ public:
 
     const char& operator[](const unsigned index) const
     {
-        if (size() <= sizeof(void*))
+        if (size() <= N)
             return data_.buffer[index];
         else
             return data_.pointer[index];
@@ -131,7 +132,7 @@ public:
 
     operator std::string() const
     {
-        const char* source = info_.size <= sizeof(void*) ?
+        const char* source = info_.size <= N ?
             data_.buffer : data_.pointer;
         return std::string(source, info_.size);
     }
@@ -139,7 +140,7 @@ public:
     size_t GetHashCode() const
     {
         size_t hash = 23;
-        const char* source = info_.size <= sizeof(void*) ?
+        const char* source = info_.size <= N ?
             data_.buffer : data_.pointer;
         for (size_t i = 0; i < info_.size; ++i)
         {
@@ -155,9 +156,9 @@ public:
         if (info_.which != other.info_.which)
             return false;
 
-        const char* x = info_.size <= sizeof(void*) ?
+        const char* x = info_.size <= N ?
             data_.buffer : data_.pointer;
-        const char* y = other.info_.size <= sizeof(void*) ?
+        const char* y = other.info_.size <= N ?
             other.data_.buffer : other.data_.pointer;
 
         for (size_t i = 0; i < info_.size; ++i)
@@ -212,14 +213,15 @@ private:
 
     union
     {
-        char buffer[sizeof(void*)];
+        char buffer[N];
         char* pointer;
     } data_;
 };
 
 namespace boost
 {
-template<> struct hash<ustring>
+template <int N>
+struct hash<ustring<N>>
 {
     size_t operator()(const ustring& str) const
     {
