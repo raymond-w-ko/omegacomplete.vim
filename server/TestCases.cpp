@@ -38,10 +38,7 @@ TestCases::~TestCases()
 
 void TestCases::ustringTest()
 {
-    ustring dummy;
-    std::cout << "runtime check of union size" << std::endl;
-    always_assert( sizeof(dummy.data_.buffer) == sizeof(dummy.data_.pointer) );
-    always_assert( sizeof(dummy) == (2 * sizeof(void*)) );
+    ustring<8> dummy("test123");
 }
 
 void TestCases::TrieNodeTest()
