@@ -13,7 +13,7 @@ void ClangCompleter::Init()
 {
     std::cout << "initializing a Clang index" << std::endl;
 
-    int exclude_declarations_from_pch = 0;
+    int exclude_declarations_from_pch = 1;
     int display_diagnostics = 1;
     index_ = clang_createIndex(exclude_declarations_from_pch, display_diagnostics);
 
@@ -44,11 +44,6 @@ ClangCompleter::~ClangCompleter()
 
 void ClangCompleter::workerThreadLoop()
 {
-#ifdef _WIN32
-    ::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_LOWEST);
-#else
-#endif
-
     while (true)
     {
 #ifdef _WIN32
@@ -233,7 +228,7 @@ const StringVectorPtr ClangCompleter::getProjectOptions(std::string absolute_pat
     if (options_file.empty())
         return results;
 
-    std::ifstream in(options_file);
+    std::ifstream in(options_file.c_str());
 
     while (in.good())
     {
