@@ -152,6 +152,8 @@ private:
 
     bool is_corrections_only_;
 
+#ifdef ENABLE_CLANG_COMPLETION
     ClangCompleter clang_;
+#endif
 };
 typedef boost::shared_ptr<Session> SessionPtr;

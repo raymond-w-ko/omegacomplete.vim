@@ -99,11 +99,18 @@ Session::~Session()
 
 void Session::Start()
 {
+#ifdef _WIN32
+    ::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
+#else
+#endif
+
     worker_thread_ = boost::thread(
         &Session::workerThreadLoop,
         this);
 
+#ifdef ENABLE_CLANG_COMPLETION
     clang_.Init();
+#endif
 
     std::cout << "session started, connection number: " << connection_number_ << "\n";
     socket_.set_option(boost::asio::ip::tcp::no_delay(true));
@@ -251,7 +258,9 @@ void Session::cmdBufferContents(StringPtr argument)
     ParseJob job(current_buffer_id_, current_contents_);
     queueParseJob(job);
 
+#ifdef ENABLE_CLANG_COMPLETION
     clang_.CreateOrUpdate(current_buffer_absolute_path_, current_contents_);
+#endif
 }
 
 void Session::cmdComplete(StringPtr argument)
@@ -410,11 +419,6 @@ void Session::queueParseJob(ParseJob job)
 
 void Session::workerThreadLoop()
 {
-#ifdef _WIN32
-    ::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_BELOW_NORMAL);
-#else
-#endif
-
     bool did_prune = false;
 
     while (true)
@@ -473,21 +477,19 @@ void Session::calculateCompletionCandidates(
     const std::string& line,
     std::string& result)
 {
+#ifdef ENABLE_CLANG_COMPLETION
     if (boost::ends_with(current_buffer_absolute_path_, ".cpp"))
     {
-        bool successful = clang_.DoCompletion(
+        clang_.DoCompletion(
             current_buffer_absolute_path_,
             line,
             cursor_pos_,
             current_contents_,
             result);
+    }
+#endif
 
-        genericKeywordCompletion(line, result);
-    }
-    else
-    {
-        genericKeywordCompletion(line, result);
-    }
+    genericKeywordCompletion(line, result);
 }
 
 void Session::genericKeywordCompletion(
