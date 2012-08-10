@@ -39,6 +39,7 @@
 #include <deque>
 #include <set>
 #include <map>
+#include <fstream>
 
 #define BOOST_THREAD_USE_LIB
 
