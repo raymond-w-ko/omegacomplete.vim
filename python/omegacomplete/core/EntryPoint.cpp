@@ -16,16 +16,6 @@ static const unsigned short PORT = 31337;
 int main(int argc, char* argv[])
 {
     // static intializers
-    LookupTable::GlobalInit();
-    if (TagsSet::GlobalInit() == false)
-        return 1;
-    Algorithm::GlobalInit();
-    Session::GlobalInit();
-#ifdef _WIN32
-#ifdef TELEPROMPTER
-    Teleprompter::GlobalInit();
-#endif
-#endif
 
 #ifndef _DEBUG
     TestCases tc;

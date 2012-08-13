@@ -3,7 +3,7 @@
 class Algorithm
 {
 public:
-    static void GlobalInit();
+    static void InitGlobal();
 
     // no side effects
     static void GenerateDepths(

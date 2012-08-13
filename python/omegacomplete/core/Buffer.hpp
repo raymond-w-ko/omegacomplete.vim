@@ -2,7 +2,7 @@
 
 #include "TrieNode.hpp"
 
-class Session;
+class OmegaComplete;
 
 class Buffer
 {
@@ -13,7 +13,7 @@ public:
 
     Buffer();
     ~Buffer();
-    bool Init(Session* parent, unsigned buffer_id);
+    bool Init(OmegaComplete* parent, unsigned buffer_id);
 
     bool operator==(const Buffer& other);
     unsigned GetBufferId() const;
@@ -25,7 +25,7 @@ public:
         const FileLocation& pos);
 
 private:
-    Session* parent_;
+    OmegaComplete* parent_;
     unsigned buffer_id_;
 
     // the buffer's contents

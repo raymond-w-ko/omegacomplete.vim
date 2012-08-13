@@ -4,7 +4,7 @@
 class Teleprompter
 {
 public:
-    static void GlobalInit();
+    static void InitGlobal();
     static Teleprompter* Instance() { return instance_; }
     ~Teleprompter();
 

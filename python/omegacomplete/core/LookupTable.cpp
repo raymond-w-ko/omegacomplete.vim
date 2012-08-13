@@ -7,7 +7,7 @@ char LookupTable::IsUpper[256];
 char LookupTable::ToLower[256];
 char LookupTable::IsNumber[256];
 
-void LookupTable::GlobalInit()
+void LookupTable::InitGlobal()
 {
     // generate lookup tables
     for (size_t index = 0; index <= 255; ++index)

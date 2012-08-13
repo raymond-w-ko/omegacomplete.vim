@@ -7,21 +7,18 @@
 #include "CompleteItem.hpp"
 #include "ClangCompleter.hpp"
 
-class Session
+class OmegaComplete
 :
-public boost::noncopyable,
-public Participant,
-public boost::enable_shared_from_this<Session>
+public boost::noncopyable
 {
 public:
-    static void GlobalInit();
+    static void InitGlobal();
+    static OmegaComplete* GetInstance() { return instance_; }
+    ~OmegaComplete();
 
-    ////////////////////////////////////////////////////////////////////////////
-    // boost::asio
-    ////////////////////////////////////////////////////////////////////////////
-    // when creating a session, this determine what the connection number is
-    static unsigned int connection_ticket_;
-    // quick match keys
+    const std::string Eval(const char* request, const int request_len);
+
+    // Quick Match Keys
     // basically a mapping from result number to keyboard key to press
     // first result  -> 'a'
     // second result -> 's'
@@ -29,16 +26,7 @@ public:
     // and etc.
     static std::vector<char> QuickMatchKey;
     static boost::unordered_map<char, unsigned> ReverseQuickMatch;
-
-    Session(boost::asio::io_service& io_service, Room& room);
-    ~Session();
-
-    boost::asio::ip::tcp::socket& Socket()
-    {
-        return socket_;
-    }
-
-    void Start();
+    static const std::string default_response_;
 
     GlobalWordSet WordSet;
 
@@ -61,36 +49,31 @@ private:
         StringPtr Contents;
     };
 
-    ////////////////////////////////////////////////////////////////////////////
-    // boost::asio
-    ////////////////////////////////////////////////////////////////////////////
-    void handleReadRequest(const boost::system::error_code& error);
-    void handleWriteResponse(const boost::system::error_code& error);
+    OmegaComplete();
+    void initCommandDispatcher();
 
-    void asyncReadHeader();
-    void handleReadHeader(const boost::system::error_code& error);
-    void writeResponse(const std::string& response);
-
-    void cmdCurrentBufferId(StringPtr argument);
-    void cmdCurrentBufferAbsolutePath(StringPtr argument);
-    void cmdCurrentLine(StringPtr argument);
-    void cmdCursorPosition(StringPtr argument);
-    void cmdBufferContents(StringPtr argument);
-    void cmdComplete(StringPtr argument);
-    void cmdFreeBuffer(StringPtr argument);
-    void cmdCurrentDirectory(StringPtr argument);
-    void cmdCurrentTags(StringPtr argument);
-    void cmdTaglistTags(StringPtr argument);
-    void cmdVimTaglistFunction(StringPtr argument);
-    void cmdPrune(StringPtr argument);
-    void cmdHideTeleprompter(StringPtr argument);
-    void cmdFlushCaches(StringPtr argument);
-    void cmdIsCorrectionsOnly(StringPtr argument);
+    ////////////////////////////////////////////////////////////////////////////
+    // Commands
+    ////////////////////////////////////////////////////////////////////////////
+    std::string cmdCurrentBufferId(StringPtr argument);
+    std::string cmdCurrentBufferAbsolutePath(StringPtr argument);
+    std::string cmdCurrentLine(StringPtr argument);
+    std::string cmdCursorPosition(StringPtr argument);
+    std::string cmdBufferContents(StringPtr argument);
+    std::string cmdComplete(StringPtr argument);
+    std::string cmdFreeBuffer(StringPtr argument);
+    std::string cmdCurrentDirectory(StringPtr argument);
+    std::string cmdCurrentTags(StringPtr argument);
+    std::string cmdTaglistTags(StringPtr argument);
+    std::string cmdVimTaglistFunction(StringPtr argument);
+    std::string cmdPrune(StringPtr argument);
+    std::string cmdHideTeleprompter(StringPtr argument);
+    std::string cmdFlushCaches(StringPtr argument);
+    std::string cmdIsCorrectionsOnly(StringPtr argument);
 
     ////////////////////////////////////////////////////////////////////////////
     // OmegaComplete Core
     ////////////////////////////////////////////////////////////////////////////
-    void processClientMessage();
 
     void queueParseJob(ParseJob job);
     void workerThreadLoop();
@@ -116,21 +99,16 @@ private:
         CompletionSet& completion_set,
         const std::vector<CompleteItem>* banned_words = NULL);
 
-    boost::asio::ip::tcp::socket socket_;
-    Room& room_;
-    unsigned int connection_number_;
-    // used when reading up to a NULL char as a delimiter
-    boost::asio::streambuf request_;
-    // read based on a header length
-    unsigned char request_header_[4];
-    std::string request_body_;
-    std::map<String, boost::function<void (StringPtr)> > command_dispatcher_;
-
     ////////////////////////////////////////////////////////////////////////////
     // OmegaComplete Core
     ////////////////////////////////////////////////////////////////////////////
+    static OmegaComplete* instance_;
+
     boost::thread worker_thread_;
     volatile int is_quitting_;
+
+    std::map<String, boost::function<std::string (StringPtr)> >
+        command_dispatcher_;
 
     boost::mutex buffers_mutex_;
     boost::unordered_map<unsigned, Buffer> buffers_;
@@ -156,4 +134,4 @@ private:
     ClangCompleter clang_;
 #endif
 };
-typedef boost::shared_ptr<Session> SessionPtr;
+typedef boost::shared_ptr<OmegaComplete> SessionPtr;

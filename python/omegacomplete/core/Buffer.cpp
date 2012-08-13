@@ -1,7 +1,7 @@
 #include "stdafx.hpp"
 
 #include "Buffer.hpp"
-#include "Session.hpp"
+#include "OmegaComplete.hpp"
 #include "Stopwatch.hpp"
 #include "LookupTable.hpp"
 
@@ -28,7 +28,7 @@ bool Buffer::operator==(const Buffer& other)
     return (this->buffer_id_ == other.buffer_id_);
 }
 
-bool Buffer::Init(Session* parent, unsigned buffer_id)
+bool Buffer::Init(OmegaComplete* parent, unsigned buffer_id)
 {
     parent_ = parent;
     buffer_id_ = buffer_id;

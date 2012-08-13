@@ -3,7 +3,7 @@
 class LookupTable
 {
 public:
-    static void GlobalInit();
+    static void InitGlobal();
 
     // used to find if a letter is part of a "word"
     static char IsPartOfWord[256];

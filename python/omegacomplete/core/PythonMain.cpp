@@ -5,7 +5,7 @@ static PyObject* eval(PyObject* self, PyObject* args)
 {
     const char* input;
     int len;
-    if (!PyArgs_ParseTuple(args, "s#", &input, &len))
+    if (!PyArg_ParseTuple(args, "s#", &input, &len))
         return NULL;
 
     const std::string& result = OmegaComplete::GetInstance()->Eval(input, len);
@@ -26,5 +26,5 @@ PyMODINIT_FUNC
 initcore(void)
 {
     (void) Py_InitModule("core", CoreMethods);
-    OmegaComplete::InitStatic();
+    OmegaComplete::InitGlobal();
 }

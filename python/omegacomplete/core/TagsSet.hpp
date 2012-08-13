@@ -6,7 +6,7 @@
 class TagsSet : public boost::noncopyable
 {
 public:
-    static bool GlobalInit();
+    static bool InitGlobal();
     static TagsSet* Instance();
     static void GlobalShutdown();
     std::string ResolveFullPathname(

@@ -8,7 +8,7 @@ Teleprompter* Teleprompter::instance_ = NULL;
 
 const char* g_szClassName = "OmegaCompleteTeleprompter";
 
-void Teleprompter::GlobalInit()
+void Teleprompter::InitGlobal()
 {
     instance_ = new Teleprompter;
 }

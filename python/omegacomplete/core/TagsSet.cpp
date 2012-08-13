@@ -7,7 +7,7 @@ TagsSet* TagsSet::instance_ = NULL;
 std::string TagsSet::win32_system_drive_;
 #endif
 
-bool TagsSet::GlobalInit()
+bool TagsSet::InitGlobal()
 {
     instance_ = new TagsSet;
 

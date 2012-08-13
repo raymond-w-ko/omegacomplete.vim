@@ -1,6 +1,6 @@
 #include "stdafx.hpp"
 
-#include "Session.hpp"
+#include "OmegaComplete.hpp"
 #include "TagsSet.hpp"
 #include "Stopwatch.hpp"
 #include "LookupTable.hpp"
@@ -8,12 +8,22 @@
 #include "Teleprompter.hpp"
 #include "Algorithm.hpp"
 
-unsigned int Session::connection_ticket_ = 0;
-std::vector<char> Session::QuickMatchKey;
-boost::unordered_map<char, unsigned> Session::ReverseQuickMatch;
+std::vector<char> OmegaComplete::QuickMatchKey;
+boost::unordered_map<char, unsigned> OmegaComplete::ReverseQuickMatch;
+const std::string default_response_ = "ACK";
+OmegaComplete* instance_ = NULL;
 
-void Session::GlobalInit()
+void OmegaComplete::InitGlobal()
 {
+    // dependencies in other classes that have to initialized first
+    LookupTable::InitGlobal();
+    TagsSet::InitGlobal();
+    Algorithm::InitGlobal();
+#if defined (_WIN32) && defined (TELEPROMPTER)
+    Teleprompter::InitGlobal();
+#endif
+
+    // this class's own initialization
     QuickMatchKey.resize(CompletionSet::kMaxNumCompletions, ' '),
 
     QuickMatchKey[0] = '1';
@@ -31,173 +41,109 @@ void Session::GlobalInit()
     {
         ReverseQuickMatch[QuickMatchKey[ii]] = ii;
     }
+
+    instance_ = new OmegaComplete;
 }
 
-Session::Session(boost::asio::io_service& io_service, Room& room)
+OmegaComplete::OmegaComplete()
 :
-socket_(io_service),
-room_(room),
-connection_number_(connection_ticket_++),
 is_quitting_(0),
 prev_input_(3),
 is_corrections_only_(false)
 {
-    command_dispatcher_["current_buffer_id"] = boost::bind(
-        &Session::cmdCurrentBufferId, boost::ref(*this), _1);
-
-    command_dispatcher_["current_buffer_absolute_path"] = boost::bind(
-        &Session::cmdCurrentBufferAbsolutePath, boost::ref(*this), _1);
-
-    command_dispatcher_["current_line"] = boost::bind(
-        &Session::cmdCurrentLine, boost::ref(*this), _1);
-
-    command_dispatcher_["cursor_position"] = boost::bind(
-        &Session::cmdCursorPosition, boost::ref(*this), _1);
-
-    command_dispatcher_["buffer_contents"] = boost::bind(
-        &Session::cmdBufferContents, boost::ref(*this), _1);
-
-    command_dispatcher_["complete"] = boost::bind(
-        &Session::cmdComplete, boost::ref(*this), _1);
-
-    command_dispatcher_["free_buffer"] = boost::bind(
-        &Session::cmdFreeBuffer, boost::ref(*this), _1);
-
-    command_dispatcher_["current_directory"] = boost::bind(
-        &Session::cmdCurrentDirectory, boost::ref(*this), _1);
-
-    command_dispatcher_["current_tags"] = boost::bind(
-        &Session::cmdCurrentTags, boost::ref(*this), _1);
-
-    command_dispatcher_["taglist_tags"] = boost::bind(
-        &Session::cmdTaglistTags, boost::ref(*this), _1);
-
-    command_dispatcher_["vim_taglist_function"] = boost::bind(
-        &Session::cmdVimTaglistFunction, boost::ref(*this), _1);
-
-    command_dispatcher_["prune"] = boost::bind(
-        &Session::cmdPrune, boost::ref(*this), _1);
-
-    command_dispatcher_["hide_teleprompter"] = boost::bind(
-        &Session::cmdHideTeleprompter, boost::ref(*this), _1);
-
-    command_dispatcher_["flush_caches"] = boost::bind(
-        &Session::cmdFlushCaches, boost::ref(*this), _1);
-
-    command_dispatcher_["is_corrections_only"] = boost::bind(
-        &Session::cmdIsCorrectionsOnly, boost::ref(*this), _1);
-}
-
-Session::~Session()
-{
-    is_quitting_ = 1;
-    worker_thread_.join();
-
-    std::cout << boost::str(boost::format(
-        "session %u destroyed\n") % connection_number_);
-}
-
-void Session::Start()
-{
-#ifdef _WIN32
-    ::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
-#else
-#endif
+    initCommandDispatcher();
 
     worker_thread_ = boost::thread(
-        &Session::workerThreadLoop,
+        &OmegaComplete::workerThreadLoop,
         this);
 
 #ifdef ENABLE_CLANG_COMPLETION
     clang_.Init();
 #endif
-
-    std::cout << "session started, connection number: " << connection_number_ << "\n";
-    socket_.set_option(boost::asio::ip::tcp::no_delay(true));
-    room_.Join(shared_from_this());
-
-    asyncReadHeader();
 }
 
-void Session::asyncReadHeader()
+void OmegaComplete::initCommandDispatcher()
 {
-    async_read(
-        socket_,
-        boost::asio::buffer(request_header_, 4),
-        boost::bind(
-            &Session::handleReadHeader,
-            this,
-            boost::asio::placeholders::error));
+    command_dispatcher_["current_buffer_id"] = boost::bind(
+        &OmegaComplete::cmdCurrentBufferId, boost::ref(*this), _1);
+
+    command_dispatcher_["current_buffer_absolute_path"] = boost::bind(
+        &OmegaComplete::cmdCurrentBufferAbsolutePath, boost::ref(*this), _1);
+
+    command_dispatcher_["current_line"] = boost::bind(
+        &OmegaComplete::cmdCurrentLine, boost::ref(*this), _1);
+
+    command_dispatcher_["cursor_position"] = boost::bind(
+        &OmegaComplete::cmdCursorPosition, boost::ref(*this), _1);
+
+    command_dispatcher_["buffer_contents"] = boost::bind(
+        &OmegaComplete::cmdBufferContents, boost::ref(*this), _1);
+
+    command_dispatcher_["complete"] = boost::bind(
+        &OmegaComplete::cmdComplete, boost::ref(*this), _1);
+
+    command_dispatcher_["free_buffer"] = boost::bind(
+        &OmegaComplete::cmdFreeBuffer, boost::ref(*this), _1);
+
+    command_dispatcher_["current_directory"] = boost::bind(
+        &OmegaComplete::cmdCurrentDirectory, boost::ref(*this), _1);
+
+    command_dispatcher_["current_tags"] = boost::bind(
+        &OmegaComplete::cmdCurrentTags, boost::ref(*this), _1);
+
+    command_dispatcher_["taglist_tags"] = boost::bind(
+        &OmegaComplete::cmdTaglistTags, boost::ref(*this), _1);
+
+    command_dispatcher_["vim_taglist_function"] = boost::bind(
+        &OmegaComplete::cmdVimTaglistFunction, boost::ref(*this), _1);
+
+    command_dispatcher_["prune"] = boost::bind(
+        &OmegaComplete::cmdPrune, boost::ref(*this), _1);
+
+    command_dispatcher_["hide_teleprompter"] = boost::bind(
+        &OmegaComplete::cmdHideTeleprompter, boost::ref(*this), _1);
+
+    command_dispatcher_["flush_caches"] = boost::bind(
+        &OmegaComplete::cmdFlushCaches, boost::ref(*this), _1);
+
+    command_dispatcher_["is_corrections_only"] = boost::bind(
+        &OmegaComplete::cmdIsCorrectionsOnly, boost::ref(*this), _1);
 }
 
-void Session::handleReadHeader(const boost::system::error_code& error)
+OmegaComplete::~OmegaComplete()
 {
-    if (error)
-    {
-        room_.Leave(shared_from_this());
-
-        LogAsioError(error, "failed to handleReadHeader()");
-        return;
-    }
-
-    // this probably isn't totally portable, but whatever
-    unsigned body_size = *( reinterpret_cast<unsigned*>(request_header_) );
-    request_body_.resize(body_size, '\0');
-
-    async_read(
-        socket_,
-        boost::asio::buffer(&request_body_[0], body_size),
-        boost::bind(
-            &Session::handleReadRequest,
-            this,
-            boost::asio::placeholders::error));
+    is_quitting_ = 1;
+    worker_thread_.join();
 }
 
-void Session::handleReadRequest(const boost::system::error_code& error)
+const std::string OmegaComplete::Eval(const char* request, const int request_len)
 {
-    if (error)
-    {
-        room_.Leave(shared_from_this());
-
-        LogAsioError(error, "failed to handleReadRequest()");
-        return;
-    }
-
-    processClientMessage();
-}
-
-void Session::processClientMessage()
-{
-    const std::string& request = request_body_;
-
     // find first space
     int index = -1;
-    if (request.size() > INT_MAX) throw std::exception();
-    for (size_t ii = 0; ii < request.size(); ++ii)
+    for (int ii = 0; ii < request_len; ++ii)
     {
         if (request[ii] == ' ')
         {
-            index = static_cast<int>(ii);
+            index = ii;
             break;
         }
     }
 
-    if (index == -1) throw std::exception();
+    if (index == -1)
+        throw std::exception();
 
     // break it up into a "request" string and a "argument"
-    std::string command(request.begin(), request.begin() + index);
+    std::string command(request, request + index);
     StringPtr argument = boost::make_shared<std::string>(
-        request.begin() + index + 1, request.end());
+        request + index + 1, request);
 
-    //std::cout << command << " " << *argument << "$" << std::endl;
-    
     auto(iter, command_dispatcher_.find(command));
     if (iter == command_dispatcher_.end())
     {
         std::cout << boost::str(boost::format(
             "unknown command %s %s") % command % *argument);
 
-        writeResponse("ACK");
+        return default_response_;
     }
     else
     {
@@ -205,35 +151,33 @@ void Session::processClientMessage()
     }
 }
 
-void Session::cmdCurrentBufferId(StringPtr argument)
+std::string OmegaComplete::cmdCurrentBufferId(StringPtr argument)
 {
-    writeResponse("ACK");
-
     current_buffer_id_ = boost::lexical_cast<unsigned>(*argument);
     if (Contains(buffers_, current_buffer_id_) == false)
     {
         buffers_[current_buffer_id_].Init(this, current_buffer_id_);
     }
+
+    return default_response_;
 }
 
-void Session::cmdCurrentBufferAbsolutePath(StringPtr argument)
+std::string OmegaComplete::cmdCurrentBufferAbsolutePath(StringPtr argument)
 {
-    writeResponse("ACK");
-
     current_buffer_absolute_path_ = *argument;
+
+    return default_response_;
 }
 
-void Session::cmdCurrentLine(StringPtr argument)
+std::string OmegaComplete::cmdCurrentLine(StringPtr argument)
 {
-    writeResponse("ACK");
-
     current_line_ = *argument;
+
+    return default_response_;
 }
 
-void Session::cmdCursorPosition(StringPtr argument)
+std::string OmegaComplete::cmdCursorPosition(StringPtr argument)
 {
-    writeResponse("ACK");
-
     std::vector<std::string> position;
     boost::split(
         position,
@@ -247,12 +191,12 @@ void Session::cmdCursorPosition(StringPtr argument)
     buffers_[current_buffer_id_].CalculateCurrentWordOfCursor(
         current_line_,
         cursor_pos_);
+
+    return default_response_;
 }
 
-void Session::cmdBufferContents(StringPtr argument)
+std::string OmegaComplete::cmdBufferContents(StringPtr argument)
 {
-    writeResponse("ACK");
-
     current_contents_ = argument;
 
     ParseJob job(current_buffer_id_, current_contents_);
@@ -261,22 +205,22 @@ void Session::cmdBufferContents(StringPtr argument)
 #ifdef ENABLE_CLANG_COMPLETION
     clang_.CreateOrUpdate(current_buffer_absolute_path_, current_contents_);
 #endif
+
+    return default_response_;
 }
 
-void Session::cmdComplete(StringPtr argument)
+std::string OmegaComplete::cmdComplete(StringPtr argument)
 {
     //Stopwatch watch; watch.Start();
-
     std::string response;
     response.reserve(8192);
     calculateCompletionCandidates(*argument, response);
-
-    writeResponse(response);
-
     //watch.Stop(); std::cout << "complete: "; watch.PrintResultMilliseconds();
+
+    return response;
 }
 
-void Session::cmdFreeBuffer(StringPtr argument)
+std::string OmegaComplete::cmdFreeBuffer(StringPtr argument)
 {
     // make sure job queue is empty before we can delete buffer
     while (true) {
@@ -292,18 +236,17 @@ void Session::cmdFreeBuffer(StringPtr argument)
     buffers_mutex_.unlock();
     job_queue_mutex_.unlock();
 
-    // block until buffer is deleted
-    writeResponse("ACK");
+    return default_response_;
 }
 
-void Session::cmdCurrentDirectory(StringPtr argument)
+std::string OmegaComplete::cmdCurrentDirectory(StringPtr argument)
 {
-    writeResponse("ACK");
-
     current_directory_ = *argument;
+
+    return default_response_;
 }
 
-void Session::cmdCurrentTags(StringPtr argument)
+std::string OmegaComplete::cmdCurrentTags(StringPtr argument)
 {
     current_tags_.clear();
 
@@ -318,11 +261,10 @@ void Session::cmdCurrentTags(StringPtr argument)
         current_tags_.push_back(tags);
     }
 
-    // block server ACK until above is done
-    writeResponse("ACK");
+    return default_response_;
 }
 
-void Session::cmdTaglistTags(StringPtr argument)
+std::string OmegaComplete::cmdTaglistTags(StringPtr argument)
 {
     taglist_tags_.clear();
 
@@ -337,87 +279,56 @@ void Session::cmdTaglistTags(StringPtr argument)
         taglist_tags_.push_back(tags);
     }
 
-    // block server ACK until above is done
-    writeResponse("ACK");
+    return default_response_;
 }
 
-void Session::cmdVimTaglistFunction(StringPtr argument)
+std::string OmegaComplete::cmdVimTaglistFunction(StringPtr argument)
 {
-    std::string response = TagsSet::Instance()->VimTaglistFunction(
+    const std::string& response = TagsSet::Instance()->VimTaglistFunction(
         *argument, taglist_tags_, current_directory_);
 
-    writeResponse(response);
+    return response;
 }
 
-void Session::cmdPrune(StringPtr argument)
+std::string OmegaComplete::cmdPrune(StringPtr argument)
 {
-    writeResponse("ACK");
 
     unsigned words_pruned = WordSet.Prune();
     //std::cout << count << " words pruned" << std::endl;
+
+    return default_response_;
 }
 
-void Session::cmdHideTeleprompter(StringPtr argument)
+std::string OmegaComplete::cmdHideTeleprompter(StringPtr argument)
 {
-    writeResponse("ACK");
-
 #ifdef TELEPROMPTER
         Teleprompter::Instance()->Show(false);
 #endif
+    return default_response_;
 }
 
-void Session::cmdFlushCaches(StringPtr argument)
+std::string OmegaComplete::cmdFlushCaches(StringPtr argument)
 {
     TagsSet::Instance()->Clear();
     Algorithm::ClearGlobalCache();
 
-    writeResponse("ACK");
+    return default_response_;
 }
 
-void Session::cmdIsCorrectionsOnly(StringPtr argument)
+std::string OmegaComplete::cmdIsCorrectionsOnly(StringPtr argument)
 {
     const std::string& response = is_corrections_only_ ? "1" : "0";
-    writeResponse(response);
+    return response;
 }
 
-void Session::writeResponse(const std::string& response)
-{
-    // note that we MUST perform synchronous writes. if async_write() is used
-    // instead it is possible that writing large responses (e.g. > 65536 bytes)
-    // takes multiple background async_write()s and the NULL character gets
-    // written before we are done writing the actual response!
-
-    boost::asio::write(
-        socket_,
-        boost::asio::buffer(&response[0], response.size()));
-
-    std::string null_byte(1, '\0');
-    boost::asio::write(
-        socket_,
-        boost::asio::buffer(&null_byte[0], null_byte.size()));
-
-    asyncReadHeader();
-}
-
-void Session::handleWriteResponse(const boost::system::error_code& error)
-{
-    if (error)
-    {
-        room_.Leave(shared_from_this());
-
-        LogAsioError(error, "failed in handleWriteResponse()");
-        return;
-    }
-}
-
-void Session::queueParseJob(ParseJob job)
+void OmegaComplete::queueParseJob(ParseJob job)
 {
     job_queue_mutex_.lock();
     job_queue_.push_back(job);
     job_queue_mutex_.unlock();
 }
 
-void Session::workerThreadLoop()
+void OmegaComplete::workerThreadLoop()
 {
     bool did_prune = false;
 
@@ -473,7 +384,7 @@ try_get_next_job:
     }
 }
 
-void Session::calculateCompletionCandidates(
+void OmegaComplete::calculateCompletionCandidates(
     const std::string& line,
     std::string& result)
 {
@@ -492,7 +403,7 @@ void Session::calculateCompletionCandidates(
     genericKeywordCompletion(line, result);
 }
 
-void Session::genericKeywordCompletion(
+void OmegaComplete::genericKeywordCompletion(
     const std::string& line,
     std::string& result)
 {
@@ -682,7 +593,7 @@ retry_completion:
 }
 
 
-std::string Session::getWordToComplete(const std::string& line)
+std::string OmegaComplete::getWordToComplete(const std::string& line)
 {
     if (line.length() == 0) return "";
 
@@ -703,7 +614,7 @@ std::string Session::getWordToComplete(const std::string& line)
     return partial;
 }
 
-bool Session::shouldEnableDisambiguateMode(const std::string& word)
+bool OmegaComplete::shouldEnableDisambiguateMode(const std::string& word)
 {
     if (word.size() < 2) return false;
     if ( !LookupTable::IsNumber[ word[word.size() - 1] ] )
@@ -712,7 +623,7 @@ bool Session::shouldEnableDisambiguateMode(const std::string& word)
     return true;
 }
 
-bool Session::shouldEnableTerminusMode(const std::string& word)
+bool OmegaComplete::shouldEnableTerminusMode(const std::string& word)
 {
     if (word.size() < 2) return false;
 
@@ -722,7 +633,7 @@ bool Session::shouldEnableTerminusMode(const std::string& word)
     return false;
 }
 
-void Session::fillCompletionSet(
+void OmegaComplete::fillCompletionSet(
     const std::string& prefix_to_complete,
     CompletionSet& completion_set,
     const std::vector<CompleteItem>* banned_words)
