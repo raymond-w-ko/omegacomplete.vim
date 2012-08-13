@@ -22,14 +22,12 @@
     <ClInclude Include="..\..\OmegaComplete.hpp" />
     <ClInclude Include="..\..\Participant.hpp" />
     <ClInclude Include="..\..\Room.hpp" />
-    <ClInclude Include="..\..\Server.hpp" />
     <ClInclude Include="..\..\stdafx.hpp" />
     <ClInclude Include="..\..\Stopwatch.hpp" />
     <ClInclude Include="..\..\Tags.hpp" />
     <ClInclude Include="..\..\TagsSet.hpp" />
     <ClInclude Include="..\..\targetver.h" />
     <ClInclude Include="..\..\Teleprompter.hpp" />
-    <ClInclude Include="..\..\TestCases.hpp" />
     <ClInclude Include="..\..\TrieNode.hpp" />
     <ClInclude Include="..\..\ustring.hpp" />
   </ItemGroup>
@@ -52,7 +50,6 @@
     <ClCompile Include="..\..\Tags.cpp" />
     <ClCompile Include="..\..\TagsSet.cpp" />
     <ClCompile Include="..\..\Teleprompter.cpp" />
-    <ClCompile Include="..\..\TestCases.cpp" />
     <ClCompile Include="..\..\TrieNode.cpp" />
     <ClCompile Include="..\..\ustring.cpp" />
   </ItemGroup>
