@@ -49,11 +49,8 @@
 
 #include <boost/noncopyable.hpp>
 #include <boost/bind.hpp>
-#include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <boost/asio.hpp>
 #include <boost/thread.hpp>
 #include <boost/format.hpp>
 #include <boost/utility/result_of.hpp>
@@ -77,6 +74,7 @@
 
 #include "ustring.hpp"
 
+/*
 inline void LogAsioError(
     const boost::system::error_code& error,
     std::string message)
@@ -88,6 +86,7 @@ inline void LogAsioError(
         % message.c_str());
     std::cerr << msg << std::endl;
 }
+*/
 
 template <typename Container, typename Item>
 bool Contains(const Container& container, const Item& item)

@@ -63,10 +63,8 @@ for path in path_list:
 sys.path.append(omegacomplete_path)
 
 # load omegacomplete python functions
-client_path = omegacomplete_path + '/client.py'
+client_path = omegacomplete_path + '/helper.py'
 exec(compile(open(client_path).read(), client_path, 'exec'))
-
-oc_init_connection()
 PYTHON
     return
 endfunction
@@ -132,10 +130,10 @@ function <SID>FeedPopup()
     
     " let server know what is the current buffer
     let buffer_number = <SID>GetCurrentBufferNumber()
-    exe 'py oc_send_command("current_buffer_id ' . buffer_number . '")'
+    exe 'py oc_eval("current_buffer_id ' . buffer_number . '")'
 
     " check if plugin has disabled itself because of connection problems
-    " we can only do this only after 1 oc_send_command() has occurred
+    " we can only do this only after 1 oc_eval() has occurred
     let is_oc_disabled=''
     exe 'py vim.command("let is_oc_disabled = " + oc_disable_check())'
     if (is_oc_disabled == "1")
@@ -143,10 +141,10 @@ function <SID>FeedPopup()
     endif
 
     " send server the contents of the current line the cursor is at
-    exe 'py oc_send_command("current_line " + oc_get_current_line())'
+    exe 'py oc_eval("current_line " + oc_get_current_line())'
 
     " tell server what the current cursor position is
-    exe 'py oc_send_command("cursor_position " + oc_get_cursor_pos())'
+    exe 'py oc_eval("cursor_position " + oc_get_cursor_pos())'
 
     " send server contents of the entire buffer in case reparse is needed
     if (s:just_did_insertenter != 1)
@@ -156,15 +154,15 @@ function <SID>FeedPopup()
 
     " send current directory to server in preparation for sending tags
     exe 'py current_directory = vim.eval("getcwd()")'
-    exe 'py oc_send_command("current_directory " + current_directory)'
+    exe 'py oc_eval("current_directory " + current_directory)'
 
     " send tags we are using to the server
     exe 'py current_tags = vim.eval("&tags")'
-    exe 'py oc_send_command("current_tags " + current_tags)'
+    exe 'py oc_eval("current_tags " + current_tags)'
 
     " send current line up to the cursor
     let partial_line = strpart(getline('.'), 0, col('.') - 1)
-    exe 'py oc_server_result = oc_send_command("complete " + vim.eval("partial_line"))'
+    exe 'py oc_server_result = oc_eval("complete " + vim.eval("partial_line"))'
 
 " check to make sure we get something
 python << EOF
@@ -178,7 +176,7 @@ EOF
         " try to show popup menu, but fail and reset completion status
         return "\<C-x>\<C-u>"
     else
-        exe 'py is_corrections_only = oc_send_command("is_corrections_only ?")'
+        exe 'py is_corrections_only = oc_eval("is_corrections_only ?")'
         let is_corrections_only=0
 python << EOF
 if is_corrections_only == '0':
@@ -223,8 +221,8 @@ function <SID>NormalModeSyncBuffer()
         return
     endif
 
-    exe 'py oc_send_command("current_buffer_id ' . buffer_number . '")'
-    exe 'py oc_send_command("current_buffer_absolute_path ' . absolute_path . '")'
+    exe 'py oc_eval("current_buffer_id ' . buffer_number . '")'
+    exe 'py oc_eval("current_buffer_absolute_path ' . absolute_path . '")'
     call s:SendCurrentBuffer()
 endfunction
 
@@ -233,7 +231,7 @@ endfunction
 " that we no longer want.
 function <SID>OnBufDelete()
     let buffer_number = expand('<abuf>')
-    exe 'py oc_send_command("free_buffer ' . buffer_number . '")'
+    exe 'py oc_eval("free_buffer ' . buffer_number . '")'
 endfunction
 
 " When we are leaving buffer (either by opening another buffer, switching
@@ -251,12 +249,12 @@ endfunction
 
 function <SID>OnInsertLeave()
     if (s:teleprompter != 0)
-        exe 'py oc_send_command("hide_teleprompter 1")'
+        exe 'py oc_eval("hide_teleprompter 1")'
     endif
 endfunction
 
 function <SID>OnFocusLost()
-    exe 'py oc_send_command("prune 1")'
+    exe 'py oc_eval("prune 1")'
 endfunction
 
 function <SID>OnBufReadPost()
@@ -326,21 +324,21 @@ endfunction
 function omegacomplete#taglist(expr)
     " send current directory to server in preparation for sending tags
     exe 'py current_directory = vim.eval("getcwd()")'
-    exe 'py oc_send_command("current_directory " + current_directory)'
+    exe 'py oc_eval("current_directory " + current_directory)'
 
     " send current tags we are using to the server
     exe 'py current_tags = vim.eval("&tags")'
-    exe 'py oc_send_command("taglist_tags " + current_tags)'
+    exe 'py oc_eval("taglist_tags " + current_tags)'
 
     " check if plugin has disabled itself because of connection problems
-    " we can only do this only after 1 oc_send_command() has occurred
+    " we can only do this only after 1 oc_eval() has occurred
     let is_oc_disabled=""
     exe 'py vim.command("let is_oc_disabled = " + oc_disable_check())'
     if (is_oc_disabled == "1")
         return []
     endif
 
-    exe 'py oc_server_result = oc_send_command("vim_taglist_function " + "' . a:expr . '")'
+    exe 'py oc_server_result = oc_eval("vim_taglist_function " + "' . a:expr . '")'
 
 " check to make sure we get something
 python << PYTHON
@@ -356,7 +354,7 @@ endfunction
 
 function omegacomplete#UseFirstEntryOfPopup()
     if (s:teleprompter != 0)
-        exe 'py oc_send_command("hide_teleprompter 1")'
+        exe 'py oc_eval("hide_teleprompter 1")'
     endif
 
     if pumvisible()
@@ -379,7 +377,7 @@ function omegacomplete#UseFirstEntryOfPopup()
 endfunction
 
 function <SID>FlushServerCaches()
-    exe 'py oc_send_command("flush_caches 1")'
+    exe 'py oc_eval("flush_caches 1")'
 endfunction
 
 " do initialization

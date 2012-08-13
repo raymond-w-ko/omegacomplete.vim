@@ -49,6 +49,7 @@ OmegaComplete::OmegaComplete()
 :
 is_quitting_(0),
 prev_input_(3),
+buffer_contents_follow_(false),
 is_corrections_only_(false)
 {
     initCommandDispatcher();
@@ -76,8 +77,8 @@ void OmegaComplete::initCommandDispatcher()
     command_dispatcher_["cursor_position"] = boost::bind(
         &OmegaComplete::cmdCursorPosition, boost::ref(*this), _1);
 
-    command_dispatcher_["buffer_contents"] = boost::bind(
-        &OmegaComplete::cmdBufferContents, boost::ref(*this), _1);
+    command_dispatcher_["buffer_contents_follow"] = boost::bind(
+        &OmegaComplete::cmdBufferContentsFollow, boost::ref(*this), _1);
 
     command_dispatcher_["complete"] = boost::bind(
         &OmegaComplete::cmdComplete, boost::ref(*this), _1);
@@ -118,36 +119,47 @@ OmegaComplete::~OmegaComplete()
 
 const std::string OmegaComplete::Eval(const char* request, const int request_len)
 {
-    // find first space
-    int index = -1;
-    for (int ii = 0; ii < request_len; ++ii)
+    if (buffer_contents_follow_)
     {
-        if (request[ii] == ' ')
-        {
-            index = ii;
-            break;
-        }
-    }
+        StringPtr argument = boost::make_shared<std::string>(
+            request, static_cast<size_t>(request_len));
 
-    if (index == -1)
-        throw std::exception();
-
-    // break it up into a "request" string and a "argument"
-    std::string command(request, request + index);
-    StringPtr argument = boost::make_shared<std::string>(
-        request + index + 1, request);
-
-    auto(iter, command_dispatcher_.find(command));
-    if (iter == command_dispatcher_.end())
-    {
-        std::cout << boost::str(boost::format(
-            "unknown command %s %s") % command % *argument);
-
-        return default_response_;
+        return queueBufferContents(argument);
     }
     else
     {
-        return iter->second(argument);
+        // find first space
+        int index = -1;
+        for (int ii = 0; ii < request_len; ++ii)
+        {
+            if (request[ii] == ' ')
+            {
+                index = ii;
+                break;
+            }
+        }
+
+        if (index == -1)
+            throw std::exception();
+
+        // break it up into a "request" string and a "argument"
+        std::string command(request, static_cast<size_t>(index));
+        StringPtr argument = boost::make_shared<std::string>(
+            request + index + 1,
+            static_cast<size_t>(request_len - command.size() - 1));
+
+        auto(iter, command_dispatcher_.find(command));
+        if (iter == command_dispatcher_.end())
+        {
+            std::cout << boost::str(boost::format(
+                "unknown command %s %s") % command % *argument);
+
+            return default_response_;
+        }
+        else
+        {
+            return iter->second(argument);
+        }
     }
 }
 
@@ -195,8 +207,17 @@ std::string OmegaComplete::cmdCursorPosition(StringPtr argument)
     return default_response_;
 }
 
-std::string OmegaComplete::cmdBufferContents(StringPtr argument)
+std::string OmegaComplete::cmdBufferContentsFollow(StringPtr argument)
 {
+    buffer_contents_follow_ = true;
+
+    return default_response_;
+}
+
+std::string OmegaComplete::queueBufferContents(StringPtr argument)
+{
+    buffer_contents_follow_ = false;
+
     current_contents_ = argument;
 
     ParseJob job(current_buffer_id_, current_contents_);

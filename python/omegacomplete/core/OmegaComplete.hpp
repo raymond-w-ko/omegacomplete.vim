@@ -59,7 +59,8 @@ private:
     std::string cmdCurrentBufferAbsolutePath(StringPtr argument);
     std::string cmdCurrentLine(StringPtr argument);
     std::string cmdCursorPosition(StringPtr argument);
-    std::string cmdBufferContents(StringPtr argument);
+    std::string cmdBufferContentsFollow(StringPtr argument);
+    std::string queueBufferContents(StringPtr argument);
     std::string cmdComplete(StringPtr argument);
     std::string cmdFreeBuffer(StringPtr argument);
     std::string cmdCurrentDirectory(StringPtr argument);
@@ -120,6 +121,7 @@ private:
     std::string current_buffer_absolute_path_;
     std::string current_line_;
     FileLocation cursor_pos_;
+    bool buffer_contents_follow_;
     StringPtr current_contents_;
 
     std::string current_directory_;
