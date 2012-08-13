@@ -1,6 +1,10 @@
+#include <Python.h>
+
 #include <stdint.h>
 
 #ifdef _WIN32
+    #include "targetver.h"
+
     // Debug Mode
     #ifdef _DEBUG
         #define _CRTDBG_MAP_ALLOC
