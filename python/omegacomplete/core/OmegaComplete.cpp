@@ -10,8 +10,8 @@
 
 std::vector<char> OmegaComplete::QuickMatchKey;
 boost::unordered_map<char, unsigned> OmegaComplete::ReverseQuickMatch;
-const std::string default_response_ = "ACK";
-OmegaComplete* instance_ = NULL;
+const std::string OmegaComplete::default_response_ = "ACK";
+OmegaComplete* OmegaComplete::instance_ = NULL;
 
 void OmegaComplete::InitGlobal()
 {
@@ -147,7 +147,7 @@ const std::string OmegaComplete::Eval(const char* request, const int request_len
     }
     else
     {
-        iter->second(argument);
+        return iter->second(argument);
     }
 }
 
