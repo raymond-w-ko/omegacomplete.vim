@@ -344,9 +344,8 @@ std::string OmegaComplete::cmdIsCorrectionsOnly(StringPtr argument)
 
 void OmegaComplete::queueParseJob(ParseJob job)
 {
-    job_queue_mutex_.lock();
+    boost::unique_lock<boost::mutex> lock(job_queue_mutex_);
     job_queue_.push_back(job);
-    job_queue_mutex_.unlock();
 }
 
 void OmegaComplete::workerThreadLoop()
