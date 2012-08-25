@@ -26,5 +26,5 @@ PyMODINIT_FUNC
 initcore(void)
 {
     (void) Py_InitModule("core", CoreMethods);
-    OmegaComplete::InitGlobal();
+    OmegaComplete::InitStatic();
 }

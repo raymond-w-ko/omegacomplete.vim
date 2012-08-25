@@ -15,7 +15,7 @@ boost::mutex Algorithm::underscore_mutex_;
 boost::unordered_map<String, StringVector> Algorithm::title_case_cache_;
 boost::mutex Algorithm::title_case_mutex_;
 
-void Algorithm::InitGlobal()
+void Algorithm::InitStatic()
 {
     // generate depth lists
     for (size_t ii = 1; ii < kWordSizeCutoffPointForDepthLists; ++ii) {

@@ -1,23 +1,32 @@
 #pragma once
 
-class LookupTable
+class LookupTable : public boost::noncopyable
 {
 public:
-    static void InitGlobal();
+    static void InitStatic();
 
-    // used to find if a letter is part of a "word"
+    /// used to find if a given char is part of a "word"
     static char IsPartOfWord[256];
-    // used to find if a letter is an uppercase letter
+    /// used to find if a given char is an uppercase letter
     static char IsUpper[256];
-    // the lowercase equivalent of a given letter
+    /// the lowercase equivalent of a given char
     static char ToLower[256];
-    // the lowercase equivalent of a given letter
+    /// used to find if a given char is a number
     static char IsNumber[256];
 
+    /// Quick Match Keys
+    /// basically a mapping from result number to keyboard key to press
+    /// first result  -> '1'
+    /// second result -> '2'
+    /// third result  -> '3'
+    /// and etc.
+    static std::vector<char> QuickMatchKey;
+    /// the reverse mapping of the above
+    static boost::unordered_map<char, unsigned> ReverseQuickMatch;
+
 private:
+    /// this is a purely static class
     LookupTable();
-    LookupTable(const LookupTable&);
-    ~LookupTable();
 
     static bool isPartOfWord(char c);
     static bool isUpper(char c);

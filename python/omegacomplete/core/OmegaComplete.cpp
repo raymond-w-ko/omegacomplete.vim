@@ -8,39 +8,18 @@
 #include "Teleprompter.hpp"
 #include "Algorithm.hpp"
 
-std::vector<char> OmegaComplete::QuickMatchKey;
-boost::unordered_map<char, unsigned> OmegaComplete::ReverseQuickMatch;
-const std::string OmegaComplete::default_response_ = "ACK";
 OmegaComplete* OmegaComplete::instance_ = NULL;
+const std::string OmegaComplete::default_response_ = "ACK";
 
-void OmegaComplete::InitGlobal()
+void OmegaComplete::InitStatic()
 {
     // dependencies in other classes that have to initialized first
-    LookupTable::InitGlobal();
-    TagsSet::InitGlobal();
-    Algorithm::InitGlobal();
+    LookupTable::InitStatic();
+    TagsSet::InitStatic();
+    Algorithm::InitStatic();
 #if defined (_WIN32) && defined (TELEPROMPTER)
-    Teleprompter::InitGlobal();
+    Teleprompter::InitStatic();
 #endif
-
-    // this class's own initialization
-    QuickMatchKey.resize(CompletionSet::kMaxNumCompletions, ' '),
-
-    QuickMatchKey[0] = '1';
-    QuickMatchKey[1] = '2';
-    QuickMatchKey[2] = '3';
-    QuickMatchKey[3] = '4';
-    QuickMatchKey[4] = '5';
-    QuickMatchKey[5] = '6';
-    QuickMatchKey[6] = '7';
-    QuickMatchKey[7] = '8';
-    QuickMatchKey[8] = '9';
-    QuickMatchKey[9] = '0';
-
-    for (unsigned ii = 0; ii < 10; ++ii)
-    {
-        ReverseQuickMatch[QuickMatchKey[ii]] = ii;
-    }
 
     instance_ = new OmegaComplete;
 }
@@ -427,57 +406,62 @@ void OmegaComplete::genericKeywordCompletion(
     const std::string& line,
     std::string& result)
 {
-    std::string prefix_to_complete = getWordToComplete(line);
-    if (prefix_to_complete.empty())
-    {
+    std::string input = getWordToComplete(line);
+    if (input.empty()) {
 #ifdef TELEPROMPTER
         Teleprompter::Instance()->Show(false);
 #endif
         return;
     }
 
+    unsigned disambiguate_index = UINT_MAX;
+    bool disambiguate_mode = shouldEnableDisambiguateMode(input, disambiguate_index);
+    if (disambiguate_mode &&
+        prev_completions_ &&
+        disambiguate_index < prev_completions_->size())
+    {
+        const CompleteItem& completion = (*prev_completions_)[disambiguate_index];
+        result += "[";
+        result += completion.SerializeToVimDict();
+        result += "]";
+        return;
+    }
+
     // keep a trailing list of previous inputs
     prev_input_[2] = prev_input_[1];
     prev_input_[1] = prev_input_[0];
-    prev_input_[0] = prefix_to_complete;
+    prev_input_[0] = input;
 
-    bool terminus_mode = shouldEnableTerminusMode(prefix_to_complete);
+    // terminus_prefix is only filled in if terminus_mode would be set to true
+    bool terminus_mode;
     std::string terminus_prefix;
+    terminus_mode = shouldEnableTerminusMode(input, terminus_prefix);
 
-    bool disambiguate_mode = shouldEnableDisambiguateMode(prefix_to_complete);
-    char disambiguate_letter = 0;
-    unsigned disambiguate_index = UINT_MAX;
-    String orig_disambiguate_prefix;
-    if (terminus_mode)
-    {
-        terminus_prefix = prefix_to_complete;
-        terminus_prefix.resize( prefix_to_complete.size() - 1 );
+    CompleteItemVectorPtr completions = boost::make_shared<CompleteItemVector>();
+
+    // TODO(rko): fill in
+    
+    foreach (const CompleteItem& completion, *completions) {
+        result += completion.SerializeToVimDict();
     }
-    else if (disambiguate_mode)
-    {
-        orig_disambiguate_prefix = prefix_to_complete;
+    prev_completions_ = completions;
+}
 
-        disambiguate_letter = prefix_to_complete[ prefix_to_complete.size() - 1 ];
-
-        prefix_to_complete.resize( prefix_to_complete.size() - 1 );
-
-        if (Contains(ReverseQuickMatch, disambiguate_letter) == true)
-            disambiguate_index = ReverseQuickMatch[disambiguate_letter];
-    }
-
+/*
+void OmegaComplete::genericKeywordCompletion2(
+    const std::string& line,
+    std::string& result)
+{
     CompletionSet main_completion_set;
     CompletionSet terminus_completion_set;
 
 retry_completion:
-
-    if (terminus_mode)
-    {
+    if (terminus_mode) {
         always_assert(disambiguate_mode == false);
         fillCompletionSet(terminus_prefix, terminus_completion_set);
     }
     std::vector<CompleteItem> banned_words;
-    if (disambiguate_mode)
-    {
+    if (disambiguate_mode) {
         banned_words.push_back(orig_disambiguate_prefix);
     }
     fillCompletionSet(prefix_to_complete, main_completion_set, &banned_words);
@@ -520,9 +504,7 @@ retry_completion:
     std::vector<CompleteItem> terminus_result_list;
 
     if (terminus_mode)
-    {
         terminus_completion_set.FillResults(terminus_result_list);
-    }
 
     // this is to prevent completions from being considered
     // that are basically the word from before you press Backspace.
@@ -531,15 +513,11 @@ retry_completion:
     {
         main_completion_set.AddBannedWord(prev_input_[1]);
         if (terminus_mode)
-        {
             terminus_completion_set.AddBannedWord(prev_input_[1]);
-        }
     }
 
-    if (terminus_mode)
-    {
-        foreach (const CompleteItem& completion, terminus_result_list)
-        {
+    if (terminus_mode) {
+        foreach (const CompleteItem& completion, terminus_result_list) {
             const std::string& word = completion.Word;
             if (word[word.size() - 1] == '_')
                 main_completion_set.AddBannedWord(word);
@@ -556,12 +534,9 @@ retry_completion:
 #endif
 
     result += "[";
-    if (disambiguate_mode == false)
-    {
-        if (terminus_mode)
-        {
-            foreach (const CompleteItem& completion, terminus_result_list)
-            {
+    if (disambiguate_mode == false) {
+        if (terminus_mode) {
+            foreach (const CompleteItem& completion, terminus_result_list) {
                 const std::string& word = completion.Word;
                 if (word[ word.size() - 1 ] != '_')
                     continue;
@@ -576,11 +551,6 @@ retry_completion:
 #endif
         }
 
-        foreach (const CompleteItem& completion, result_list)
-        {
-            result += completion.SerializeToVimDict();
-        }
-            
 #ifdef TELEPROMPTER
         Teleprompter::Instance()->AppendText(result_list);
 #endif
@@ -590,11 +560,9 @@ retry_completion:
             prefix_to_complete,
             result);
     }
-    else
-    {
+    else {
         // make sure we actually have a result, or we crash
-        if (result_list.size() > disambiguate_index)
-        {
+        if (result_list.size() > disambiguate_index) {
             CompleteItem single_result = result_list[disambiguate_index];
             single_result.Abbr = single_result.Word + " <==";
             result += single_result.SerializeToVimDict();
@@ -611,6 +579,7 @@ retry_completion:
     Teleprompter::Instance()->Redraw();
 #endif
 }
+*/
 
 
 std::string OmegaComplete::getWordToComplete(const std::string& line)
@@ -634,21 +603,33 @@ std::string OmegaComplete::getWordToComplete(const std::string& line)
     return partial;
 }
 
-bool OmegaComplete::shouldEnableDisambiguateMode(const std::string& word)
+bool OmegaComplete::shouldEnableDisambiguateMode(
+    const std::string& word, unsigned& index)
 {
-    if (word.size() < 2) return false;
-    if ( !LookupTable::IsNumber[ word[word.size() - 1] ] )
+    if (word.size() < 2)
         return false;
 
-    return true;
+    char last = word[word.size() - 1];
+    if (LookupTable::IsNumber[last]) {
+        if (Contains(LookupTable::ReverseQuickMatch, last))
+            index = LookupTable::ReverseQuickMatch[last];
+        return true;
+    }
+
+    return false;
 }
 
-bool OmegaComplete::shouldEnableTerminusMode(const std::string& word)
+bool OmegaComplete::shouldEnableTerminusMode(
+    const std::string& word, std::string& prefix)
 {
-    if (word.size() < 2) return false;
+    if (word.size() < 2)
+        return false;
 
-    if (word[ word.size() - 1 ] == '_')
+    if (word[word.size() - 1] == '_') {
+        prefix = word;
+        prefix.resize(word.size() - 1);
         return true;
+    }
 
     return false;
 }

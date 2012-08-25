@@ -12,20 +12,12 @@ class OmegaComplete
 public boost::noncopyable
 {
 public:
-    static void InitGlobal();
+    static void InitStatic();
     static OmegaComplete* GetInstance() { return instance_; }
     ~OmegaComplete();
 
     const std::string Eval(const char* request, const int request_len);
 
-    // Quick Match Keys
-    // basically a mapping from result number to keyboard key to press
-    // first result  -> 'a'
-    // second result -> 's'
-    // third result  -> 'd'
-    // and etc.
-    static std::vector<char> QuickMatchKey;
-    static boost::unordered_map<char, unsigned> ReverseQuickMatch;
     static const std::string default_response_;
 
     GlobalWordSet WordSet;
@@ -75,7 +67,6 @@ private:
     ////////////////////////////////////////////////////////////////////////////
     // OmegaComplete Core
     ////////////////////////////////////////////////////////////////////////////
-
     void queueParseJob(ParseJob job);
     void workerThreadLoop();
 
@@ -93,8 +84,9 @@ private:
         unsigned& num_completions_added,
         boost::unordered_set<std::string>& added_words);
 
-    bool shouldEnableDisambiguateMode(const std::string& word);
-    bool shouldEnableTerminusMode(const std::string& word);
+    bool shouldEnableDisambiguateMode(const std::string& word, unsigned& index);
+    bool shouldEnableTerminusMode(
+        const std::string& word, std::string& prefix);
     void fillCompletionSet(
         const std::string& prefix_to_complete,
         CompletionSet& completion_set,
@@ -129,6 +121,9 @@ private:
     std::vector<std::string> taglist_tags_;
 
     std::vector<std::string> prev_input_;
+    typedef std::vector<CompleteItem> CompleteItemVector;
+    typedef boost::shared_ptr<CompleteItemVector> CompleteItemVectorPtr;
+    CompleteItemVectorPtr prev_completions_;
 
     bool is_corrections_only_;
 

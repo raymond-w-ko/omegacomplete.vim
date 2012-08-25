@@ -4,7 +4,7 @@ struct CompleteItem
 {
     unsigned Weight;
 
-    // VIM specific portin
+    // VIM specific portion
 
     // word that will be inserted
     String Word;

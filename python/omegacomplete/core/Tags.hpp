@@ -60,5 +60,5 @@ private:
         std::multimap<String, String>::iterator
         tags_iterator;
     std::multimap<String, String> tags_;
-    std::multimap<String, AbbreviationInfo> abbreviations_;
+    boost::unordered_multimap<String, AbbreviationInfo> abbreviations_;
 };

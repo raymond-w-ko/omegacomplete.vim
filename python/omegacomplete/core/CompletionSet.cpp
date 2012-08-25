@@ -1,6 +1,7 @@
 #include "stdafx.hpp"
 #include "CompletionSet.hpp"
 #include "OmegaComplete.hpp"
+#include "LookupTable.hpp"
 
 const unsigned CompletionSet::kMaxNumCompletions = 32;
 
@@ -39,16 +40,17 @@ void CompletionSet::addCompletionsToResults(
     const std::set<CompleteItem>& completions,
     std::vector<CompleteItem>& result_list)
 {
-    foreach (CompleteItem completion, completions)
-    {
-        if (num_completions_added_ >= kMaxNumCompletions) break;
-        const std::string& word = completion.Word;
-        if (Contains(added_words_, word) == true) continue;
+    foreach (CompleteItem completion, completions) {
+        if (num_completions_added_ >= kMaxNumCompletions)
+            break;
 
-        if (OmegaComplete::QuickMatchKey[num_completions_added_] != ' ')
-        {
+        const std::string& word = completion.Word;
+        if (Contains(added_words_, word) == true)
+            continue;
+
+        if (LookupTable::QuickMatchKey[num_completions_added_] != ' ') {
             completion.Menu = boost::lexical_cast<std::string>(
-                OmegaComplete::QuickMatchKey[num_completions_added_]) +
+                LookupTable::QuickMatchKey[num_completions_added_]) +
                 " " + completion.Menu;
         }
         result_list.push_back(completion);
@@ -74,10 +76,14 @@ void CompletionSet::FillLevenshteinResults(
 
         int score = iter->first;
         foreach (const std::string& word, iter->second) {
-            if (num_completions_added_ >= kMaxNumCompletions) break;
-            if (Contains(added_words_, word) == true) continue;
-            if (word == prefix_to_complete) continue;
-            if (boost::starts_with(prefix_to_complete, word)) continue;
+            if (num_completions_added_ >= kMaxNumCompletions)
+                break;
+            if (Contains(added_words_, word) == true)
+                continue;
+            if (word == prefix_to_complete)
+                continue;
+            if (boost::starts_with(prefix_to_complete, word))
+                continue;
 
             result += boost::str(boost::format(
                 "{'abbr':'*** %s','word':'%s'},")

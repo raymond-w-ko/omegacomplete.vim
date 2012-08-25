@@ -59,8 +59,10 @@ void GlobalWordSet::GetPrefixCompletions(
         const std::string& candidate = iter->first;
         const WordInfo& wi = iter->second;
 
-        if (boost::starts_with(candidate, prefix) == false) break;
-        if (wi.ReferenceCount == 0) continue;
+        if (boost::starts_with(candidate, prefix) == false)
+            break;
+        if (wi.ReferenceCount == 0)
+            continue;
 
         CompleteItem completion(candidate);
         completion.Menu = boost::str(boost::format("        [%d Counts]")
