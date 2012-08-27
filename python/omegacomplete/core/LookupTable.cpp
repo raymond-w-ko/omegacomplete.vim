@@ -3,6 +3,8 @@
 #include "LookupTable.hpp"
 
 const unsigned LookupTable::kMaxNumCompletions = 32;
+const unsigned LookupTable::kMaxNumQuickMatch = 10;
+
 char LookupTable::IsPartOfWord[256];
 char LookupTable::IsUpper[256];
 char LookupTable::ToLower[256];

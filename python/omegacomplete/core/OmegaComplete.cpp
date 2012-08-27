@@ -405,6 +405,11 @@ void OmegaComplete::genericKeywordCompletion(
     if (input.empty())
         return;
 
+    // keep a trailing list of previous inputs
+    prev_input_[2] = prev_input_[1];
+    prev_input_[1] = prev_input_[0];
+    prev_input_[0] = input;
+
     unsigned disambiguate_index = UINT_MAX;
     bool disambiguate_mode = shouldEnableDisambiguateMode(input, disambiguate_index);
     if (disambiguate_mode &&
@@ -417,11 +422,6 @@ void OmegaComplete::genericKeywordCompletion(
         result += "]";
         return;
     }
-
-    // keep a trailing list of previous inputs
-    prev_input_[2] = prev_input_[1];
-    prev_input_[1] = prev_input_[0];
-    prev_input_[0] = input;
 
     // terminus_prefix is only filled in if terminus_mode would be set to true
     bool terminus_mode;
@@ -460,6 +460,16 @@ void OmegaComplete::genericKeywordCompletion(
         current_tags_, current_directory_,
         completions, added_words,
         terminus_mode);
+
+    for (size_t i = 0; i < LookupTable::kMaxNumQuickMatch; ++i) {
+        if (i >= completions->size())
+            break;
+
+        CompleteItem& item = (*completions)[i];
+        item.Menu =
+            boost::lexical_cast<std::string>(LookupTable::QuickMatchKey[i]) +
+            " " + item.Menu;
+    }
 
     addLevenshteinCorrections(input, completions);
 

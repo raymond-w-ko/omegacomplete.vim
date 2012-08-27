@@ -7,6 +7,8 @@ public:
 
     /// maximum number of completions to return
     static const unsigned kMaxNumCompletions;
+    /// maximum number of quick match keys
+    static const unsigned kMaxNumQuickMatch;
 
     /// used to find if a given char is part of a "word"
     static char IsPartOfWord[256];
