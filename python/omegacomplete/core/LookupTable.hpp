@@ -5,6 +5,9 @@ class LookupTable : public boost::noncopyable
 public:
     static void InitStatic();
 
+    /// maximum number of completions to return
+    static const unsigned kMaxNumCompletions;
+
     /// used to find if a given char is part of a "word"
     static char IsPartOfWord[256];
     /// used to find if a given char is an uppercase letter

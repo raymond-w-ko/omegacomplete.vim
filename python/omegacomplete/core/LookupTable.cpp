@@ -3,6 +3,7 @@
 #include "LookupTable.hpp"
 #include "CompletionSet.hpp"
 
+const unsigned LookupTable::kMaxNumCompletions = 32;
 char LookupTable::IsPartOfWord[256];
 char LookupTable::IsUpper[256];
 char LookupTable::ToLower[256];
@@ -28,7 +29,7 @@ void LookupTable::InitStatic()
             LookupTable::isNumber(index) ? 1 : 0;
     }
 
-    QuickMatchKey.resize(CompletionSet::kMaxNumCompletions, ' '),
+    QuickMatchKey.resize(kMaxNumCompletions, ' '),
 
     QuickMatchKey[0] = '1';
     QuickMatchKey[1] = '2';
