@@ -2,18 +2,22 @@
 
 struct CompleteItem
 {
+public:
     unsigned Weight;
 
     // VIM specific portion
 
     // word that will be inserted
     String Word;
+
     // how it will look like
     String Abbr;
+
     // extra text after Word or Abbr
     String Menu;
+
     // displayed in Preview Window
-    String Info;
+    //String Info;
     // single letter to indicate type of completion
     /*
     The "kind" item uses a single letter to indicate the kind of completion.
@@ -25,22 +29,27 @@ struct CompleteItem
         t	typedef
         d	#define or macro
     */
-    String Kind;
+    //String Kind;
+
+private:
     // when non-zero case is to be ignored when comparing items to be equal;
     // when omitted zero is used, thus items that only differ in case are added
-    bool Icase;
+    //bool Icase;
+
     // when non-zero this match will be added even when an item with the same
     // word is already present.
     bool Dup;
-    // when non-zero this match will be added even when it is an empty string
-    bool Empty;
 
+    // when non-zero this match will be added even when it is an empty string
+    //bool Empty;
+
+public:
     CompleteItem()
     :
     Weight(0),
-    Icase(false),
-    Dup(false),
-    Empty(false)
+    //Icase(false),
+    Dup(true)
+    //Empty(false)
     {
         ;
     }
@@ -49,9 +58,9 @@ struct CompleteItem
     :
     Weight(0),
     Word(word),
-    Icase(false),
-    Dup(false),
-    Empty(false)
+    //Icase(false),
+    Dup(true)
+    //Empty(false)
     {
         ;
     }
@@ -60,9 +69,9 @@ struct CompleteItem
     :
     Weight(weight),
     Word(word),
-    Icase(false),
-    Dup(false),
-    Empty(false)
+    //Icase(false),
+    Dup(true)
+    //Empty(false)
     {
         ;
     }
@@ -73,11 +82,11 @@ struct CompleteItem
     Word(other.Word),
     Abbr(other.Abbr),
     Menu(other.Menu),
-    Info(other.Info),
-    Kind(other.Kind),
-    Icase(other.Icase),
-    Dup(other.Dup),
-    Empty(other.Empty)
+    //Info(other.Info),
+    //Kind(other.Kind),
+    //Icase(other.Icase),
+    Dup(other.Dup)
+    //Empty(other.Empty)
     {
     }
 
@@ -87,14 +96,36 @@ struct CompleteItem
             return true;
         else if (Weight > other.Weight)
             return false;
-        else
-            return Word < other.Word;
+
+        int result;
+
+        result = Word.compare(other.Word);
+        if (result < 0)
+            return true;
+        else if (result > 0)
+            return false;
+
+        result = Abbr.compare(other.Abbr);
+        if (result < 0)
+            return true;
+        else if (result > 0)
+            return false;
+
+        result = Menu.compare(other.Menu);
+        if (result < 0)
+            return true;
+        else if (result > 0)
+            return false;
+
+        return false;
     }
 
     bool operator==(const CompleteItem& other) const
     {
-        return (Weight == other.Weight) &&
-               (Word == other.Word);
+        return Weight == other.Weight &&
+               Word == other.Word &&
+               Abbr == other.Abbr &&
+               Menu == other.Menu;
     }
 
     std::string SerializeToVimDict() const
@@ -111,17 +142,17 @@ struct CompleteItem
             result += boost::str(boost::format("'abbr':'%s',") % Abbr);
         if (!Menu.empty())
             result += boost::str(boost::format("'menu':'%s',") % Menu);
-        if (!Info.empty())
-            result += boost::str(boost::format("'info':'%s',") % Info);
-        if (!Kind.empty())
-            result += boost::str(boost::format("'kind':'%s',") % Kind);
+        //if (!Info.empty())
+            //result += boost::str(boost::format("'info':'%s',") % Info);
+        //if (!Kind.empty())
+            //result += boost::str(boost::format("'kind':'%s',") % Kind);
 
-        if (Icase)
-            result += "'icase':1,";
+        //if (Icase)
+            //result += "'icase':1,";
         if (Dup)
             result += "'dup':1,";
-        if (Empty)
-            result += "'empty':1,";
+        //if (Empty)
+            //result += "'empty':1,";
 
         result += "},";
 
@@ -129,3 +160,5 @@ struct CompleteItem
     }
 };
 
+typedef std::vector<CompleteItem> CompleteItemVector;
+typedef boost::shared_ptr<CompleteItemVector> CompleteItemVectorPtr;
