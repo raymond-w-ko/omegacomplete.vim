@@ -427,6 +427,8 @@ void OmegaComplete::genericKeywordCompletion(
     bool terminus_mode;
     std::string terminus_prefix;
     terminus_mode = shouldEnableTerminusMode(input, terminus_prefix);
+    if (terminus_mode)
+        input = terminus_prefix;
 
     CompleteItemVectorPtr completions = boost::make_shared<CompleteItemVector>();
     std::set<std::string> added_words;

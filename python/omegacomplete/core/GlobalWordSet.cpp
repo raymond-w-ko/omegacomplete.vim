@@ -68,6 +68,8 @@ void GlobalWordSet::GetPrefixCompletions(
 
         if (wi.ReferenceCount == 0)
             continue;
+        if (terminus_mode && !boost::ends_with(candidate, "_"))
+            continue;
         if (Contains(added_words, candidate))
             continue;
 
@@ -97,6 +99,8 @@ void GlobalWordSet::GetAbbrCompletions(
             break;
 
         if (wi.ReferenceCount == 0)
+            continue;
+        if (terminus_mode && !boost::ends_with(candidate.Word, "_"))
             continue;
         if (Contains(added_words, candidate.Word))
             continue;

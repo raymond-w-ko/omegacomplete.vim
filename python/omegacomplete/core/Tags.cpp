@@ -183,6 +183,8 @@ void Tags::GetPrefixCompletions(
         if (boost::starts_with(candidate, input) == false)
             break;
 
+        if (terminus_mode && !boost::ends_with(candidate, "_"))
+            continue;
         if (Contains(added_words, candidate))
             continue;
 
@@ -210,6 +212,8 @@ void Tags::GetAbbrCompletions(
         if (completions->size() == LookupTable::kMaxNumCompletions)
             break;
 
+        if (terminus_mode && !boost::ends_with(candidate.Word, "_"))
+            continue;
         if (Contains(added_words, candidate.Word))
             continue;
 
