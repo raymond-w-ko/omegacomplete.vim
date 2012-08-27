@@ -16,7 +16,6 @@
     <ClInclude Include="..\..\ClangCompleter.hpp" />
     <ClInclude Include="..\..\CompleteItem.hpp" />
     <ClInclude Include="..\..\CompletionPriorities.hpp" />
-    <ClInclude Include="..\..\CompletionSet.hpp" />
     <ClInclude Include="..\..\GlobalWordSet.hpp" />
     <ClInclude Include="..\..\LookupTable.hpp" />
     <ClInclude Include="..\..\OmegaComplete.hpp" />
@@ -35,7 +34,6 @@
     <ClCompile Include="..\..\Algorithm.cpp" />
     <ClCompile Include="..\..\Buffer.cpp" />
     <ClCompile Include="..\..\ClangCompleter.cpp" />
-    <ClCompile Include="..\..\CompletionSet.cpp" />
     <ClCompile Include="..\..\DllMain.cpp" />
     <ClCompile Include="..\..\GlobalWordSet.cpp" />
     <ClCompile Include="..\..\LookupTable.cpp" />
