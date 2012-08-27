@@ -87,10 +87,9 @@ private:
     bool shouldEnableDisambiguateMode(const std::string& word, unsigned& index);
     bool shouldEnableTerminusMode(
         const std::string& word, std::string& prefix);
-    void fillCompletionSet(
-        const std::string& prefix_to_complete,
-        CompletionSet& completion_set,
-        const std::vector<CompleteItem>* banned_words = NULL);
+    void addLevenshteinCorrections(
+        const std::string& input,
+        CompleteItemVectorPtr& completions);
 
     ////////////////////////////////////////////////////////////////////////////
     // OmegaComplete Core
@@ -121,8 +120,6 @@ private:
     std::vector<std::string> taglist_tags_;
 
     std::vector<std::string> prev_input_;
-    typedef std::vector<CompleteItem> CompleteItemVector;
-    typedef boost::shared_ptr<CompleteItemVector> CompleteItemVectorPtr;
     CompleteItemVectorPtr prev_completions_;
 
     bool is_corrections_only_;

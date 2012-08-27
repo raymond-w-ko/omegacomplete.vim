@@ -51,13 +51,9 @@ bool TagsSet::CreateOrUpdate(
     tags_pathname = ResolveFullPathname(tags_pathname, current_directory);
 
     if (Contains(tags_list_, tags_pathname) == false)
-    {
         tags_list_[tags_pathname].Init(tags_pathname);
-    }
     else
-    {
         tags_list_[tags_pathname].Update();
-    }
 
     return true;
 }
@@ -81,8 +77,7 @@ std::string TagsSet::VimTaglistFunction(
 
     ss << "[";
 
-    foreach (std::string tags, tags_list)
-    {
+    foreach (std::string tags, tags_list) {
         tags = ResolveFullPathname(tags, current_directory);
         if (Contains(tags_list_, tags) == false) continue;
 
@@ -94,18 +89,22 @@ std::string TagsSet::VimTaglistFunction(
     return ss.str();
 }
 
-void TagsSet::GetAllWordsWithPrefix(
+void TagsSet::GetPrefixCompletions(
     const std::string& prefix,
     const std::vector<std::string>& tags_list,
     const std::string& current_directory,
-    std::set<CompleteItem>* results)
+    CompleteItemVectorPtr& completions, std::set<std::string> added_words,
+    bool terminus_mode)
 {
-    foreach (std::string tags, tags_list)
-    {
+    foreach (std::string tags, tags_list) {
         tags = ResolveFullPathname(tags, current_directory);
-        if (Contains(tags_list_, tags) == false) continue;
+        if (Contains(tags_list_, tags) == false)
+            continue;
 
-        tags_list_[tags].GetAllWordsWithPrefix(prefix, results);
+        tags_list_[tags].GetPrefixCompletions(
+            prefix,
+            completions, added_words,
+            terminus_mode);
     }
 }
 
@@ -113,14 +112,18 @@ void TagsSet::GetAbbrCompletions(
     const std::string& prefix,
     const std::vector<std::string>& tags_list,
     const std::string& current_directory,
-    std::set<CompleteItem>* results)
+    CompleteItemVectorPtr& completions, std::set<std::string> added_words,
+    bool terminus_mode)
 {
-    foreach (std::string tags, tags_list)
-    {
+    foreach (std::string tags, tags_list) {
         tags = ResolveFullPathname(tags, current_directory);
-        if (Contains(tags_list_, tags) == false) continue;
+        if (Contains(tags_list_, tags) == false)
+            continue;
 
-        tags_list_[tags].GetAbbrCompletions(prefix, results);
+        tags_list_[tags].GetAbbrCompletions(
+            prefix,
+            completions, added_words,
+            terminus_mode);
     }
 }
 

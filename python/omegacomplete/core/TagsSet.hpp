@@ -19,17 +19,19 @@ public:
         std::string tags_pathname,
         const std::string& current_directory);
 
-    void GetAllWordsWithPrefix(
+    void GetPrefixCompletions(
         const std::string& prefix,
         const std::vector<std::string>& tags_list,
         const std::string& current_directory,
-        std::set<CompleteItem>* results);
+        CompleteItemVectorPtr& completions, std::set<std::string> added_words,
+        bool terminus_mode);
 
     void GetAbbrCompletions(
         const std::string& prefix,
         const std::vector<std::string>& tags_list,
         const std::string& current_directory,
-        std::set<CompleteItem>* results);
+        CompleteItemVectorPtr& completions, std::set<std::string> added_words,
+        bool terminus_mode);
 
     std::string VimTaglistFunction(
         const std::string& word,

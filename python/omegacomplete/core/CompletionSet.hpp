@@ -25,7 +25,6 @@ public:
 
     void AddBannedWord(const std::string& word);
 
-    static const unsigned kMaxNumCompletions;
 
 private:
     void addCompletionsToResults(

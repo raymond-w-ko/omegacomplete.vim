@@ -3,7 +3,6 @@
 #include "OmegaComplete.hpp"
 #include "LookupTable.hpp"
 
-const unsigned CompletionSet::kMaxNumCompletions = 32;
 
 CompletionSet::CompletionSet()
 :
@@ -41,7 +40,7 @@ void CompletionSet::addCompletionsToResults(
     std::vector<CompleteItem>& result_list)
 {
     foreach (CompleteItem completion, completions) {
-        if (num_completions_added_ >= kMaxNumCompletions)
+        if (num_completions_added_ >= LookupTable::kMaxNumCompletions)
             break;
 
         const std::string& word = completion.Word;
@@ -70,28 +69,4 @@ void CompletionSet::FillLevenshteinResults(
     const std::string& prefix_to_complete,
     std::string& result)
 {
-    auto (iter, levenshtein_completions.begin());
-    for (; iter != levenshtein_completions.end(); ++iter) {
-        if (num_completions_added_ >= kMaxNumCompletions) break;
-
-        int score = iter->first;
-        foreach (const std::string& word, iter->second) {
-            if (num_completions_added_ >= kMaxNumCompletions)
-                break;
-            if (Contains(added_words_, word) == true)
-                continue;
-            if (word == prefix_to_complete)
-                continue;
-            if (boost::starts_with(prefix_to_complete, word))
-                continue;
-
-            result += boost::str(boost::format(
-                "{'abbr':'*** %s','word':'%s'},")
-                % word % word);
-
-            num_completions_added_++;
-
-            added_words_.insert(word);
-        }
-    }
 }

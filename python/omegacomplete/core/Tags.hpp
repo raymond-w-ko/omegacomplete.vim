@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CompleteItem.hpp"
+#include "AbbreviationInfo.hpp"
 
 struct TagInfo
 {
@@ -22,29 +23,21 @@ public:
 
     void Update();
 
-    void GetAllWordsWithPrefix(
-        const std::string& prefix,
-        std::set<CompleteItem>* results);
+    void GetPrefixCompletions(
+        const std::string& input,
+        CompleteItemVectorPtr& completions, std::set<std::string> added_words,
+        bool terminus_mode);
 
     void GetAbbrCompletions(
-        const std::string& prefix,
-        std::set<CompleteItem>* results);
+        const std::string& input,
+        CompleteItemVectorPtr& completions, std::set<std::string> added_words,
+        bool terminus_mode);
 
     void VimTaglistFunction(
         const std::string& word,
         std::stringstream& ss);
 
 private:
-    struct AbbreviationInfo
-    {
-        AbbreviationInfo(unsigned weight, const std::string& word)
-            : Weight(weight), Word(word) { }
-        ~AbbreviationInfo() { }
-
-        unsigned Weight;
-        const std::string& Word;
-    };
-
     bool calculateParentDirectory();
     void reparse();
     bool calculateTagInfo(
@@ -60,5 +53,5 @@ private:
         std::multimap<String, String>::iterator
         tags_iterator;
     std::multimap<String, String> tags_;
-    boost::unordered_multimap<String, AbbreviationInfo> abbreviations_;
+    std::map<String, std::set<AbbreviationInfo> > abbreviations_;
 };

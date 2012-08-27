@@ -17,8 +17,7 @@ bool Tags::Init(const std::string& pathname)
 {
     pathname_ = pathname;
 
-    if (calculateParentDirectory() == false)
-    {
+    if (calculateParentDirectory() == false) {
         std::cout << "couldn't calculate parent directory for tags file, not parsing"
                   << std::endl;
         std::cout << pathname_ << std::endl;
@@ -42,15 +41,13 @@ bool Tags::calculateParentDirectory()
 
     size_t pos = pathname_.rfind(directory_separator);
     // error out because we can't find the last directory separator
-    if (pos == std::string::npos)
-    {
+    if (pos == std::string::npos) {
         std::cout << "coulnd't find last directory separator" << std::endl;
         std::cout << pathname_ << std::endl;
         return false;
     }
     // there is nothing after the last directory separator
-    if (pos >= (pathname_.size() - 1))
-    {
+    if (pos >= (pathname_.size() - 1)) {
         std::cout << "there is nothing after the last directory separator" << std::endl;
         std::cout << pathname_ << std::endl;
         return false;
@@ -84,16 +81,14 @@ void Tags::reparse()
     std::ifstream file(pathname_.c_str());
     unsigned line_num = 0;
 
-    for (std::string line; std::getline(file, line).good(); ++line_num)
-    {
+    for (std::string line; std::getline(file, line).good(); ++line_num) {
         // the first 6 lines contain a description of the tags file, which we don't need
         if (line_num < 6) continue;
 
         std::vector<std::string> tokens;
         boost::split(tokens, line, boost::is_any_of("\t"), boost::token_compress_off);
 
-        if (tokens.size() < 3)
-        {
+        if (tokens.size() < 3) {
             std::cout << "invalid tag line detected!" << std::endl;
             return;
         }
@@ -117,23 +112,21 @@ void Tags::reparse()
 
         foreach (const UnsignedStringPair& title_case, *title_cases) {
             AbbreviationInfo ai(title_case.first, word);
-
             if (ai.Weight == kPrioritySinglesAbbreviation)
                 ai.Weight = kPriorityTagsSinglesAbbreviation;
             else if (ai.Weight == kPrioritySubsequenceAbbreviation)
                 ai.Weight = kPriorityTagsSubsequenceAbbreviation;
 
-            abbreviations_.insert(make_pair(title_case.second, ai));
+            abbreviations_[title_case.second].insert(ai);
         }
         foreach (const UnsignedStringPair& underscore, *underscores) {
             AbbreviationInfo ai(underscore.first, word);
-
             if (ai.Weight == kPrioritySinglesAbbreviation)
                 ai.Weight = kPriorityTagsSinglesAbbreviation;
             else if (ai.Weight == kPrioritySubsequenceAbbreviation)
                 ai.Weight = kPriorityTagsSubsequenceAbbreviation;
 
-            abbreviations_.insert(make_pair(underscore.second, ai));
+            abbreviations_[underscore.second].insert(ai);
         }
 
         prev_word = word;
@@ -175,37 +168,53 @@ void Tags::VimTaglistFunction(
     }
 }
 
-void Tags::GetAllWordsWithPrefix(
-    const std::string& prefix,
-    std::set<CompleteItem>* results)
+void Tags::GetPrefixCompletions(
+    const std::string& input,
+    CompleteItemVectorPtr& completions, std::set<std::string> added_words,
+    bool terminus_mode)
 {
-    auto(iter, tags_.lower_bound(prefix));
-    for (; iter != tags_.end(); ++iter)
-    {
+    auto(iter, tags_.lower_bound(input));
+    for (; iter != tags_.end(); ++iter) {
         const std::string& candidate = iter->first;
         const std::string& line = iter->second;
-        if (boost::starts_with(candidate, prefix) == false) break;
+
+        if (completions->size() == LookupTable::kMaxNumCompletions)
+            break;
+        if (boost::starts_with(candidate, input) == false)
+            break;
+
+        if (Contains(added_words, candidate))
+            continue;
 
         CompleteItem completion(candidate);
         completion.Menu = "        [Tags]";
-        results->insert(completion);
+        completions->push_back(completion);
+
+        added_words.insert(candidate);
     }
 }
 
 void Tags::GetAbbrCompletions(
-    const std::string& prefix,
-    std::set<CompleteItem>* results)
+    const std::string& input,
+    CompleteItemVectorPtr& completions, std::set<std::string> added_words,
+    bool terminus_mode)
 {
-    if (prefix.length() < 2) return;
+    if (input.length() < 2)
+        return;
 
-    auto(bounds, abbreviations_.equal_range(prefix));
-    auto(iter, bounds.first);
-    for (; iter != bounds.second; ++iter)
-    {
-        const AbbreviationInfo& candidate = iter->second;
+    auto(const &set, abbreviations_[input]);
+    auto(iter, set.begin());
+    for (; iter != set.end(); ++iter) {
+        const AbbreviationInfo& candidate = *iter;
+
+        if (completions->size() == LookupTable::kMaxNumCompletions)
+            break;
+
         CompleteItem completion(candidate.Word, candidate.Weight);
         completion.Menu = "        [Tags]";
-        results->insert(completion);
+        completions->push_back(completion);
+
+        added_words.insert(candidate.Word);
     }
 }
 

@@ -2,6 +2,7 @@
 #include "GlobalWordSet.hpp"
 #include "LookupTable.hpp"
 #include "Algorithm.hpp"
+#include "CompletionPriorities.hpp"
 
 static const int kLevenshteinMaxCost = 2;
 static const size_t kMinLengthForLevenshteinCompletion = 4;
@@ -38,57 +39,72 @@ void GlobalWordSet::UpdateWord(const std::string& word, int reference_count_delt
     // generate and store abbreviations
     foreach (const UnsignedStringPair& title_case, *title_cases) {
         AbbreviationInfo ai(title_case.first, word);
-        abbreviations_.insert(make_pair(title_case.second, ai));
+        abbreviations_[title_case.second].insert(ai);
     }
     foreach (const UnsignedStringPair& underscore, *underscores) {
         AbbreviationInfo ai(underscore.first, word);
-        abbreviations_.insert(make_pair(underscore.second, ai));
+        abbreviations_[underscore.second].insert(ai);
     }
 
     wi.GeneratedAbbreviations = true;
 }
 
 void GlobalWordSet::GetPrefixCompletions(
-    const std::string& prefix,
-    std::set<CompleteItem>* completions)
+    const std::string& input,
+    CompleteItemVectorPtr& completions, std::set<std::string> added_words,
+    bool terminus_mode)
 {
     boost::unique_lock<boost::mutex> lock(mutex_);
 
-    auto(iter, words_.lower_bound(prefix));
+    auto(iter, words_.lower_bound(input));
     for (; iter != words_.end(); ++iter) {
         const std::string& candidate = iter->first;
         const WordInfo& wi = iter->second;
 
-        if (boost::starts_with(candidate, prefix) == false)
+        if (completions->size() == LookupTable::kMaxNumCompletions)
             break;
+        if (boost::starts_with(candidate, input) == false)
+            break;
+
         if (wi.ReferenceCount == 0)
+            continue;
+        if (Contains(added_words, candidate))
             continue;
 
         CompleteItem completion(candidate);
         completion.Menu = boost::str(boost::format("        [%d Counts]")
             % wi.ReferenceCount);
-        completions->insert(completion);
+        completions->push_back(completion);
+
+        added_words.insert(candidate);
     }
 }
 
 void GlobalWordSet::GetAbbrCompletions(
-    const std::string& prefix,
-    std::set<CompleteItem>* completions)
+    const std::string& input,
+    CompleteItemVectorPtr& completions, std::set<std::string> added_words,
+    bool terminus_mode)
 {
     boost::unique_lock<boost::mutex> lock(mutex_);
 
-    auto(bounds, abbreviations_.equal_range(prefix));
-    auto(iter, bounds.first);
-    for (; iter != bounds.second; ++iter) {
-        const AbbreviationInfo& candidate = iter->second;
+    auto(const &set, abbreviations_[input]);
+    auto(iter, set.begin());
+    for (; iter != set.end(); ++iter) {
+        const AbbreviationInfo& candidate = *iter;
         const WordInfo& wi = words_[candidate.Word];
+
+        if (completions->size() == LookupTable::kMaxNumCompletions)
+            break;
+
         if (wi.ReferenceCount == 0)
             continue;
 
         CompleteItem completion(candidate.Word, candidate.Weight);
         completion.Menu = boost::str(boost::format("        [%d Counts]")
             % wi.ReferenceCount);
-        completions->insert(completion);
+        completions->push_back(completion);
+
+        added_words.insert(candidate.Word);
     }
 }
 
@@ -110,27 +126,25 @@ unsigned GlobalWordSet::Prune()
 
     foreach (const std::string& word, to_be_pruned) {
         foreach (const UnsignedStringPair& w,
-                 *Algorithm::ComputeTitleCase(word))
-        {
-            auto (bounds, abbreviations_.equal_range(w.second));
-            auto (iter, bounds.first);
-            while (iter != bounds.second)
-            {
-                if (iter->second.Word == word)
-                    abbreviations_.erase(iter++);
+                 *Algorithm::ComputeTitleCase(word)) {
+            std::set<AbbreviationInfo>& set = abbreviations_[w.second];
+
+            auto (iter, set.begin());
+            while (iter != set.end()) {
+                if (iter->Word == word)
+                    set.erase(iter++);
                 else
                     ++iter;
             }
         }
         foreach (const UnsignedStringPair& w,
-                 *Algorithm::ComputeUnderscore(word))
-        {
-            auto (bounds, abbreviations_.equal_range(w.second));
-            auto (iter, bounds.first);
-            while (iter != bounds.second)
-            {
-                if (iter->second.Word == word)
-                    abbreviations_.erase(iter++);
+                 *Algorithm::ComputeUnderscore(word)) {
+            std::set<AbbreviationInfo>& set = abbreviations_[w.second];
+
+            auto (iter, set.begin());
+            while (iter != set.end()) {
+                if (iter->Word == word)
+                    set.erase(iter++);
                 else
                     ++iter;
             }

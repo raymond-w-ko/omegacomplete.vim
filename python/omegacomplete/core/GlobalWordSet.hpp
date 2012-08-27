@@ -2,22 +2,10 @@
 
 #include "TrieNode.hpp"
 #include "CompleteItem.hpp"
+#include "WordInfo.hpp"
+#include "AbbreviationInfo.hpp"
 
 typedef std::map< int, std::set<std::string> > LevenshteinSearchResults;
-
-struct WordInfo
-{
-    WordInfo()
-    :
-    ReferenceCount(0),
-    GeneratedAbbreviations(false)
-    { }
-
-    ~WordInfo() { }
-
-    int ReferenceCount;
-    bool GeneratedAbbreviations;
-};
 
 class GlobalWordSet : public boost::noncopyable
 {
@@ -43,34 +31,24 @@ public:
     unsigned Prune();
 
     void GetPrefixCompletions(
-        const std::string& prefix,
-        std::set<CompleteItem>* completions);
+        const std::string& input,
+        CompleteItemVectorPtr& completions, std::set<std::string> added_words,
+        bool terminus_mode);
 
     void GetAbbrCompletions(
-        const std::string& prefix,
-        std::set<CompleteItem>* completions);
+        const std::string& input,
+        CompleteItemVectorPtr& completions, std::set<std::string> added_words,
+        bool terminus_mode);
 
     void GetLevenshteinCompletions(
         const std::string& prefix,
         LevenshteinSearchResults& results);
 
 private:
-    struct AbbreviationInfo
-    {
-        AbbreviationInfo(unsigned weight, const std::string word)
-            : Weight(weight), Word(word) { }
-        AbbreviationInfo(const AbbreviationInfo& other)
-            : Weight(other.Weight), Word(other.Word) { }
-        ~AbbreviationInfo() { }
-
-        unsigned Weight;
-        const std::string Word;
-    };
-
     boost::mutex mutex_;
 
     std::map<String, WordInfo> words_;
-    boost::unordered_multimap<String, AbbreviationInfo> abbreviations_;
+    std::map<String, std::set<AbbreviationInfo> > abbreviations_;
 
     boost::mutex trie_mutex_;
     TrieNode trie_;

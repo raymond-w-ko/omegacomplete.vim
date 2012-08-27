@@ -407,12 +407,8 @@ void OmegaComplete::genericKeywordCompletion(
     std::string& result)
 {
     std::string input = getWordToComplete(line);
-    if (input.empty()) {
-#ifdef TELEPROMPTER
-        Teleprompter::Instance()->Show(false);
-#endif
+    if (input.empty())
         return;
-    }
 
     unsigned disambiguate_index = UINT_MAX;
     bool disambiguate_mode = shouldEnableDisambiguateMode(input, disambiguate_index);
@@ -438,67 +434,50 @@ void OmegaComplete::genericKeywordCompletion(
     terminus_mode = shouldEnableTerminusMode(input, terminus_prefix);
 
     CompleteItemVectorPtr completions = boost::make_shared<CompleteItemVector>();
+    std::set<std::string> added_words;
+    added_words.insert(input);
+    if (prev_input_[1].size() == (input.size() + 1) &&
+        boost::starts_with(prev_input_[1], input))
+    {
+        added_words.insert(prev_input_[1]);
+    }
 
-    // TODO(rko): fill in
-    
+    WordSet.GetAbbrCompletions(
+        input,
+        completions, added_words,
+        terminus_mode);
+
+    TagsSet::Instance()->GetAbbrCompletions(
+        input,
+        current_tags_, current_directory_,
+        completions, added_words,
+        terminus_mode);
+
+    WordSet.GetPrefixCompletions(
+        input,
+        completions, added_words,
+        terminus_mode);
+
+    TagsSet::Instance()->GetPrefixCompletions(
+        input,
+        current_tags_, current_directory_,
+        completions, added_words,
+        terminus_mode);
+
+    addLevenshteinCorrections(input, completions);
+
+    result += "[";
     foreach (const CompleteItem& completion, *completions) {
         result += completion.SerializeToVimDict();
     }
+    result += "]";
+
     prev_completions_ = completions;
 }
 
 /*
-void OmegaComplete::genericKeywordCompletion2(
-    const std::string& line,
-    std::string& result)
 {
-    CompletionSet main_completion_set;
-    CompletionSet terminus_completion_set;
-
-retry_completion:
-    if (terminus_mode) {
-        always_assert(disambiguate_mode == false);
-        fillCompletionSet(terminus_prefix, terminus_completion_set);
-    }
-    std::vector<CompleteItem> banned_words;
-    if (disambiguate_mode) {
-        banned_words.push_back(orig_disambiguate_prefix);
-    }
     fillCompletionSet(prefix_to_complete, main_completion_set, &banned_words);
-
-    // encountered an invalid disambiguation, abort and retry normally
-    // as though it was not intended
-    //
-    // for example, should2 would falsely trigger 'disambiguate_mode'
-    // but we probably want to try it as a regular prefix completion
-    if (disambiguate_mode &&
-        disambiguate_index >= 0 &&
-        disambiguate_index >= main_completion_set.GetNumCompletions())
-    {
-        disambiguate_mode = false;
-        disambiguate_index = UINT_MAX;
-
-        main_completion_set.Clear();
-
-        prefix_to_complete += boost::lexical_cast<std::string>(disambiguate_letter);
-
-        goto retry_completion;
-    }
-
-    // only if we have no completions do we try to Levenshtein distance completion
-    LevenshteinSearchResults levenshtein_completions;
-    if (main_completion_set.GetNumCompletions() == 0)
-    {
-        WordSet.GetLevenshteinCompletions(
-            prefix_to_complete,
-            levenshtein_completions);
-
-        is_corrections_only_ = true;
-    }
-    else
-    {
-        is_corrections_only_ = false;
-    }
 
     std::vector<CompleteItem> result_list;
     std::vector<CompleteItem> terminus_result_list;
@@ -527,13 +506,6 @@ retry_completion:
     main_completion_set.FillResults(result_list);
 
     // convert to format that VIM expects, basically a list of dictionaries
-#ifdef TELEPROMPTER
-    Teleprompter::Instance()->Show(true);
-    Teleprompter::Instance()->Clear();
-    Teleprompter::Instance()->SetCurrentWord(prefix_to_complete);
-#endif
-
-    result += "[";
     if (disambiguate_mode == false) {
         if (terminus_mode) {
             foreach (const CompleteItem& completion, terminus_result_list) {
@@ -573,11 +545,6 @@ retry_completion:
 #endif
         }
     }
-    result += "]";
-
-#ifdef TELEPROMPTER
-    Teleprompter::Instance()->Redraw();
-#endif
 }
 */
 
@@ -634,27 +601,12 @@ bool OmegaComplete::shouldEnableTerminusMode(
     return false;
 }
 
+/*
 void OmegaComplete::fillCompletionSet(
     const std::string& prefix_to_complete,
     CompletionSet& completion_set,
     const std::vector<CompleteItem>* banned_words)
 {
-    this->WordSet.GetAbbrCompletions(
-        prefix_to_complete,
-        &completion_set.AbbrCompletions);
-
-    TagsSet::Instance()->GetAbbrCompletions(
-        prefix_to_complete, current_tags_, current_directory_,
-        &completion_set.TagsAbbrCompletions);
-
-    this->WordSet.GetPrefixCompletions(
-        prefix_to_complete,
-        &completion_set.PrefixCompletions);
-
-    TagsSet::Instance()->GetAllWordsWithPrefix(
-        prefix_to_complete, current_tags_, current_directory_,
-        &completion_set.TagsPrefixCompletions);
-
     CompleteItem repeat(prefix_to_complete);
     completion_set.AbbrCompletions.erase(repeat);
     completion_set.TagsAbbrCompletions.erase(repeat);
@@ -670,5 +622,37 @@ void OmegaComplete::fillCompletionSet(
         completion_set.TagsAbbrCompletions.erase(completion);
         completion_set.PrefixCompletions.erase(completion);
         completion_set.TagsPrefixCompletions.erase(completion);
+    }
+}
+*/
+
+void OmegaComplete::addLevenshteinCorrections(
+    const std::string& input,
+    CompleteItemVectorPtr& completions)
+{
+    if (completions->size() == 0) {
+        is_corrections_only_ = true;
+    } else {
+        is_corrections_only_ = false;
+        return;
+    }
+
+    LevenshteinSearchResults levenshtein_completions;
+    WordSet.GetLevenshteinCompletions(input, levenshtein_completions);
+
+    auto (iter, levenshtein_completions.begin());
+    for (; iter != levenshtein_completions.end(); ++iter) {
+        foreach (const std::string& word, iter->second) {
+            if (completions->size() >= LookupTable::kMaxNumCompletions)
+                return;
+
+            if (word == input)
+                continue;
+            if (boost::starts_with(input, word))
+                continue;
+
+            CompleteItem completion(word);
+            completions->push_back(completion);
+        }
     }
 }
