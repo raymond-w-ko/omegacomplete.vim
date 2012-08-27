@@ -210,6 +210,9 @@ void Tags::GetAbbrCompletions(
         if (completions->size() == LookupTable::kMaxNumCompletions)
             break;
 
+        if (Contains(added_words, candidate.Word))
+            continue;
+
         CompleteItem completion(candidate.Word, candidate.Weight);
         completion.Menu = "        [Tags]";
         completions->push_back(completion);

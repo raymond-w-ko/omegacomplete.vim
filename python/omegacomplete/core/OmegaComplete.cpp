@@ -330,8 +330,7 @@ void OmegaComplete::workerThreadLoop()
 {
     bool did_prune = false;
 
-    while (true)
-    {
+    while (true) {
 #ifdef _WIN32
         // this is in milliseconds
         ::Sleep(1);
@@ -344,16 +343,14 @@ void OmegaComplete::workerThreadLoop()
         // pop off the next job
 try_get_next_job:
         job_queue_mutex_.lock();
-        if (job_queue_.size() > 0)
-        {
+        if (job_queue_.size() > 0) {
             ParseJob job(job_queue_.front());
             job_queue_.pop_front();
             job_queue_mutex_.unlock();
 
             // do the job
             buffers_mutex_.lock();
-            if (Contains(buffers_, job.BufferNumber) == false)
-            {
+            if (Contains(buffers_, job.BufferNumber) == false) {
                 std::cout << "buffer " << job.BufferNumber
                           << "no longer exists! "
                           << "skipping this job" << std::endl;
@@ -368,8 +365,7 @@ try_get_next_job:
             // immediately process it, don't go to sleep
             goto try_get_next_job;
         }
-        else
-        {
+        else {
             job_queue_mutex_.unlock();
 
             if (did_prune == false) {
@@ -435,6 +431,8 @@ void OmegaComplete::genericKeywordCompletion(
     CompleteItemVectorPtr completions = boost::make_shared<CompleteItemVector>();
     std::set<std::string> added_words;
     added_words.insert(input);
+    // this is to prevent completions from being considered
+    // that are basically the word from before you press Backspace.
     if (prev_input_[1].size() == (input.size() + 1) &&
         boost::starts_with(prev_input_[1], input))
     {
@@ -474,88 +472,14 @@ void OmegaComplete::genericKeywordCompletion(
     prev_completions_ = completions;
 }
 
-/*
-{
-    fillCompletionSet(prefix_to_complete, main_completion_set, &banned_words);
-
-    std::vector<CompleteItem> result_list;
-    std::vector<CompleteItem> terminus_result_list;
-
-    if (terminus_mode)
-        terminus_completion_set.FillResults(terminus_result_list);
-
-    // this is to prevent completions from being considered
-    // that are basically the word from before you press Backspace.
-    if (prev_input_[1].size() == (prefix_to_complete.size() + 1) &&
-        boost::starts_with(prev_input_[1], prefix_to_complete))
-    {
-        main_completion_set.AddBannedWord(prev_input_[1]);
-        if (terminus_mode)
-            terminus_completion_set.AddBannedWord(prev_input_[1]);
-    }
-
-    if (terminus_mode) {
-        foreach (const CompleteItem& completion, terminus_result_list) {
-            const std::string& word = completion.Word;
-            if (word[word.size() - 1] == '_')
-                main_completion_set.AddBannedWord(word);
-        }
-    }
-
-    main_completion_set.FillResults(result_list);
-
-    // convert to format that VIM expects, basically a list of dictionaries
-    if (disambiguate_mode == false) {
-        if (terminus_mode) {
-            foreach (const CompleteItem& completion, terminus_result_list) {
-                const std::string& word = completion.Word;
-                if (word[ word.size() - 1 ] != '_')
-                    continue;
-                if (word == prefix_to_complete)
-                    continue;
-
-                result += completion.SerializeToVimDict();
-            }
-
-#ifdef TELEPROMPTER
-            Teleprompter::Instance()->AppendText(terminus_result_list);
-#endif
-        }
-
-#ifdef TELEPROMPTER
-        Teleprompter::Instance()->AppendText(result_list);
-#endif
-
-        main_completion_set.FillLevenshteinResults(
-            levenshtein_completions,
-            prefix_to_complete,
-            result);
-    }
-    else {
-        // make sure we actually have a result, or we crash
-        if (result_list.size() > disambiguate_index) {
-            CompleteItem single_result = result_list[disambiguate_index];
-            single_result.Abbr = single_result.Word + " <==";
-            result += single_result.SerializeToVimDict();
-
-#ifdef TELEPROMPTER
-            Teleprompter::Instance()->AppendText(
-                single_result + "    <==");
-#endif
-        }
-    }
-}
-*/
-
-
 std::string OmegaComplete::getWordToComplete(const std::string& line)
 {
-    if (line.length() == 0) return "";
+    if (line.length() == 0)
+        return "";
 
     int partial_end = line.length();
     int partial_begin = partial_end - 1;
-    for (; partial_begin >= 0; --partial_begin)
-    {
+    for (; partial_begin >= 0; --partial_begin) {
         char c = line[partial_begin];
         if (LookupTable::IsPartOfWord[c])
             continue;
@@ -563,7 +487,8 @@ std::string OmegaComplete::getWordToComplete(const std::string& line)
         break;
     }
 
-    if ((partial_begin + 1) == partial_end) return "";
+    if ((partial_begin + 1) == partial_end)
+        return "";
 
     std::string partial( &line[partial_begin + 1], &line[partial_end] );
     return partial;
@@ -599,31 +524,6 @@ bool OmegaComplete::shouldEnableTerminusMode(
 
     return false;
 }
-
-/*
-void OmegaComplete::fillCompletionSet(
-    const std::string& prefix_to_complete,
-    CompletionSet& completion_set,
-    const std::vector<CompleteItem>* banned_words)
-{
-    CompleteItem repeat(prefix_to_complete);
-    completion_set.AbbrCompletions.erase(repeat);
-    completion_set.TagsAbbrCompletions.erase(repeat);
-    completion_set.PrefixCompletions.erase(repeat);
-    completion_set.TagsPrefixCompletions.erase(repeat);
-
-    if (banned_words == NULL)
-        return;
-
-    foreach (const CompleteItem& completion, *banned_words)
-    {
-        completion_set.AbbrCompletions.erase(completion);
-        completion_set.TagsAbbrCompletions.erase(completion);
-        completion_set.PrefixCompletions.erase(completion);
-        completion_set.TagsPrefixCompletions.erase(completion);
-    }
-}
-*/
 
 void OmegaComplete::addLevenshteinCorrections(
     const std::string& input,

@@ -98,6 +98,8 @@ void GlobalWordSet::GetAbbrCompletions(
 
         if (wi.ReferenceCount == 0)
             continue;
+        if (Contains(added_words, candidate.Word))
+            continue;
 
         CompleteItem completion(candidate.Word, candidate.Weight);
         completion.Menu = boost::str(boost::format("        [%d Counts]")
