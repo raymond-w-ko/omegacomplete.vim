@@ -4,7 +4,6 @@
 #include "TagsSet.hpp"
 #include "Stopwatch.hpp"
 #include "LookupTable.hpp"
-#include "CompletionSet.hpp"
 #include "Teleprompter.hpp"
 #include "Algorithm.hpp"
 

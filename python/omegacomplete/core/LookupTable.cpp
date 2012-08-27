@@ -1,7 +1,6 @@
 #include "stdafx.hpp"
 
 #include "LookupTable.hpp"
-#include "CompletionSet.hpp"
 
 const unsigned LookupTable::kMaxNumCompletions = 32;
 char LookupTable::IsPartOfWord[256];

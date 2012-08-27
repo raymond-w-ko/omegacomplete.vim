@@ -3,7 +3,6 @@
 #include "Room.hpp"
 #include "Buffer.hpp"
 #include "GlobalWordSet.hpp"
-#include "CompletionSet.hpp"
 #include "CompleteItem.hpp"
 #include "ClangCompleter.hpp"
 
