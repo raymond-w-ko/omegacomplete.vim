@@ -101,11 +101,11 @@ GetChar         2
 GetCode         3
 </pre>
 
-#### Disambiguate Mode triggered by '1'
+#### Disambiguate Mode triggered by '2'
 <pre>
 GetCode GetChar GarbageCollect
-gc1|
-GetChar  1
+gc2|
+GetChar  2
 </pre>
 
 ***
