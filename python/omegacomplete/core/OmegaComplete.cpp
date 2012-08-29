@@ -441,6 +441,7 @@ void OmegaComplete::genericKeywordCompletion(
         added_words.insert(prev_input_[1]);
     }
 
+retry_completion:
     WordSet.GetAbbrCompletions(
         input,
         completions, added_words,
@@ -463,6 +464,13 @@ void OmegaComplete::genericKeywordCompletion(
         completions, added_words,
         terminus_mode);
 
+    if (terminus_mode && completions->size() == 0) {
+        terminus_mode = false;
+        input = input + "_";
+        goto retry_completion;
+    }
+
+    // assign quick match number of entries
     for (size_t i = 0; i < LookupTable::kMaxNumQuickMatch; ++i) {
         if (i >= completions->size())
             break;
