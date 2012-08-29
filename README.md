@@ -3,16 +3,16 @@
 ## General Information
 This is my crazy side project which attempts to provide the fastest and most useful keyword completions for VIM.
 
-To accomplish this, the OmegaComplete uses a Python extension module coded in C++03 to do the
+To accomplish this, OmegaComplete uses a Python extension module coded in C++03 to do the
 acutal parsing and completions. Tiny bits of Python are used to "glue" VIM and the C++ module together.
 
 Processing of buffers, which include keyword extraction, abbreviation calculation,
-and maintaining a trie and  of all words, is done asynchronously,
-so results might lag behind a bit. But because of this, editing large files is not a problem
+and maintaining a trie of all words, is done asynchronously,
+so results might lag behind a tiny bit. But because of this, editing large files is not a problem
 and does not introduce input lag when in insert mode.
 
-The only bottleneck is in the Python code where the buffer is joined into one huge string before sending to the server.
-For large ( > 2MB ) files, there might be pauses in insert mode when you type too fast.
+The only bottleneck is in the Python code where the buffer is joined into one huge string before sending
+to the C++ module. For large (greater than 5MB) files, there might be pauses in insert mode when you type too fast.
 If anyone has a better solution, please, please let me know. For now I am not treating it
 as a problem, because you are screwed anyways if you have to maintain source code files that big.
 
