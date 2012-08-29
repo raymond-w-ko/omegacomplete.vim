@@ -113,25 +113,26 @@ GetChar  2
 ### Underscore Terminus Mode
 This is really for Google style C++ (http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml)
 where member variables end in an underscore. From my experience,
-when creating constructors or false positives are triggered sometimes you want the completions that ends with
-an underscore. This means playing around with Ctrl-N or Ctrl-P, which is not that efficient. Now, when
-your input word ends in an underscore, the completions that have an underscore as their ending character
-are placed first, allowing you to easily select them.
+when creating constructors or false positives are triggered, sometimes you want the completions that ends with
+an underscore. This means playing around with Ctrl-N or Ctrl-P, which is not that efficient. Now with this mode, when
+your input word ends in an underscore, the completions are filtered so that only those ending with
+an underscore are offered. OmegaComplete automatically falls back to the above completions if it finds no
+words ending with an underscore.
 
 #### Example of completions offered
 <pre>
 camera_list_ camera_list CommonLisp
 cl|
-CommonLisp   [A]
-camera_list  [S]
-camera_list_ [D]
+CommonLisp   1
+camera_list  2
+camera_list_ 3
 </pre>
 
 #### Disambiguate Mode triggered by 'S'
 <pre>
 camera_list_ camera_list CommonLisp
 cl_|
-camera_list_ [D]
+camera_list_ 1
 </pre>
 ***
 
