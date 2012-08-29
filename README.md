@@ -162,11 +162,9 @@ is parsing tags files.
 
 ### VIM taglist("^keyword$") Function Replacement and Enhancement
 As a natural result of cached tags, OmegaComplete offers a function to lookup
-tag information in constant time (cache is implemented as a unordered hash table).
-This cuts down from the O( log(n) ) or O(n) time needed by VIM to perform a linear or
-binary search on the tags file everytime to find tag info.
+tag information in logarithmic time (cache is implemented as a std::multimap).
 
-Also add a "prefix" tag info, which is the text
+The VIM dict returned by this function also has a "prefix" key-value pair added, which is the text
 that prefixes the keyword in the Ex command needed to find it. This is useful
 for extracting return types from C++ function definitions, as ctags does
 not natively offer it. See my vimrc repository on how I use it for an example.
