@@ -83,7 +83,7 @@ with only two index points, as they eventually become ambiguous given enough buf
 
 Right now it only generate the semantic abbreviations if the number of "index points" is less than 5.
 The "depth" is also capped at 3. The reason for this is that the number of possible abbreviations per
-word is "depth" to the power of the number of "index points", which can get pretty huge quickly.
+word is "depth" to the power of the number of "index points", which can consum a lot of memory quickly.
 
 ***
 ### Disambiguate Mode
