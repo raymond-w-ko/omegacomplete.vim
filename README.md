@@ -18,10 +18,10 @@ as a problem, because you are screwed anyways if you have to maintain source cod
 
 ## Prerequisites for Use
 To compile the server portion you need a relatively standards compliant C++03 compiler
-along with the compiled Boost C++ libraries for boost::asio. Your version of VIM also needs
+along with the compiled Boost C++ libraries for boost threads. Your version of VIM also needs
 to have the Python 2.X bindings.
 
-If you use Visual Studio 2008 and have Boost compiled and installed in "C:\Boost", then you
+If you use Visual Studio 2010 and have Boost compiled and installed in "C:\Boost", then you
 can just use with the solution file provided.
 
 ## Important Tip
