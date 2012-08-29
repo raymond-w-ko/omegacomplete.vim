@@ -87,27 +87,25 @@ word is "depth" to the power of the number of "index points", which can consum a
 
 ***
 ### Disambiguate Mode
-As you may have noticed, completions in general have a '[X]' (where X is a capital letter) 
-after them in the VIM popup menu. This is so that you may append that capital letter and cause
-that to be the only match that comes up. In the cases where there are 10 or so ambiguous entries,
-this is useful because you don't have to use Ctrl-N or Ctrl-P to select that entry. Note that at this
-time the prefix before the capital letter must be entirely lowercase in order for disambiguate mode
-to be triggered.
+As you may have noticed, completions in general have a number after them in the VIM popup menu.
+This is so that you may append that number and cause that to be the only match that comes up.
+In the cases where there are 10 or so ambiguous entries, this is useful because you don't have to use
+Ctrl-N or Ctrl-P to select that entry.
 
 #### Example of completions offered
 <pre>
 GetCode GetChar GarbageCollect
 gc|
-GarbageCollect  [A]
-GetChar         [S]
-GetCode         [D]
+GarbageCollect  1
+GetChar         2
+GetCode         3
 </pre>
 
-#### Disambiguate Mode triggered by 'S'
+#### Disambiguate Mode triggered by '1'
 <pre>
 GetCode GetChar GarbageCollect
-gcS|
-GetChar  &lt;--
+gc1|
+GetChar  1
 </pre>
 
 ***
