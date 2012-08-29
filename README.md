@@ -137,11 +137,16 @@ camera_list_ 1
 ***
 
 ### Levenshtein Distance Correction Completion
-OmegaComplete calculates the Levenshtein distance of
-the current word against all known words in all buffers. If the Levenshtein distance
-between the current word and a candidate word is less than or equal to X,
-it offers the word as a completion completions.  Right now this only
-triggers if words are longer than 3 characters and the distance is <= 2.
+OmegaComplete calculates the Levenshtein distance of the current word against all known words in all buffers.
+If the Levenshtein distance between the current word and a candidate word is less than or equal to X,
+it offers the word as a correction candidate.  Right now this only
+triggers if words are longer than 3 characters, the distance is <= 2 to preserve speed.
+As an additional condition, this completion is only triggered when it finds no other completions,
+as this usually means that a typo has occurred.
+
+You can also set the colorscheme of the VIM popup menu to be different when this type of completion
+pops up. I find it very useful to have the color change so you know whether OmegaComplete is offering completions
+or corrections.
 
 ## Other features
 
