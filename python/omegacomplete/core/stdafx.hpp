@@ -26,7 +26,6 @@
     }
 #else
         #include <stdlib.h>
-        #include <crtdbg.h>
 #endif
 
 #include <stdio.h>
@@ -70,7 +69,9 @@
 #define foreach BOOST_FOREACH
 #define reverse_foreach BOOST_REVERSE_FOREACH
 
-#include <clang-c/Index.h>
+#ifdef ENABLE_CLANG_COMPLETION
+    #include <clang-c/Index.h>
+#endif
 
 #include "ustring.hpp"
 

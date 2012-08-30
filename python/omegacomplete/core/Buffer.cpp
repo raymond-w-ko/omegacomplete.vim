@@ -99,20 +99,20 @@ void Buffer::ReplaceContentsWith(StringPtr new_contents)
                 to_be_changed[word] += (*new_words)[word] - ref_count;
         }
 
-        for (StringIntMapConstIter iter = to_be_added.cbegin();
-             iter != to_be_added.cend();
+        for (StringIntMapConstIter iter = to_be_added.begin();
+             iter != to_be_added.end();
              ++iter)
         {
             parent_->WordSet.UpdateWord(iter->first, +iter->second);
         }
-        for (StringIntMapConstIter iter = to_be_removed.cbegin();
-             iter != to_be_removed.cend();
+        for (StringIntMapConstIter iter = to_be_removed.begin();
+             iter != to_be_removed.end();
              ++iter)
         {
             parent_->WordSet.UpdateWord(iter->first, -iter->second);
         }
-        for (StringIntMapConstIter iter = to_be_changed.cbegin();
-             iter != to_be_changed.cend();
+        for (StringIntMapConstIter iter = to_be_changed.begin();
+             iter != to_be_changed.end();
              ++iter)
         {
             parent_->WordSet.UpdateWord(iter->first,  iter->second);

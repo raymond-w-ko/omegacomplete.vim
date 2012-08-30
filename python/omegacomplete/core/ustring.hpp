@@ -221,9 +221,9 @@ private:
 namespace boost
 {
 template <int N>
-struct hash<ustring<N>>
+struct hash<ustring<N> >
 {
-    size_t operator()(const ustring& str) const
+    size_t operator()(const ustring<N>& str) const
     {
         return str.GetHashCode();
     }

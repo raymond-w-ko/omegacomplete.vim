@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef ENABLE_CLANG_COMPLETION
+
 class ClangCompleter
 {
 public:
@@ -54,3 +56,5 @@ private:
     std::map<std::string, CXTranslationUnit> translation_units_;
     std::map<std::string, StringVectorPtr> options_cache_;
 };
+
+#endif
