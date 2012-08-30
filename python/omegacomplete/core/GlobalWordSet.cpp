@@ -131,8 +131,10 @@ unsigned GlobalWordSet::Prune()
     }
 
     foreach (const std::string& word, to_be_pruned) {
-        foreach (const UnsignedStringPair& w,
-                 *Algorithm::ComputeTitleCase(word)) {
+        UnsignedStringPairVectorPtr collection;
+
+        collection = Algorithm::ComputeTitleCase(word);
+        foreach (UnsignedStringPair w, *collection) {
             std::set<AbbreviationInfo>& set = abbreviations_[w.second];
 
             auto (iter, set.begin());
@@ -142,9 +144,13 @@ unsigned GlobalWordSet::Prune()
                 else
                     ++iter;
             }
+
+            if (abbreviations_[w.second].size() == 0)
+                abbreviations_.erase(w.second);
         }
-        foreach (const UnsignedStringPair& w,
-                 *Algorithm::ComputeUnderscore(word)) {
+
+        collection = Algorithm::ComputeUnderscore(word);
+        foreach (UnsignedStringPair w, *collection) {
             std::set<AbbreviationInfo>& set = abbreviations_[w.second];
 
             auto (iter, set.begin());
@@ -154,6 +160,9 @@ unsigned GlobalWordSet::Prune()
                 else
                     ++iter;
             }
+
+            if (abbreviations_[w.second].size() == 0)
+                abbreviations_.erase(w.second);
         }
         
         // we must erase the things that contains a const& to the word before

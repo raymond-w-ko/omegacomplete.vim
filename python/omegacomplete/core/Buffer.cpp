@@ -8,6 +8,8 @@
 using namespace std;
 
 Buffer::Buffer()
+:
+parent_(NULL)
 {
 }
 
