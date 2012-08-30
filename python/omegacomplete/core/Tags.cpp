@@ -176,7 +176,6 @@ void Tags::GetPrefixCompletions(
     auto(iter, tags_.lower_bound(input));
     for (; iter != tags_.end(); ++iter) {
         const std::string& candidate = iter->first;
-        const std::string& line = iter->second;
 
         if (completions->size() == LookupTable::kMaxNumCompletions)
             break;
