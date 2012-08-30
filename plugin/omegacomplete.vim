@@ -16,14 +16,14 @@ let g:omegacomplete_server_results=[]
 
 if !exists("g:omegacomplete_normal_hi_cmds")
     let g:omegacomplete_normal_hi_cmds=[
-        \ "hi Pmenu guifg=#ffff00 guibg=#373700 gui=none",
-        \ "hi PmenuSel guifg=#373700 guibg=#ffff00 gui=none",
+        \ "hi Pmenu guifg=#00ff00 guibg=#003700 gui=none",
+        \ "hi PmenuSel guifg=#003700 guibg=#00ff00 gui=none",
         \ ]
 endif
 if !exists("g:omegacomplete_corrections_hi_cmds")
     let g:omegacomplete_corrections_hi_cmds=[
-        \ "hi Pmenu guifg=#00ff00 guibg=#003700 gui=none",
-        \ "hi PmenuSel guifg=#003700 guibg=#00ff00 gui=none",
+        \ "hi Pmenu guifg=#ffff00 guibg=#373700 gui=none",
+        \ "hi PmenuSel guifg=#373700 guibg=#ffff00 gui=none",
         \ ]
 endif
 
@@ -185,11 +185,11 @@ else:
     vim.command('let is_corrections_only=1')
 EOF
         if (is_corrections_only)
-            for cmd in g:omegacomplete_normal_hi_cmds
+            for cmd in g:omegacomplete_corrections_hi_cmds
                 exe cmd
             endfor
         else
-            for cmd in g:omegacomplete_corrections_hi_cmds
+            for cmd in g:omegacomplete_normal_hi_cmds
                 exe cmd
             endfor
         endif
