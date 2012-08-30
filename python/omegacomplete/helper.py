@@ -5,8 +5,9 @@ oc_is_disabled = False
 
 try:
     from omegacomplete.core import eval as oc_core_eval
-except:
+except Exception as e:
     oc_is_disabled = True
+    print(e)
 
 def oc_eval(cmd):
     global oc_is_disabled
