@@ -3,6 +3,8 @@
 #include "Stopwatch.hpp"
 #include "ClangCompleter.hpp"
 
+#ifdef ENABLE_CLANG_COMPLETION
+
 ClangCompleter::ClangCompleter()
 :
 is_quitting_(0)
@@ -359,3 +361,5 @@ bool ClangCompleter::AtCompletionPoint(
 
     return false;
 }
+
+#endif
