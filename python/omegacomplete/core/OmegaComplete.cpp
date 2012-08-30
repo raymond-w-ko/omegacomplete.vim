@@ -26,8 +26,8 @@ void OmegaComplete::InitStatic()
 OmegaComplete::OmegaComplete()
 :
 is_quitting_(0),
-prev_input_(3),
 buffer_contents_follow_(false),
+prev_input_(3),
 is_corrections_only_(false)
 {
     initCommandDispatcher();
@@ -292,7 +292,7 @@ std::string OmegaComplete::cmdVimTaglistFunction(StringPtr argument)
 std::string OmegaComplete::cmdPrune(StringPtr argument)
 {
 
-    unsigned words_pruned = WordSet.Prune();
+    WordSet.Prune();
     //std::cout << count << " words pruned" << std::endl;
 
     return default_response_;
