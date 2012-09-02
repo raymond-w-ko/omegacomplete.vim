@@ -20,5 +20,7 @@ ipch/
 *.tmp
 python/omegacomplete/core/Build/VC100/Debug
 python/omegacomplete/core/Build/VC100/Release
-*.pyd
-*.so
+python/omegacomplete/core/build
+core.pyd
+core.so
+core.dll
