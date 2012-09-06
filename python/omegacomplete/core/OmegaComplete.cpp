@@ -87,6 +87,9 @@ void OmegaComplete::initCommandDispatcher()
 
     command_dispatcher_["is_corrections_only"] = boost::bind(
         &OmegaComplete::cmdIsCorrectionsOnly, boost::ref(*this), _1);
+
+    command_dispatcher_["prune_buffers"] = boost::bind(
+        &OmegaComplete::cmdPruneBuffers, boost::ref(*this), _1);
 }
 
 OmegaComplete::~OmegaComplete()
@@ -320,6 +323,36 @@ std::string OmegaComplete::cmdIsCorrectionsOnly(StringPtr argument)
     return response;
 }
 
+std::string OmegaComplete::cmdPruneBuffers(StringPtr argument)
+{
+    std::vector<std::string> numbers;
+    boost::split(
+        numbers, *argument,
+        boost::is_any_of(","), boost::token_compress_on);
+    std::set<unsigned> valid_buffers;
+    foreach (const std::string& number, numbers) {
+        valid_buffers.insert(boost::lexical_cast<unsigned>(number));
+    }
+
+    buffers_mutex_.lock();
+
+    std::vector<unsigned> to_be_erased;
+    auto (iter, buffers_.begin());
+    for (; iter != buffers_.end(); ++iter) {
+        unsigned num = iter->second.GetBufferId();
+        if (!Contains(valid_buffers, num))
+            to_be_erased.push_back(num);
+    }
+
+    foreach (unsigned num, to_be_erased) {
+        buffers_.erase(num);
+    }
+
+    buffers_mutex_.unlock();
+
+    return default_response_;
+}
+
 void OmegaComplete::queueParseJob(ParseJob job)
 {
     boost::unique_lock<boost::mutex> lock(job_queue_mutex_);
@@ -351,9 +384,12 @@ try_get_next_job:
             // do the job
             buffers_mutex_.lock();
             if (Contains(buffers_, job.BufferNumber) == false) {
+                /*
                 std::cout << "buffer " << job.BufferNumber
                           << "no longer exists! "
                           << "skipping this job" << std::endl;
+                */
+                buffers_mutex_.unlock();
                 continue;
             }
             buffers_[job.BufferNumber].ReplaceContentsWith(job.Contents);

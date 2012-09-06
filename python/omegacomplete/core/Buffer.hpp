@@ -4,7 +4,7 @@
 
 class OmegaComplete;
 
-class Buffer
+class Buffer : public boost::noncopyable
 {
 public:
     static void TokenizeContentsIntoKeywords(

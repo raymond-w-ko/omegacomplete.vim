@@ -234,6 +234,10 @@ function <SID>OnBufDelete()
     exe 'py oc_eval("free_buffer ' . buffer_number . '")'
 endfunction
 
+function <SID>PruneBuffers()
+    py oc_prune_buffers()
+endfunction
+
 " When we are leaving buffer (either by opening another buffer, switching
 " tabs, or moving to another split), then we have to inform send the contents
 " of the buffer to the server since we could have changed the contents of the
@@ -245,6 +249,7 @@ endfunction
 function <SID>OnInsertEnter()
     let s:just_did_insertenter = 1
     call <SID>NormalModeSyncBuffer()
+    call <SID>PruneBuffers()
 endfunction
 
 function <SID>OnInsertLeave()

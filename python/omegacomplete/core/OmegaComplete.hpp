@@ -62,6 +62,7 @@ private:
     std::string cmdHideTeleprompter(StringPtr argument);
     std::string cmdFlushCaches(StringPtr argument);
     std::string cmdIsCorrectionsOnly(StringPtr argument);
+    std::string cmdPruneBuffers(StringPtr argument);
 
     ////////////////////////////////////////////////////////////////////////////
     // OmegaComplete Core

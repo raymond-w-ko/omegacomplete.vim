@@ -55,3 +55,19 @@ def oc_send_current_buffer():
     oc_core_eval(header)
     buffer_contents = '\n'.join(vim.eval("getline(1, '$')"))
     return oc_core_eval(buffer_contents)
+
+def oc_prune_buffers():
+    global oc_is_disabled
+    if oc_is_disabled:
+        return
+
+    valid_buffers = []
+    for buffer in vim.buffers:
+        num = str(buffer.number)
+        if vim.eval('buflisted(' + num + ')') == '0':
+            continue
+        valid_buffers.append(num)
+    
+    active_buffer_list = ','.join(valid_buffers)
+
+    return oc_core_eval('prune_buffers ' + active_buffer_list)
