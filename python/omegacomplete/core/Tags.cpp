@@ -170,7 +170,7 @@ void Tags::VimTaglistFunction(
 
 void Tags::GetPrefixCompletions(
     const std::string& input,
-    CompleteItemVectorPtr& completions, std::set<std::string> added_words,
+    CompleteItemVectorPtr& completions, std::set<std::string>& added_words,
     bool terminus_mode)
 {
     auto(iter, tags_.lower_bound(input));
@@ -197,7 +197,7 @@ void Tags::GetPrefixCompletions(
 
 void Tags::GetAbbrCompletions(
     const std::string& input,
-    CompleteItemVectorPtr& completions, std::set<std::string> added_words,
+    CompleteItemVectorPtr& completions, std::set<std::string>& added_words,
     bool terminus_mode)
 {
     if (input.length() < 2)
@@ -265,7 +265,7 @@ void Tags::Update()
     {
         last_write_time_ = 1;
         reparse_needed = true;
-        std::cout << "in UNIX, deciding to parse: " << pathname_ << std::endl;
+        //std::cout << "in UNIX, deciding to parse: " << pathname_ << std::endl;
     }
 #endif
 

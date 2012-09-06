@@ -51,7 +51,7 @@ void GlobalWordSet::UpdateWord(const std::string& word, int reference_count_delt
 
 void GlobalWordSet::GetPrefixCompletions(
     const std::string& input,
-    CompleteItemVectorPtr& completions, std::set<std::string> added_words,
+    CompleteItemVectorPtr& completions, std::set<std::string>& added_words,
     bool terminus_mode)
 {
     boost::unique_lock<boost::mutex> lock(mutex_);
@@ -84,7 +84,7 @@ void GlobalWordSet::GetPrefixCompletions(
 
 void GlobalWordSet::GetAbbrCompletions(
     const std::string& input,
-    CompleteItemVectorPtr& completions, std::set<std::string> added_words,
+    CompleteItemVectorPtr& completions, std::set<std::string>& added_words,
     bool terminus_mode)
 {
     boost::unique_lock<boost::mutex> lock(mutex_);

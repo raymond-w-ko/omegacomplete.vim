@@ -32,12 +32,12 @@ public:
 
     void GetPrefixCompletions(
         const std::string& input,
-        CompleteItemVectorPtr& completions, std::set<std::string> added_words,
+        CompleteItemVectorPtr& completions, std::set<std::string>& added_words,
         bool terminus_mode);
 
     void GetAbbrCompletions(
         const std::string& input,
-        CompleteItemVectorPtr& completions, std::set<std::string> added_words,
+        CompleteItemVectorPtr& completions, std::set<std::string>& added_words,
         bool terminus_mode);
 
     void GetLevenshteinCompletions(
