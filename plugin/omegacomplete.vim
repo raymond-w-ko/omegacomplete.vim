@@ -207,10 +207,6 @@ function <SID>NormalModeSyncBuffer()
     let buffer_name = bufname('%') 
     let absolute_path = expand('%:p')
 
-    if (match(absolute_path, '\v.vim73\/doc') != -1)
-        return
-    endif
-
     " help breaks omegacomplete by causing to forever remain
     if &ft == 'help'
         return
