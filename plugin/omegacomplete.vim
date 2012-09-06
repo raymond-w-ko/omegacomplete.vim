@@ -298,6 +298,10 @@ augroup END
 " don't think  it can use script / scope specific functions
 function OmegaCompleteFunc(findstart, base)
     if a:findstart
+        if len(g:omegacomplete_server_results) == 0
+            return -3
+        endif
+
         let index = col('.') - 2
         let line = getline('.')
         while 1
