@@ -11,46 +11,48 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\AbbreviationInfo.hpp" />
-    <ClInclude Include="..\..\Algorithm.hpp" />
-    <ClInclude Include="..\..\Buffer.hpp" />
-    <ClInclude Include="..\..\ClangCompleter.hpp" />
-    <ClInclude Include="..\..\CompleteItem.hpp" />
-    <ClInclude Include="..\..\CompletionPriorities.hpp" />
-    <ClInclude Include="..\..\GlobalWordSet.hpp" />
-    <ClInclude Include="..\..\LookupTable.hpp" />
-    <ClInclude Include="..\..\OmegaComplete.hpp" />
-    <ClInclude Include="..\..\Participant.hpp" />
-    <ClInclude Include="..\..\Room.hpp" />
-    <ClInclude Include="..\..\stdafx.hpp" />
-    <ClInclude Include="..\..\Stopwatch.hpp" />
-    <ClInclude Include="..\..\Tags.hpp" />
-    <ClInclude Include="..\..\TagsSet.hpp" />
-    <ClInclude Include="..\..\targetver.h" />
-    <ClInclude Include="..\..\Teleprompter.hpp" />
-    <ClInclude Include="..\..\TrieNode.hpp" />
-    <ClInclude Include="..\..\ustring.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\Algorithm.cpp" />
-    <ClCompile Include="..\..\Buffer.cpp" />
-    <ClCompile Include="..\..\ClangCompleter.cpp" />
-    <ClCompile Include="..\..\DllMain.cpp" />
-    <ClCompile Include="..\..\GlobalWordSet.cpp" />
-    <ClCompile Include="..\..\LookupTable.cpp" />
-    <ClCompile Include="..\..\OmegaComplete.cpp" />
-    <ClCompile Include="..\..\Participant.cpp" />
-    <ClCompile Include="..\..\PythonMain.cpp" />
-    <ClCompile Include="..\..\Room.cpp" />
-    <ClCompile Include="..\..\stdafx.cpp">
+    <ClCompile Include="..\Algorithm.cpp" />
+    <ClCompile Include="..\Buffer.cpp" />
+    <ClCompile Include="..\ClangCompleter.cpp" />
+    <ClCompile Include="..\DllMain.cpp" />
+    <ClCompile Include="..\GlobalWordSet.cpp" />
+    <ClCompile Include="..\LookupTable.cpp" />
+    <ClCompile Include="..\OmegaComplete.cpp" />
+    <ClCompile Include="..\Participant.cpp" />
+    <ClCompile Include="..\PythonMain.cpp" />
+    <ClCompile Include="..\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Tags.cpp" />
-    <ClCompile Include="..\..\TagsSet.cpp" />
-    <ClCompile Include="..\..\Teleprompter.cpp" />
-    <ClCompile Include="..\..\TrieNode.cpp" />
-    <ClCompile Include="..\..\ustring.cpp" />
+    <ClCompile Include="..\Tags.cpp" />
+    <ClCompile Include="..\TagsSet.cpp" />
+    <ClCompile Include="..\Teleprompter.cpp" />
+    <ClCompile Include="..\TestCases.cpp" />
+    <ClCompile Include="..\TrieNode.cpp" />
+    <ClCompile Include="..\ustring.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\AbbreviationInfo.hpp" />
+    <ClInclude Include="..\Algorithm.hpp" />
+    <ClInclude Include="..\Buffer.hpp" />
+    <ClInclude Include="..\ClangCompleter.hpp" />
+    <ClInclude Include="..\CompleteItem.hpp" />
+    <ClInclude Include="..\CompletionPriorities.hpp" />
+    <ClInclude Include="..\EntryPoint.hpp" />
+    <ClInclude Include="..\GlobalWordSet.hpp" />
+    <ClInclude Include="..\LookupTable.hpp" />
+    <ClInclude Include="..\OmegaComplete.hpp" />
+    <ClInclude Include="..\Participant.hpp" />
+    <ClInclude Include="..\stdafx.hpp" />
+    <ClInclude Include="..\Stopwatch.hpp" />
+    <ClInclude Include="..\Tags.hpp" />
+    <ClInclude Include="..\TagsSet.hpp" />
+    <ClInclude Include="..\targetver.h" />
+    <ClInclude Include="..\Teleprompter.hpp" />
+    <ClInclude Include="..\TestCases.hpp" />
+    <ClInclude Include="..\TrieNode.hpp" />
+    <ClInclude Include="..\ustring.hpp" />
+    <ClInclude Include="..\WordInfo.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{2C4CB7D0-6452-4AE5-BCD1-91947B75D78A}</ProjectGuid>
@@ -107,7 +109,7 @@
       <AdditionalDependencies>libclang.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(TargetPath) $(ProjectDir)\..\..\..\omegacomplete\core.dll</Command>
+      <Command>copy $(TargetPath) $(ProjectDir)..\..\omegacomplete\core.pyd</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -140,7 +142,7 @@
       <AdditionalDependencies>libclang.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(TargetPath) $(ProjectDir)\..\..\..\omegacomplete\core.pyd</Command>
+      <Command>copy $(TargetPath) $(ProjectDir)..\..\omegacomplete\core.pyd</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
