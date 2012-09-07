@@ -384,11 +384,6 @@ try_get_next_job:
             // do the job
             buffers_mutex_.lock();
             if (Contains(buffers_, job.BufferNumber) == false) {
-                /*
-                std::cout << "buffer " << job.BufferNumber
-                          << "no longer exists! "
-                          << "skipping this job" << std::endl;
-                */
                 buffers_mutex_.unlock();
                 continue;
             }
