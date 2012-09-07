@@ -44,8 +44,6 @@
 #include <map>
 #include <fstream>
 
-#define BOOST_THREAD_USE_LIB
-
 #include <boost/noncopyable.hpp>
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
