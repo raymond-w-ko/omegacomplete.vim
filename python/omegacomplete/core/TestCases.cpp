@@ -125,6 +125,7 @@ void TestCases::TagsTest()
 
 void TestCases::ClangTest()
 {
+#ifdef ENABLE_CLANG_COMPLETION
     std::cout << "checking to see if libclang/libclang.dll works" << std::endl;
 
     int argc = 1;
@@ -135,4 +136,5 @@ void TestCases::ClangTest()
         index, 0, argv, argc, 0, 0, CXTranslationUnit_None);
     clang_disposeTranslationUnit(tu);
     clang_disposeIndex(index);
+#endif
 }
