@@ -362,8 +362,6 @@ void OmegaComplete::queueParseJob(ParseJob job)
 
 void OmegaComplete::workerThreadLoop()
 {
-    bool did_prune = false;
-
     while (!is_quitting_) {
         ParseJob job;
         {
