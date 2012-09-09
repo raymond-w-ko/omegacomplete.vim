@@ -24,6 +24,11 @@ public:
 private:
     struct ParseJob
     {
+        ParseJob()
+        :
+        BufferNumber(0)
+        {}
+
         ParseJob(unsigned buffer_number, const StringPtr& contents)
         :
         BufferNumber(buffer_number),
@@ -106,6 +111,7 @@ private:
     boost::unordered_map<unsigned, Buffer> buffers_;
 
     boost::mutex job_queue_mutex_;
+    boost::condition_variable job_queue_conditional_variable_;
     std::deque<ParseJob> job_queue_;
 
     unsigned current_buffer_id_;

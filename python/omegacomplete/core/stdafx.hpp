@@ -48,7 +48,6 @@
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
-#include <boost/thread.hpp>
 #include <boost/format.hpp>
 #include <boost/utility/result_of.hpp>
 #include <boost/unordered_map.hpp>
@@ -58,7 +57,9 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
 #include <boost/typeof/typeof.hpp>
+#include <boost/thread.hpp>
 #include <boost/thread/locks.hpp>
+#include <boost/thread/condition_variable.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>

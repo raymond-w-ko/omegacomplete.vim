@@ -357,55 +357,29 @@ void OmegaComplete::queueParseJob(ParseJob job)
 {
     boost::unique_lock<boost::mutex> lock(job_queue_mutex_);
     job_queue_.push_back(job);
+    job_queue_conditional_variable_.notify_one();
 }
 
 void OmegaComplete::workerThreadLoop()
 {
     bool did_prune = false;
 
-    while (true) {
-#ifdef _WIN32
-        // this is in milliseconds
-        ::Sleep(1);
-#else
-        ::usleep(1 * 1000);
-#endif
-        if (is_quitting_ == 1)
-            break;
-
-        // pop off the next job
-try_get_next_job:
-        job_queue_mutex_.lock();
-        if (job_queue_.size() > 0) {
-            ParseJob job(job_queue_.front());
+    while (!is_quitting_) {
+        ParseJob job;
+        {
+            boost::unique_lock<boost::mutex> lock(job_queue_mutex_);
+            while (job_queue_.empty()) {
+                job_queue_conditional_variable_.wait(lock);
+            }
+            job = job_queue_.front();
             job_queue_.pop_front();
-            job_queue_mutex_.unlock();
-
-            // do the job
-            buffers_mutex_.lock();
-            if (Contains(buffers_, job.BufferNumber) == false) {
-                buffers_mutex_.unlock();
-                continue;
-            }
-            buffers_[job.BufferNumber].ReplaceContentsWith(job.Contents);
-            buffers_mutex_.unlock();
-
-            did_prune = false;
-
-            // try and see if there is something queued up if so, then
-            // immediately process it, don't go to sleep
-            goto try_get_next_job;
         }
-        else {
-            job_queue_mutex_.unlock();
 
-            if (did_prune == false) {
-                WordSet.Prune();
-                did_prune = true;
-            }
-
+        // do the job
+        boost::unique_lock<boost::mutex> lock(buffers_mutex_);
+        if (!Contains(buffers_, job.BufferNumber))
             continue;
-        }
+        buffers_[job.BufferNumber].ReplaceContentsWith(job.Contents);
     }
 }
 
