@@ -18,6 +18,8 @@ ipch/
 python/omegacomplete/core/build
 python/omegacomplete/core/VC100/Debug
 python/omegacomplete/core/VC100/Release
+python/omegacomplete/core/VC110/Debug
+python/omegacomplete/core/VC110/Release
 core.pyd
 core.so
 core.dll
