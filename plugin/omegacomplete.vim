@@ -207,10 +207,6 @@ function <SID>NormalModeSyncBuffer()
     let buffer_name = bufname('%') 
     let absolute_path = expand('%:p')
 
-    " help breaks omegacomplete by causing to forever remain
-    if &ft == 'help'
-        return
-    endif
     " don't process these special buffers from other plugins
     if (match(buffer_name,
             \ '\v(GoToFile|ControlP|__Scratch__|__Gundo__|__Gundo_Preview__)') != -1)
