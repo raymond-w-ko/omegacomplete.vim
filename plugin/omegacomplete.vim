@@ -92,11 +92,11 @@ function s:MapForMappingDriven()
         \ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
         \ 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
         \ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-        \ '_', '<Space>', '<C-h>', '<BS>', 
+        \ '-', '_', '<Space>', '<C-h>', '<BS>', 
         \ ]
 
-        "\ '-', '_', '~', '^', '.', ',', ':', '!', '#', '=', '%', '$', '@',
-        "\ '<', '>', '/', '\'
+        "'~', '^', '.', ',', ':', '!', '#', '=', '%', '$', '@', '<', '>', '/',
+        "'\'
  
     for key in s:keys_mapping_driven
         exe printf('inoremap <silent> %s %s<C-r>=<SID>FeedPopup()<CR>',
@@ -276,16 +276,16 @@ augroup OmegaComplete
     " completions
     autocmd InsertEnter * call <SID>OnInsertEnter()
 
+    " when you leave insert mode turn off any Teleprompter if possible
+    " also prune words and trie
+    autocmd InsertLeave * call <SID>OnInsertLeave()
 
     " if we are idle, then we take this change to prune unused global words
     " set and trie. there are a variety of things which we consider 'idle'
     autocmd InsertLeave * call <SID>OnIdle()
     autocmd CursorHold * call <SID>OnIdle()
     autocmd CursorHoldI * call <SID>OnIdle()
-
-    " when you switch from the VIM window to some other process, tell the
-    " server to prune unused words from its completion set
-    autocmd FocusLost * call <SID>OnFocusLost()
+    autocmd FocusLost * call <SID>OnIdle()
 
     " when we open a file, send it contents to the server since we usually
     " have some time before we need to start editing the file (usually you
