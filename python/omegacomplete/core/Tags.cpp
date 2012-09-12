@@ -194,6 +194,8 @@ void Tags::GetPrefixCompletions(
 
         if (terminus_mode && !boost::ends_with(candidate, "_"))
             continue;
+        if (boost::ends_with(candidate, "-"))
+            continue;
         if (Contains(added_words, candidate))
             continue;
 
