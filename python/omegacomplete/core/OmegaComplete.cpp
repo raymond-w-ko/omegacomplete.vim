@@ -488,7 +488,7 @@ retry_completion:
             " " + item.Menu;
     }
 
-    addLevenshteinCorrections(input, completions);
+    addLevenshteinCorrections(input, completions, added_words);
 
     result += "[";
     foreach (const CompleteItem& completion, *completions) {
@@ -554,7 +554,8 @@ bool OmegaComplete::shouldEnableTerminusMode(
 
 void OmegaComplete::addLevenshteinCorrections(
     const std::string& input,
-    CompleteItemVectorPtr& completions)
+    CompleteItemVectorPtr& completions,
+    std::set<std::string>& added_words)
 {
     if (completions->size() == 0) {
         is_corrections_only_ = true;
@@ -575,6 +576,8 @@ void OmegaComplete::addLevenshteinCorrections(
             if (word == input)
                 continue;
             if (boost::starts_with(input, word))
+                continue;
+            if (Contains(added_words, word))
                 continue;
 
             CompleteItem completion(word);

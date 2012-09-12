@@ -94,7 +94,8 @@ private:
         const std::string& word, std::string& prefix);
     void addLevenshteinCorrections(
         const std::string& input,
-        CompleteItemVectorPtr& completions);
+        CompleteItemVectorPtr& completions,
+        std::set<std::string>& added_words);
 
     ////////////////////////////////////////////////////////////////////////////
     // OmegaComplete Core
