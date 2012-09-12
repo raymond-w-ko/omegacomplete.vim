@@ -52,6 +52,7 @@ bool LookupTable::isPartOfWord(char c)
 {
     if ((('a' <= c) && (c <= 'z')) ||
         (('A' <= c) && (c <= 'Z')) ||
+        (c == '-') ||
         (c == '_') ||
         (('0' <= c) && (c <= '9')))
     {

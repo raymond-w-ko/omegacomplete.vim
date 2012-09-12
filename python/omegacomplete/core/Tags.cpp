@@ -109,6 +109,7 @@ void Tags::reparse()
 
         UnsignedStringPairVectorPtr title_cases = Algorithm::ComputeTitleCase(word);
         UnsignedStringPairVectorPtr underscores = Algorithm::ComputeUnderscore(word);
+        UnsignedStringPairVectorPtr hyphens = Algorithm::ComputeHyphens(word);
 
         foreach (const UnsignedStringPair& title_case, *title_cases) {
             AbbreviationInfo ai(title_case.first, word);
@@ -127,6 +128,15 @@ void Tags::reparse()
                 ai.Weight = kPriorityTagsSubsequenceAbbreviation;
 
             abbreviations_[underscore.second].insert(ai);
+        }
+        foreach (const UnsignedStringPair& hyphen, *hyphens) {
+            AbbreviationInfo ai(hyphen.first, word);
+            if (ai.Weight == kPrioritySinglesAbbreviation)
+                ai.Weight = kPriorityTagsSinglesAbbreviation;
+            else if (ai.Weight == kPrioritySubsequenceAbbreviation)
+                ai.Weight = kPriorityTagsSubsequenceAbbreviation;
+
+            abbreviations_[hyphen.second].insert(ai);
         }
 
         prev_word = word;

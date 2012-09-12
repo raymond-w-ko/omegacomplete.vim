@@ -35,6 +35,7 @@ void GlobalWordSet::UpdateWord(const std::string& word, int reference_count_delt
 
     UnsignedStringPairVectorPtr title_cases = Algorithm::ComputeTitleCase(word);
     UnsignedStringPairVectorPtr underscores = Algorithm::ComputeUnderscore(word);
+    UnsignedStringPairVectorPtr hyphens = Algorithm::ComputeHyphens(word);
 
     // generate and store abbreviations
     foreach (const UnsignedStringPair& title_case, *title_cases) {
@@ -44,6 +45,10 @@ void GlobalWordSet::UpdateWord(const std::string& word, int reference_count_delt
     foreach (const UnsignedStringPair& underscore, *underscores) {
         AbbreviationInfo ai(underscore.first, word);
         abbreviations_[underscore.second].insert(ai);
+    }
+    foreach (const UnsignedStringPair& hyphen, *hyphens) {
+        AbbreviationInfo ai(hyphen.first, word);
+        abbreviations_[hyphen.second].insert(ai);
     }
 
     wi.GeneratedAbbreviations = true;
@@ -131,38 +136,27 @@ unsigned GlobalWordSet::Prune()
     }
 
     foreach (const std::string& word, to_be_pruned) {
-        UnsignedStringPairVectorPtr collection;
+        std::vector<UnsignedStringPairVectorPtr> collections;
 
-        collection = Algorithm::ComputeTitleCase(word);
-        foreach (UnsignedStringPair w, *collection) {
-            std::set<AbbreviationInfo>& set = abbreviations_[w.second];
+        collections.push_back(Algorithm::ComputeTitleCase(word));
+        collections.push_back(Algorithm::ComputeUnderscore(word));
+        collections.push_back(Algorithm::ComputeHyphens(word));
 
-            auto (iter, set.begin());
-            while (iter != set.end()) {
-                if (iter->Word == word)
-                    set.erase(iter++);
-                else
-                    ++iter;
+        foreach (UnsignedStringPairVectorPtr collection, collections) {
+            foreach (UnsignedStringPair w, *collection) {
+                std::set<AbbreviationInfo>& set = abbreviations_[w.second];
+
+                auto (iter, set.begin());
+                while (iter != set.end()) {
+                    if (iter->Word == word)
+                        set.erase(iter++);
+                    else
+                        ++iter;
+                }
+
+                if (abbreviations_[w.second].size() == 0)
+                    abbreviations_.erase(w.second);
             }
-
-            if (abbreviations_[w.second].size() == 0)
-                abbreviations_.erase(w.second);
-        }
-
-        collection = Algorithm::ComputeUnderscore(word);
-        foreach (UnsignedStringPair w, *collection) {
-            std::set<AbbreviationInfo>& set = abbreviations_[w.second];
-
-            auto (iter, set.begin());
-            while (iter != set.end()) {
-                if (iter->Word == word)
-                    set.erase(iter++);
-                else
-                    ++iter;
-            }
-
-            if (abbreviations_[w.second].size() == 0)
-                abbreviations_.erase(w.second);
         }
         
         // we must erase the things that contains a const& to the word before
