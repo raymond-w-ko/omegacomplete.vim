@@ -76,8 +76,9 @@ private:
             abbr.reserve(kWordSizeCutoffPointForDepthLists);
             foreach (size_t index, indices)
                 abbr += LookupTable::ToLower[word[index]];
-            if (!AllowedOnHeadTail &&
-                (!StartsWith(abbr, C) || !EndsWith(abbr, C)))
+            if (AllowedOnHeadTail ||
+                (!AllowedOnHeadTail && (!StartsWith(abbr, C) ||
+                                        !EndsWith(abbr, C))))
             {
                 results->push_back(std::make_pair(kPrioritySinglesAbbreviation,
                                                   abbr));
@@ -106,8 +107,9 @@ private:
                 unsigned priority = abbr.size() <= indices.size() ?
                     kPrioritySinglesAbbreviation :
                     kPrioritySubsequenceAbbreviation;
-                if (!AllowedOnHeadTail &&
-                    (!StartsWith(abbr, C) || !EndsWith(abbr, C)))
+                if (AllowedOnHeadTail ||
+                    (!AllowedOnHeadTail && (!StartsWith(abbr, C) ||
+                                            !EndsWith(abbr, C))))
                 {
                     results->push_back(std::make_pair(priority, abbr));
                 }
