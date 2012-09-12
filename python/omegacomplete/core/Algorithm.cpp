@@ -217,13 +217,13 @@ void Algorithm::ClearGlobalCache()
 UnsignedStringPairVectorPtr Algorithm::ComputeUnderscore(
     const std::string& word)
 {
-    return computeSeparator<'_'>(word);
+    return computeSeparator<'_', true>(word);
 }
 
 UnsignedStringPairVectorPtr Algorithm::ComputeHyphens(
     const std::string& word)
 {
-    return computeSeparator<'-'>(word);
+    return computeSeparator<'-', false>(word);
 }
 
 UnsignedStringPairVectorPtr Algorithm::ComputeTitleCase(

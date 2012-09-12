@@ -29,9 +29,17 @@ public:
     static UnsignedStringPairVectorPtr ComputeTitleCase(
         const std::string& word);
 
-private:
+    static bool StartsWith(const std::string& input, char c)
+    {
+        return input[0] == c;
+    }
+    static bool EndsWith(const std::string& input, char c)
+    {
+        return input[input.size() - 1] == c;
+    }
 
-    template <char C>
+private:
+    template <char C, bool AllowedOnHeadTail>
     static UnsignedStringPairVectorPtr computeSeparator(
         const std::string& word)
     {
@@ -68,8 +76,12 @@ private:
             abbr.reserve(kWordSizeCutoffPointForDepthLists);
             foreach (size_t index, indices)
                 abbr += LookupTable::ToLower[word[index]];
-            results->push_back(std::make_pair(kPrioritySinglesAbbreviation,
-                                              abbr));
+            if (!AllowedOnHeadTail &&
+                (!StartsWith(abbr, C) || !EndsWith(abbr, C)))
+            {
+                results->push_back(std::make_pair(kPrioritySinglesAbbreviation,
+                                                  abbr));
+            }
         }
         // generate various abbreviations based on depth permutations
         else {
@@ -94,7 +106,11 @@ private:
                 unsigned priority = abbr.size() <= indices.size() ?
                     kPrioritySinglesAbbreviation :
                     kPrioritySubsequenceAbbreviation;
-                results->push_back(std::make_pair(priority, abbr));
+                if (!AllowedOnHeadTail &&
+                    (!StartsWith(abbr, C) || !EndsWith(abbr, C)))
+                {
+                    results->push_back(std::make_pair(priority, abbr));
+                }
             }
         }
 
