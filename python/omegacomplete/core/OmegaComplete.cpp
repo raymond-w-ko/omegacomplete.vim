@@ -379,6 +379,8 @@ void OmegaComplete::workerThreadLoop()
         if (!Contains(buffers_, job.BufferNumber))
             continue;
         buffers_[job.BufferNumber].ReplaceContentsWith(job.Contents);
+
+        this->WordSet.Prune();
     }
 }
 
