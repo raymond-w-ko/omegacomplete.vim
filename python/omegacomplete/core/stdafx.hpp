@@ -39,10 +39,10 @@
 #include <utility>
 #include <fstream>
 #include <vector>
-#include <deque>
 #include <set>
 #include <map>
 #include <fstream>
+#include <queue>
 
 #include <boost/noncopyable.hpp>
 #include <boost/bind.hpp>

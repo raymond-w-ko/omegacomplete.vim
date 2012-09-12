@@ -355,9 +355,10 @@ std::string OmegaComplete::cmdPruneBuffers(StringPtr argument)
 
 void OmegaComplete::queueParseJob(ParseJob job)
 {
-    boost::unique_lock<boost::mutex> lock(job_queue_mutex_);
-    job_queue_.push_back(job);
-    job_queue_conditional_variable_.notify_one();
+    boost::mutex::scoped_lock lock(job_queue_mutex_);
+    job_queue_.push(job);
+    lock.unlock();
+    job_queue_conditional_variable_.notify_all();
 }
 
 void OmegaComplete::workerThreadLoop()
@@ -365,16 +366,16 @@ void OmegaComplete::workerThreadLoop()
     while (!is_quitting_) {
         ParseJob job;
         {
-            boost::unique_lock<boost::mutex> lock(job_queue_mutex_);
+            boost::mutex::scoped_lock lock(job_queue_mutex_);
             while (job_queue_.empty()) {
                 job_queue_conditional_variable_.wait(lock);
             }
             job = job_queue_.front();
-            job_queue_.pop_front();
+            job_queue_.pop();
         }
 
         // do the job
-        boost::unique_lock<boost::mutex> lock(buffers_mutex_);
+        boost::mutex::scoped_lock lock(buffers_mutex_);
         if (!Contains(buffers_, job.BufferNumber))
             continue;
         buffers_[job.BufferNumber].ReplaceContentsWith(job.Contents);
@@ -426,13 +427,6 @@ void OmegaComplete::genericKeywordCompletion(
         return;
     }
 
-    // terminus_prefix is only filled in if terminus_mode would be set to true
-    bool terminus_mode;
-    std::string terminus_prefix;
-    terminus_mode = shouldEnableTerminusMode(input, terminus_prefix);
-    if (terminus_mode)
-        input = terminus_prefix;
-
     CompleteItemVectorPtr completions = boost::make_shared<CompleteItemVector>();
     std::set<std::string> added_words;
     added_words.insert(input);
@@ -442,6 +436,16 @@ void OmegaComplete::genericKeywordCompletion(
         boost::starts_with(prev_input_[1], input))
     {
         added_words.insert(prev_input_[1]);
+    }
+
+    // terminus_prefix is only filled in if terminus_mode would be set to true
+    bool terminus_mode;
+    std::string terminus_prefix;
+    terminus_mode = shouldEnableTerminusMode(input, terminus_prefix);
+    if (terminus_mode) {
+        // don't want to get the word that is currently displayed on screen
+        added_words.insert(input);
+        input = terminus_prefix;
     }
 
 retry_completion:

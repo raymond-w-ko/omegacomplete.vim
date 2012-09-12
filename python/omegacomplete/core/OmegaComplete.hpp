@@ -112,7 +112,7 @@ private:
 
     boost::mutex job_queue_mutex_;
     boost::condition_variable job_queue_conditional_variable_;
-    std::deque<ParseJob> job_queue_;
+    std::queue<ParseJob> job_queue_;
 
     unsigned current_buffer_id_;
     std::string current_buffer_absolute_path_;
