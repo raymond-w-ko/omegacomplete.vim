@@ -250,7 +250,7 @@ function <SID>OnInsertLeave()
     endif
 endfunction
 
-function <SID>OnFocusLost()
+function <SID>OnIdle()
     exe 'py oc_eval("prune 1")'
 endfunction
 
@@ -276,8 +276,12 @@ augroup OmegaComplete
     " completions
     autocmd InsertEnter * call <SID>OnInsertEnter()
 
-    " when you leave insert mode turn off any Teleprompter if possible
-    autocmd InsertLeave * call <SID>OnInsertLeave()
+
+    " if we are idle, then we take this change to prune unused global words
+    " set and trie. there are a variety of things which we consider 'idle'
+    autocmd InsertLeave * call <SID>OnIdle()
+    autocmd CursorHold * call <SID>OnIdle()
+    autocmd CursorHoldI * call <SID>OnIdle()
 
     " when you switch from the VIM window to some other process, tell the
     " server to prune unused words from its completion set
