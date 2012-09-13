@@ -146,15 +146,18 @@ void Buffer::TokenizeContentsIntoKeywords(
         size_t jj = ii + 1;
         for (; jj < contents_size; ++jj)
         {
+            c = text[jj - 1];
+
             if (LookupTable::IsPartOfWord[text[jj]])
                 continue;
             break;
         }
 
         // construct word based off of pointer
+        // don't want "words" that end in hyphen
         std::string word(
             text.begin() + ii,
-            text.begin() + jj);
+            text.begin() + jj + (c == '-' ? -1 : 0));
         (*words)[word]++;
 
         // for loop will autoincrement

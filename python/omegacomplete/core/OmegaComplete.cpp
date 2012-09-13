@@ -579,6 +579,8 @@ void OmegaComplete::addLevenshteinCorrections(
                 continue;
             if (boost::starts_with(input, word))
                 continue;
+            if (boost::ends_with(word, "-"))
+                continue;
             if (Contains(added_words, word))
                 continue;
 
