@@ -20,6 +20,7 @@ python/omegacomplete/core/VC100/Debug
 python/omegacomplete/core/VC100/Release
 python/omegacomplete/core/VC110/Debug
 python/omegacomplete/core/VC110/Release
+python/omegacomplete/core/VC110/x64
 core.pyd
 core.so
 core.dll
