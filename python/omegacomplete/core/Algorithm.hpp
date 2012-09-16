@@ -1,5 +1,10 @@
 #pragma once
 
+#include "CompletionPriorities.hpp"
+
+static const unsigned kWordSizeCutoffPointForDepthLists = 5;
+static const unsigned kMaxDepthPerIndex = 3;
+
 class Algorithm
 {
 public:

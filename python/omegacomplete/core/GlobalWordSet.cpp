@@ -1,7 +1,7 @@
 #include "stdafx.hpp"
-#include "GlobalWordSet.hpp"
 #include "LookupTable.hpp"
 #include "Algorithm.hpp"
+#include "GlobalWordSet.hpp"
 #include "CompletionPriorities.hpp"
 
 static const int kLevenshteinMaxCost = 2;

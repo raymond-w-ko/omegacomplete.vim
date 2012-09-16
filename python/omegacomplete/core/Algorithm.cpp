@@ -1,11 +1,9 @@
 #include "stdafx.hpp"
 
-#include "Algorithm.hpp"
 #include "LookupTable.hpp"
 #include "CompletionPriorities.hpp"
+#include "Algorithm.hpp"
 
-static const unsigned kWordSizeCutoffPointForDepthLists = 5;
-static const unsigned kMaxDepthPerIndex = 3;
 boost::unordered_map<size_t, std::vector<std::vector<size_t> > >
     Algorithm::depth_list_cache_;
 
