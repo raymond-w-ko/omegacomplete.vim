@@ -17,17 +17,17 @@ void LookupTable::InitStatic()
     // generate lookup tables
     for (size_t index = 0; index <= 255; ++index) {
         LookupTable::IsPartOfWord[index] =
-            LookupTable::isPartOfWord(index) ? 1 : 0;
+            LookupTable::isPartOfWord(static_cast<char>(index)) ? 1 : 0;
 
         LookupTable::IsUpper[index] =
-            LookupTable::isUpper(index) ? 1 : 0;
+            LookupTable::isUpper(static_cast<char>(index)) ? 1 : 0;
 
         std::string temp(1, static_cast<char>(index));
         boost::algorithm::to_lower(temp);
         LookupTable::ToLower[index] = temp[0];
 
         LookupTable::IsNumber[index] =
-            LookupTable::isNumber(index) ? 1 : 0;
+            LookupTable::isNumber(static_cast<char>(index)) ? 1 : 0;
     }
 
     QuickMatchKey.resize(kMaxNumCompletions, ' '),

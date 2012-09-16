@@ -121,7 +121,7 @@ void GlobalWordSet::GetAbbrCompletions(
     }
 }
 
-unsigned GlobalWordSet::Prune()
+size_t GlobalWordSet::Prune()
 {
     boost::unique_lock<boost::mutex> lock(mutex_);
 
@@ -190,14 +190,15 @@ void GlobalWordSet::GetLevenshteinCompletions(
 // http://stevehanov.ca/blog/index.php?id=114
 void GlobalWordSet::LevenshteinSearch(
     const std::string& word,
-    const int max_cost,
+    const size_t max_cost,
     const TrieNode& trie,
     LevenshteinSearchResults& results)
 {
     // generate sequence from [0, len(word)]
     size_t current_row_end = word.length() + 1;
-    std::vector<int> current_row;
-    for (size_t ii = 0; ii < current_row_end; ++ii) current_row.push_back(ii);
+    std::vector<size_t> current_row;
+    for (size_t ii = 0; ii < current_row_end; ++ii)
+        current_row.push_back(ii);
 
     for (TrieNode::ChildrenConstIterator iter = trie.Children.begin();
         iter != trie.Children.end();
@@ -222,22 +223,22 @@ void GlobalWordSet::LevenshteinSearchRecursive(
     const TrieNode& node,
     char letter,
     const std::string& word,
-    const std::vector<int>& previous_row,
+    const std::vector<size_t>& previous_row,
     LevenshteinSearchResults& results,
-    int max_cost)
+    size_t max_cost)
 {
     size_t columns = word.length() + 1;
-    std::vector<int> current_row;
+    std::vector<size_t> current_row;
     current_row.push_back( previous_row[0] + 1 );
 
     // Build one row for the letter, with a column for each letter in the target
     // word, plus one for the empty string at column 0
     for (unsigned column = 1; column < columns; ++column)
     {
-        int insert_cost = current_row[column - 1] + 1;
-        int delete_cost = previous_row[column] + 1;
+        size_t insert_cost = current_row[column - 1] + 1;
+        size_t delete_cost = previous_row[column] + 1;
 
-        int replace_cost;
+        size_t replace_cost;
         if (word[column - 1] != letter)
             replace_cost = previous_row[column - 1] + 1;
         else

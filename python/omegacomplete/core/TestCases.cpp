@@ -79,7 +79,7 @@ void TestCases::TrieNodeTest()
 
     boost::random::mt19937 gen;
     gen.seed( static_cast<unsigned int>(0) );
-    boost::random::uniform_int_distribution<> dist(0, words.size() - 1);
+    boost::random::uniform_int_distribution<> dist(0, static_cast<int>(words.size() - 1));
     for (size_t ii = 0; ii < num_searches; ++ii)
     {
         const std::string& word = words.at(dist(gen));

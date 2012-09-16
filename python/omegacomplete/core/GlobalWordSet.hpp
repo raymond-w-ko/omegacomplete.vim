@@ -5,14 +5,14 @@
 #include "WordInfo.hpp"
 #include "AbbreviationInfo.hpp"
 
-typedef std::map< int, std::set<std::string> > LevenshteinSearchResults;
+typedef std::map< size_t, std::set<std::string> > LevenshteinSearchResults;
 
 class GlobalWordSet : public boost::noncopyable
 {
 public:
     static void LevenshteinSearch(
         const std::string& word,
-        int max_cost,
+        size_t max_cost,
         const TrieNode& trie,
         LevenshteinSearchResults& results);
 
@@ -20,15 +20,15 @@ public:
         const TrieNode& node,
         char letter,
         const std::string& word,
-        const std::vector<int>& previous_row,
+        const std::vector<size_t>& previous_row,
         LevenshteinSearchResults& results,
-        int max_cost);
+        size_t max_cost);
 
     GlobalWordSet();
     ~GlobalWordSet();
 
     void UpdateWord(const std::string& word, int reference_count_delta);
-    unsigned Prune();
+    size_t Prune();
 
     void GetPrefixCompletions(
         const std::string& input,

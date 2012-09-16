@@ -506,7 +506,8 @@ std::string OmegaComplete::getWordToComplete(const std::string& line)
     if (line.length() == 0)
         return "";
 
-    int partial_end = line.length();
+	// we can potentially have an empty line
+    int partial_end = static_cast<int>(line.length());
     int partial_begin = partial_end - 1;
     for (; partial_begin >= 0; --partial_begin) {
         char c = line[partial_begin];

@@ -54,7 +54,7 @@ void TrieNode::Erase(const std::string& word)
 
     assert ( node_list.size() == (word.size() + 1) );
 
-    for (int ii = word.size() - 1; ii >= 0; --ii)
+    for (size_t ii = word.size() - 1; ii >= 0; --ii)
     {
         if (node_list[ii + 1]->Children.size() == 0 &&
             node_list[ii + 1]->Word.empty())
