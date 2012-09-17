@@ -1,5 +1,4 @@
 #pragma once
-
 struct TrieNode : public boost::noncopyable
 {
     TrieNode();
@@ -11,10 +10,10 @@ struct TrieNode : public boost::noncopyable
 
     String Word;
     typedef
-        boost::unordered_map<char, TrieNode*>::iterator
+        boost::unordered_map<uchar, TrieNode*>::iterator
         ChildrenIterator;
     typedef
-        boost::unordered_map<char, TrieNode*>::const_iterator
+        boost::unordered_map<uchar, TrieNode*>::const_iterator
         ChildrenConstIterator;
-    boost::unordered_map<char, TrieNode*> Children;
+    boost::unordered_map<uchar, TrieNode*> Children;
 };

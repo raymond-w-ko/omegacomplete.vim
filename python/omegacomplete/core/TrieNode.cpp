@@ -19,7 +19,7 @@ TrieNode::~TrieNode()
 void TrieNode::Insert(const std::string& word)
 {
     TrieNode* node = this;
-    foreach (char letter, word) {
+    foreach (uchar letter, word) {
         auto(&children, node->Children);
         if (Contains(children, letter) == false) {
             TrieNode* new_node = new TrieNode;
@@ -39,7 +39,7 @@ void TrieNode::Erase(const std::string& word)
 
     TrieNode* node = this;
     node_list.push_back(node);
-    foreach (char letter, word)
+    foreach (uchar letter, word)
     {
         auto(&children, node->Children);
         if (Contains(children, letter) == false) {
@@ -54,13 +54,13 @@ void TrieNode::Erase(const std::string& word)
 
     assert ( node_list.size() == (word.size() + 1) );
 
-    for (size_t ii = word.size() - 1; ii >= 0; --ii)
+    for (int ii = static_cast<int>(word.size()) - 1; ii >= 0; --ii)
     {
         if (node_list[ii + 1]->Children.size() == 0 &&
             node_list[ii + 1]->Word.empty())
         {
             auto (&children, node_list[ii]->Children);
-            char letter_key = word[ii];
+            uchar letter_key = word[ii];
 
             node = children[letter_key];
             delete node;
