@@ -137,7 +137,7 @@ void Buffer::TokenizeContentsIntoKeywords(
         // initial case, find character in the set of ([a-z][A-Z][0-9]_)
         // this will be what is considered a word
         // I guess we have unicode stuff we are screwed :
-        char c = text[ii];
+        uchar c = static_cast<uchar>(text[ii]);
         if (!LookupTable::IsPartOfWord[c])
             continue;
 
@@ -146,9 +146,9 @@ void Buffer::TokenizeContentsIntoKeywords(
         size_t jj = ii + 1;
         for (; jj < contents_size; ++jj)
         {
-            c = text[jj - 1];
+            c = static_cast<uchar>(text[jj - 1]);
 
-            if (LookupTable::IsPartOfWord[text[jj]])
+            if (LookupTable::IsPartOfWord[static_cast<uchar>(text[jj])])
                 continue;
             break;
         }
@@ -170,7 +170,7 @@ void Buffer::CalculateCurrentWordOfCursor(
     const FileLocation& pos)
 {
     int end_bound = pos.Column;
-    while (LookupTable::IsPartOfWord[line[end_bound]] &&
+    while (LookupTable::IsPartOfWord[static_cast<uchar>(line[end_bound])] &&
            end_bound < static_cast<int>(line.size()))
     {
         end_bound++;
@@ -178,7 +178,7 @@ void Buffer::CalculateCurrentWordOfCursor(
 
     int begin_bound = pos.Column - 1;
     while ( begin_bound >= 0 &&
-            LookupTable::IsPartOfWord[line[begin_bound]] )
+            LookupTable::IsPartOfWord[static_cast<uchar>(line[begin_bound])] )
     {
         begin_bound--;
     }

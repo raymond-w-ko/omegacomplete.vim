@@ -510,7 +510,7 @@ std::string OmegaComplete::getWordToComplete(const std::string& line)
     int partial_end = static_cast<int>(line.length());
     int partial_begin = partial_end - 1;
     for (; partial_begin >= 0; --partial_begin) {
-        char c = line[partial_begin];
+        uchar c = static_cast<uchar>(line[partial_begin]);
         if (LookupTable::IsPartOfWord[c])
             continue;
 
@@ -530,7 +530,7 @@ bool OmegaComplete::shouldEnableDisambiguateMode(
     if (word.size() < 2)
         return false;
 
-    char last = word[word.size() - 1];
+    uchar last = static_cast<uchar>(word[word.size() - 1]);
     if (LookupTable::IsNumber[last]) {
         if (Contains(LookupTable::ReverseQuickMatch, last))
             index = LookupTable::ReverseQuickMatch[last];

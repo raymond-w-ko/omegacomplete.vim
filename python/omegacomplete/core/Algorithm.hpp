@@ -80,7 +80,7 @@ private:
             std::string abbr;
             abbr.reserve(kWordSizeCutoffPointForDepthLists);
             foreach (size_t index, indices)
-                abbr += LookupTable::ToLower[word[index]];
+                abbr += LookupTable::ToLower[static_cast<uchar>(word[index])];
             if (AllowedOnHeadTail ||
                 (!AllowedOnHeadTail && (!StartsWith(abbr, C) ||
                                         !EndsWith(abbr, C))))
@@ -106,7 +106,7 @@ private:
                         char c = word[index + cur_depth];
                         if (c == C)
                             break;
-                        abbr += LookupTable::ToLower[c];
+                        abbr += LookupTable::ToLower[static_cast<uchar>(c)];
                     }
                 }
                 unsigned priority = abbr.size() <= indices.size() ?

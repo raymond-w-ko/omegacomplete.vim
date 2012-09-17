@@ -106,7 +106,7 @@ const StringVector* Algorithm::ComputeUnderscoreCached(
         std::string abbr;
         abbr.reserve(kWordSizeCutoffPointForDepthLists);
         foreach (size_t index, indices)
-            abbr += LookupTable::ToLower[word[index]];
+            abbr += LookupTable::ToLower[static_cast<uchar>(word[index])];
         underscore_cache_[word].push_back(abbr);
     }
     // generate various abbreviations based on depth permutations
@@ -123,7 +123,7 @@ const StringVector* Algorithm::ComputeUnderscoreCached(
                 for (size_t cur_depth = 0; cur_depth < depth; ++cur_depth) {
                     if ((index + cur_depth) >= next_index)
                         break;
-                    char c = word[index + cur_depth];
+                    uchar c = static_cast<uchar>(word[index + cur_depth]);
                     if (c == '_')
                         break;
                     abbr += LookupTable::ToLower[c];
@@ -151,7 +151,7 @@ const StringVector* Algorithm::ComputeTitleCaseCached(
     // calculate indices of all the 'TitleCase' points
     std::vector<size_t> indices;
     for (size_t ii = 0; ii < word_size; ++ii) {
-        char c = word[ii];
+        uchar c = static_cast<uchar>(word[ii]);
 
         if (ii == 0) {
             indices.push_back(ii);
@@ -175,7 +175,7 @@ const StringVector* Algorithm::ComputeTitleCaseCached(
         std::string abbr;
         abbr.reserve(kWordSizeCutoffPointForDepthLists);
         foreach (size_t index, indices)
-            abbr += LookupTable::ToLower[word[index]];
+            abbr += LookupTable::ToLower[static_cast<uchar>(word[index])];
         title_case_cache_[word].push_back(abbr);
     }
     // generate various abbreviations based on depth permutations
@@ -192,7 +192,7 @@ const StringVector* Algorithm::ComputeTitleCaseCached(
                 for (size_t cur_depth = 0; cur_depth < depth; ++cur_depth) {
                     if ((index + cur_depth) >= next_index)
                         break;
-                    char c = word[index + cur_depth];
+                    uchar c = static_cast<uchar>(word[index + cur_depth]);
                     abbr += LookupTable::ToLower[c];
                 }
             }
@@ -235,7 +235,7 @@ UnsignedStringPairVectorPtr Algorithm::ComputeTitleCase(
     // calculate indices of all the 'TitleCase' points
     std::vector<size_t> indices;
     for (size_t ii = 0; ii < word_size; ++ii) {
-        char c = word[ii];
+        uchar c = static_cast<uchar>(word[ii]);
 
         if (ii == 0) {
             indices.push_back(ii);
@@ -259,7 +259,7 @@ UnsignedStringPairVectorPtr Algorithm::ComputeTitleCase(
         std::string abbr;
         abbr.reserve(kWordSizeCutoffPointForDepthLists);
         foreach (size_t index, indices)
-            abbr += LookupTable::ToLower[word[index]];
+            abbr += LookupTable::ToLower[static_cast<uchar>(word[index])];
         results->push_back(std::make_pair(kPrioritySinglesAbbreviation, abbr));
     }
     // generate various abbreviations based on depth permutations
@@ -276,7 +276,7 @@ UnsignedStringPairVectorPtr Algorithm::ComputeTitleCase(
                 for (size_t cur_depth = 0; cur_depth < depth; ++cur_depth) {
                     if ((index + cur_depth) >= next_index)
                         break;
-                    char c = word[index + cur_depth];
+                    uchar c = static_cast<uchar>(word[index + cur_depth]);
                     abbr += LookupTable::ToLower[c];
                 }
             }

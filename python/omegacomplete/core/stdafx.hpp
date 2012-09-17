@@ -118,6 +118,8 @@ struct FileLocation
     unsigned Column;
 };
 
+typedef unsigned char uchar;
+
 typedef std::string String;
 //typedef ustring String;
 
