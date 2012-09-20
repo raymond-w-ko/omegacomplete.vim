@@ -358,17 +358,20 @@ void OmegaComplete::queueParseJob(ParseJob job)
     boost::mutex::scoped_lock lock(job_queue_mutex_);
     job_queue_.push(job);
     lock.unlock();
-    job_queue_conditional_variable_.notify_all();
+    job_queue_conditional_variable_.notify_one();
 }
 
 void OmegaComplete::workerThreadLoop()
 {
+    ParseJob job;
     while (!is_quitting_) {
-        ParseJob job;
         {
             boost::mutex::scoped_lock lock(job_queue_mutex_);
             while (job_queue_.empty()) {
-                job_queue_conditional_variable_.wait(lock);
+                const boost::system_time timeout = 
+                    boost::get_system_time() +
+                    boost::posix_time::milliseconds(5 * 1000);
+                job_queue_conditional_variable_.timed_wait(lock, timeout);
             }
             job = job_queue_.front();
             job_queue_.pop();

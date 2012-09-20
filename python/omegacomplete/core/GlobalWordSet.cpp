@@ -19,16 +19,17 @@ GlobalWordSet::~GlobalWordSet()
 
 void GlobalWordSet::UpdateWord(const std::string& word, int reference_count_delta)
 {
-    boost::unique_lock<boost::mutex> lock(mutex_);
+    boost::mutex::scoped_lock lock(mutex_);
 
     WordInfo& wi = words_[word];
     wi.ReferenceCount += reference_count_delta;
     if (wi.ReferenceCount <= 0)
         return;
 
-    trie_mutex_.lock();
-    trie_.Insert(word);
-    trie_mutex_.unlock();
+    {
+        boost::mutex::scoped_lock lock(trie_mutex_);
+        trie_.Insert(word);
+    }
 
     if (wi.GeneratedAbbreviations)
         return;
@@ -59,7 +60,7 @@ void GlobalWordSet::GetPrefixCompletions(
     CompleteItemVectorPtr& completions, std::set<std::string>& added_words,
     bool terminus_mode)
 {
-    boost::unique_lock<boost::mutex> lock(mutex_);
+    boost::mutex::scoped_lock lock(mutex_);
 
     auto(iter, words_.lower_bound(input));
     for (; iter != words_.end(); ++iter) {
@@ -94,7 +95,7 @@ void GlobalWordSet::GetAbbrCompletions(
     CompleteItemVectorPtr& completions, std::set<std::string>& added_words,
     bool terminus_mode)
 {
-    boost::unique_lock<boost::mutex> lock(mutex_);
+    boost::mutex::scoped_lock lock(mutex_);
 
     auto(const &set, abbreviations_[input]);
     auto(iter, set.begin());
@@ -123,7 +124,7 @@ void GlobalWordSet::GetAbbrCompletions(
 
 size_t GlobalWordSet::Prune()
 {
-    boost::unique_lock<boost::mutex> lock(mutex_);
+    boost::mutex::scoped_lock lock(mutex_);
 
     // simply just looping through words_ and removing things might cause
     // iterator invalidation, so be safe and built a set of things to remove
@@ -165,9 +166,10 @@ size_t GlobalWordSet::Prune()
         // removing the actual word for safety reasons
         words_.erase(word);
 
-        trie_mutex_.lock();
-        trie_.Erase(word);
-        trie_mutex_.unlock();
+        {
+            boost::mutex::scoped_lock lock(trie_mutex_);
+            trie_.Erase(word);
+        }
     }
 
     return to_be_pruned.size();
@@ -179,11 +181,11 @@ void GlobalWordSet::GetLevenshteinCompletions(
 {
     // only try correction if we have a sufficiently long enough
     // word to make it worthwhile
-    if (prefix.length() < kMinLengthForLevenshteinCompletion) return;
+    if (prefix.length() < kMinLengthForLevenshteinCompletion)
+        return;
 
-    trie_mutex_.lock();
+    boost::mutex::scoped_lock lock(trie_mutex_);
     LevenshteinSearch(prefix, kLevenshteinMaxCost, trie_, results);
-    trie_mutex_.unlock();
 }
 
 // translated from Python code provided by
