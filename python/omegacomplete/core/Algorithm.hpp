@@ -44,7 +44,7 @@ public:
     }
 
 private:
-    template <char C, bool AllowedOnHeadTail>
+    template <char Separator, bool AllowedOnHeadOrTail>
     static UnsignedStringPairVectorPtr computeSeparator(
         const std::string& word)
     {
@@ -53,17 +53,17 @@ private:
 
         const size_t word_size = word.size();
 
-        // calculate indices of all the 'underscore' points,
-        // which means the first letter, and the letters following an underscore
+        // calculate indices of all the 'underscore' points, which means the
+        // first letter, and the letters following an underscore
         std::vector<size_t> indices;
         for (size_t ii = 0; ii < word_size; ++ii) {
-            if (ii == 0 && word[ii] != C) {
+            if (ii == 0 && word[ii] != Separator) {
                 indices.push_back(ii);
                 continue;
             }
 
-            if (word[ii] == C) {
-                if ((ii < (word_size - 1)) && (word[ii + 1] != C))
+            if (word[ii] == Separator) {
+                if ((ii < (word_size - 1)) && (word[ii + 1] != Separator))
                     indices.push_back(ii + 1);
             }
         }
@@ -81,9 +81,9 @@ private:
             abbr.reserve(kWordSizeCutoffPointForDepthLists);
             foreach (size_t index, indices)
                 abbr += LookupTable::ToLower[static_cast<uchar>(word[index])];
-            if (AllowedOnHeadTail ||
-                (!AllowedOnHeadTail && (!StartsWith(abbr, C) ||
-                                        !EndsWith(abbr, C))))
+            if (AllowedOnHeadOrTail ||
+                (!AllowedOnHeadOrTail && (!StartsWith(abbr, Separator) ||
+                                          !EndsWith(abbr, Separator))))
             {
                 results->push_back(std::make_pair(kPrioritySinglesAbbreviation,
                                                   abbr));
@@ -104,7 +104,7 @@ private:
                         if ((index + cur_depth) >= next_index)
                             break;
                         char c = word[index + cur_depth];
-                        if (c == C)
+                        if (c == Separator)
                             break;
                         abbr += LookupTable::ToLower[static_cast<uchar>(c)];
                     }
@@ -112,9 +112,9 @@ private:
                 unsigned priority = abbr.size() <= indices.size() ?
                     kPrioritySinglesAbbreviation :
                     kPrioritySubsequenceAbbreviation;
-                if (AllowedOnHeadTail ||
-                    (!AllowedOnHeadTail && (!StartsWith(abbr, C) ||
-                                            !EndsWith(abbr, C))))
+                if (AllowedOnHeadOrTail ||
+                    (!AllowedOnHeadOrTail && (!StartsWith(abbr, Separator) ||
+                                              !EndsWith(abbr, Separator))))
                 {
                     results->push_back(std::make_pair(priority, abbr));
                 }
