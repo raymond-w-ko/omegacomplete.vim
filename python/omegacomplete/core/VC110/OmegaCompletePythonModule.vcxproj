@@ -169,6 +169,7 @@
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <PrecompiledHeaderFile>stdafx.hpp</PrecompiledHeaderFile>
       <EnablePREfast>false</EnablePREfast>
+      <AdditionalOptions>/Qpar-report:1 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

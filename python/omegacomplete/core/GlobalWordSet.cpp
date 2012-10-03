@@ -40,15 +40,15 @@ void GlobalWordSet::UpdateWord(const std::string& word, int reference_count_delt
 
     // generate and store abbreviations
     foreach (const UnsignedStringPair& title_case, *title_cases) {
-        AbbreviationInfo ai(title_case.first, word);
+        AbbreviationInfo ai(title_case.first + kPriorityTitleCase, word);
         abbreviations_[title_case.second].insert(ai);
     }
     foreach (const UnsignedStringPair& underscore, *underscores) {
-        AbbreviationInfo ai(underscore.first, word);
+        AbbreviationInfo ai(underscore.first + kPriorityUnderscore, word);
         abbreviations_[underscore.second].insert(ai);
     }
     foreach (const UnsignedStringPair& hyphen, *hyphens) {
-        AbbreviationInfo ai(hyphen.first, word);
+        AbbreviationInfo ai(hyphen.first + kPriorityHyphen, word);
         abbreviations_[hyphen.second].insert(ai);
     }
 

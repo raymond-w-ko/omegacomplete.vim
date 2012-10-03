@@ -117,6 +117,8 @@ void Tags::reparse()
                 ai.Weight = kPriorityTagsSinglesAbbreviation;
             else if (ai.Weight == kPrioritySubsequenceAbbreviation)
                 ai.Weight = kPriorityTagsSubsequenceAbbreviation;
+            
+            ai.Weight += kPriorityTitleCase;
 
             abbreviations_[title_case.second].insert(ai);
         }
@@ -126,6 +128,8 @@ void Tags::reparse()
                 ai.Weight = kPriorityTagsSinglesAbbreviation;
             else if (ai.Weight == kPrioritySubsequenceAbbreviation)
                 ai.Weight = kPriorityTagsSubsequenceAbbreviation;
+            
+            ai.Weight += kPriorityUnderscore;
 
             abbreviations_[underscore.second].insert(ai);
         }
@@ -135,6 +139,8 @@ void Tags::reparse()
                 ai.Weight = kPriorityTagsSinglesAbbreviation;
             else if (ai.Weight == kPrioritySubsequenceAbbreviation)
                 ai.Weight = kPriorityTagsSubsequenceAbbreviation;
+
+            ai.Weight += kPriorityHyphen;
 
             abbreviations_[hyphen.second].insert(ai);
         }
