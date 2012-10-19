@@ -192,7 +192,6 @@
     <ClCompile Include="..\GlobalWordSet.cpp" />
     <ClCompile Include="..\LookupTable.cpp" />
     <ClCompile Include="..\OmegaComplete.cpp" />
-    <ClCompile Include="..\Participant.cpp" />
     <ClCompile Include="..\PythonMain.cpp" />
     <ClCompile Include="..\Room.cpp" />
     <ClCompile Include="..\stdafx.cpp">
@@ -217,7 +216,6 @@
     <ClInclude Include="..\GlobalWordSet.hpp" />
     <ClInclude Include="..\LookupTable.hpp" />
     <ClInclude Include="..\OmegaComplete.hpp" />
-    <ClInclude Include="..\Participant.hpp" />
     <ClInclude Include="..\Room.hpp" />
     <ClInclude Include="..\stdafx.hpp" />
     <ClInclude Include="..\Stopwatch.hpp" />
