@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Room.hpp"
 #include "Buffer.hpp"
 #include "GlobalWordSet.hpp"
 #include "CompleteItem.hpp"

@@ -193,7 +193,6 @@
     <ClCompile Include="..\LookupTable.cpp" />
     <ClCompile Include="..\OmegaComplete.cpp" />
     <ClCompile Include="..\PythonMain.cpp" />
-    <ClCompile Include="..\Room.cpp" />
     <ClCompile Include="..\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -216,7 +215,6 @@
     <ClInclude Include="..\GlobalWordSet.hpp" />
     <ClInclude Include="..\LookupTable.hpp" />
     <ClInclude Include="..\OmegaComplete.hpp" />
-    <ClInclude Include="..\Room.hpp" />
     <ClInclude Include="..\stdafx.hpp" />
     <ClInclude Include="..\Stopwatch.hpp" />
     <ClInclude Include="..\Tags.hpp" />
