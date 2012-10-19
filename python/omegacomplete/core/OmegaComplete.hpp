@@ -65,6 +65,9 @@ private:
     std::string cmdFlushCaches(StringPtr argument);
     std::string cmdIsCorrectionsOnly(StringPtr argument);
     std::string cmdPruneBuffers(StringPtr argument);
+    std::string cmdShouldAutocomplete(StringPtr argument);
+    std::string cmdConfig(StringPtr argument);
+    std::string cmdGetAutocomplete(StringPtr argument);
 
     ////////////////////////////////////////////////////////////////////////////
     // OmegaComplete Core
@@ -127,4 +130,13 @@ private:
     CompleteItemVectorPtr prev_completions_;
 
     bool is_corrections_only_;
+    bool should_autocomplete_;
+
+    // if both these are true then autocomplete is triggered
+    bool suffix0_;
+    bool suffix1_;
+    CompleteItemVectorPtr autocomplete_completions_;
+    std::string autocomplete_input_trigger_;
+
+    std::map<std::string, std::string> config_;
 };

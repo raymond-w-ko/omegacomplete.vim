@@ -24,7 +24,10 @@ OmegaComplete::OmegaComplete()
 is_quitting_(0),
 buffer_contents_follow_(false),
 prev_input_(3),
-is_corrections_only_(false)
+is_corrections_only_(false),
+should_autocomplete_(false),
+suffix0_(false),
+suffix1_(false)
 {
     initCommandDispatcher();
 
@@ -79,6 +82,15 @@ void OmegaComplete::initCommandDispatcher()
 
     command_dispatcher_["prune_buffers"] = boost::bind(
         &OmegaComplete::cmdPruneBuffers, boost::ref(*this), _1);
+
+    command_dispatcher_["should_autocomplete"] = boost::bind(
+        &OmegaComplete::cmdShouldAutocomplete, boost::ref(*this), _1);
+
+    command_dispatcher_["config"] = boost::bind(
+        &OmegaComplete::cmdConfig, boost::ref(*this), _1);
+
+    command_dispatcher_["get_autocomplete"] = boost::bind(
+        &OmegaComplete::cmdGetAutocomplete, boost::ref(*this), _1);
 }
 
 OmegaComplete::~OmegaComplete()
@@ -89,21 +101,17 @@ OmegaComplete::~OmegaComplete()
 
 const std::string OmegaComplete::Eval(const char* request, const int request_len)
 {
-    if (buffer_contents_follow_)
-    {
+    if (buffer_contents_follow_) {
         StringPtr argument = boost::make_shared<std::string>(
             request, static_cast<size_t>(request_len));
 
         return queueBufferContents(argument);
     }
-    else
-    {
+    else {
         // find first space
         int index = -1;
-        for (int ii = 0; ii < request_len; ++ii)
-        {
-            if (request[ii] == ' ')
-            {
+        for (int ii = 0; ii < request_len; ++ii) {
+            if (request[ii] == ' ') {
                 index = ii;
                 break;
             }
@@ -119,15 +127,13 @@ const std::string OmegaComplete::Eval(const char* request, const int request_len
             static_cast<size_t>(request_len - command.size() - 1));
 
         auto(iter, command_dispatcher_.find(command));
-        if (iter == command_dispatcher_.end())
-        {
-            std::cout << boost::str(boost::format(
-                "unknown command %s %s") % command % *argument);
+        if (iter == command_dispatcher_.end()) {
+            //std::cout << boost::str(boost::format(
+                //"unknown command %s %s") % command % *argument);
 
             return default_response_;
         }
-        else
-        {
+        else {
             return iter->second(argument);
         }
     }
@@ -279,7 +285,6 @@ std::string OmegaComplete::cmdVimTaglistFunction(StringPtr argument)
 
 std::string OmegaComplete::cmdPrune(StringPtr argument)
 {
-
     WordSet.Prune();
     //std::cout << count << " words pruned" << std::endl;
 
@@ -330,6 +335,46 @@ std::string OmegaComplete::cmdPruneBuffers(StringPtr argument)
     return default_response_;
 }
 
+std::string OmegaComplete::cmdShouldAutocomplete(StringPtr argument)
+{
+    const std::string& response = should_autocomplete_ ? "1" : "0";
+    return response;
+}
+
+std::string OmegaComplete::cmdConfig(StringPtr argument)
+{
+    std::vector<std::string> tokens;
+    boost::split(tokens, *argument, boost::is_any_of(" "), boost::token_compress_on);
+
+    if (tokens.size() != 2)
+        return default_response_;
+    config_[tokens[0]] = tokens[1];
+
+    return default_response_;
+}
+
+std::string OmegaComplete::cmdGetAutocomplete(StringPtr argument)
+{
+    if (!suffix0_ || !suffix1_)
+        return "";
+
+    if (!autocomplete_completions_ || autocomplete_completions_->size() == 0)
+        return "";
+
+    // create autcompletion string
+    std::string result;
+    for (size_t i = 0; i < autocomplete_input_trigger_.size(); ++i) {
+        result += "\x08";
+    }
+    result += (*autocomplete_completions_)[0].Word;
+
+    // clear so it can't be accidentally reused
+    suffix0_ = suffix1_ = false;
+    autocomplete_completions_.reset();
+
+    return result;
+}
+
 void OmegaComplete::queueParseJob(ParseJob job)
 {
     boost::mutex::scoped_lock lock(job_queue_mutex_);
@@ -378,6 +423,25 @@ void OmegaComplete::genericKeywordCompletion(
     std::string input = getWordToComplete(line);
     if (input.empty())
         return;
+
+    // check to see if autocomplete is tripped
+    if (input[input.size() - 1] == config_["autcomplete_suffix"][0]) {
+        suffix0_ = true;
+        autocomplete_completions_ = prev_completions_;
+    }
+    else if (suffix0_) {
+        if (input.size() > 2 &&
+            input[input.size() - 1] == config_["autcomplete_suffix"][1])
+        {
+            suffix1_ = true;
+            autocomplete_input_trigger_ = input;
+            should_autocomplete_ = true;
+            return;
+        }
+        else {
+            suffix0_ = suffix1_ = false;
+        }
+    }
 
     // keep a trailing list of previous inputs
     prev_input_[2] = prev_input_[1];

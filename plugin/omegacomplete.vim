@@ -27,6 +27,10 @@ if !exists("g:omegacomplete_corrections_hi_cmds")
         \ ]
 endif
 
+if !exists("g:omegacomplete_autocomplete_suffix")
+    let g:omegacomplete_autocomplete_suffix="fj"
+endif
+
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " init
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -64,7 +68,10 @@ sys.path.append(omegacomplete_path)
 client_path = omegacomplete_path + '/helper.py'
 exec(compile(open(client_path).read(), client_path, 'exec'))
 PYTHON
-    return
+
+    " send config options to the C++ portion
+    exe 'py oc_eval("config autcomplete_suffix ' .
+       \ g:omegacomplete_autocomplete_suffix . '")'
 endfunction
 
 " utility functions that any script can use really
@@ -161,6 +168,18 @@ function <SID>FeedPopup()
     " send current line up to the cursor
     let partial_line = strpart(getline('.'), 0, col('.') - 1)
     exe 'py oc_server_result = oc_eval("complete " + vim.eval("partial_line"))'
+
+    let autocomplete=""
+python << EOF
+should_autocomplete = oc_eval('should_autocomplete ?')
+if should_autocomplete != '0':
+    temp = oc_eval('get_autocomplete please')
+    vim.command('let autocomplete="' + temp + '"')
+EOF
+    if len(autocomplete) > 0
+        echom len(autocomplete)
+        return autocomplete
+    endif
 
 " check to make sure we get something
 python << EOF
