@@ -4,9 +4,9 @@ module1 = Extension('core',
                     libraries = ['boost_thread-mt', 'boost_system-mt'],
                     sources = ['Algorithm.cpp', 'Buffer.cpp', 'DllMain.cpp',
                         'GlobalWordSet.cpp', 'LookupTable.cpp',
-                        'OmegaComplete.cpp', 'Participant.cpp', 'PythonMain.cpp',
-                        'Room.cpp', 'stdafx.cpp', 'Tags.cpp', 'TagsSet.cpp',
-                        'Teleprompter.cpp', 'TrieNode.cpp', 'ustring.cpp'])
+                        'OmegaComplete.cpp', 'PythonMain.cpp', 'stdafx.cpp',
+                        'Tags.cpp', 'TagsSet.cpp', 'TrieNode.cpp',
+                        'ustring.cpp'])
 
 setup(name = 'core',
       version = '1.0',
