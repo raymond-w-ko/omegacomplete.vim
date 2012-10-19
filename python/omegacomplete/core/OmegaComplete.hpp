@@ -4,7 +4,6 @@
 #include "Buffer.hpp"
 #include "GlobalWordSet.hpp"
 #include "CompleteItem.hpp"
-#include "ClangCompleter.hpp"
 
 class OmegaComplete
 :
