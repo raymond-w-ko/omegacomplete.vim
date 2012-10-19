@@ -27,8 +27,6 @@ if !exists("g:omegacomplete_corrections_hi_cmds")
         \ ]
 endif
 
-" whether teleprompter is active
-let s:teleprompter = 0
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " init
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -244,12 +242,6 @@ function <SID>OnInsertEnter()
     call <SID>PruneBuffers()
 endfunction
 
-function <SID>OnInsertLeave()
-    if (s:teleprompter != 0)
-        exe 'py oc_eval("hide_teleprompter 1")'
-    endif
-endfunction
-
 function <SID>OnIdle()
     exe 'py oc_eval("prune 1")'
 endfunction
@@ -275,10 +267,6 @@ augroup OmegaComplete
     " that the server has a chance to synchronize before we start offering
     " completions
     autocmd InsertEnter * call <SID>OnInsertEnter()
-
-    " when you leave insert mode turn off any Teleprompter if possible
-    " also prune words and trie
-    autocmd InsertLeave * call <SID>OnInsertLeave()
 
     " if we are idle, then we take this change to prune unused global words
     " set and trie. there are a variety of things which we consider 'idle'
@@ -358,10 +346,6 @@ PYTHON
 endfunction
 
 function omegacomplete#UseFirstEntryOfPopup()
-    if (s:teleprompter != 0)
-        exe 'py oc_eval("hide_teleprompter 1")'
-    endif
-
     if pumvisible()
         return "\<C-n>\<C-y>"
     else

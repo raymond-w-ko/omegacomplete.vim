@@ -41,9 +41,6 @@
     <ClCompile Include="..\TagsSet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Teleprompter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\TestCases.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -89,9 +86,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\TagsSet.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Teleprompter.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\TestCases.hpp">

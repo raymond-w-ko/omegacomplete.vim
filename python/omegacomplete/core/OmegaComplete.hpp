@@ -62,7 +62,6 @@ private:
     std::string cmdTaglistTags(StringPtr argument);
     std::string cmdVimTaglistFunction(StringPtr argument);
     std::string cmdPrune(StringPtr argument);
-    std::string cmdHideTeleprompter(StringPtr argument);
     std::string cmdFlushCaches(StringPtr argument);
     std::string cmdIsCorrectionsOnly(StringPtr argument);
     std::string cmdPruneBuffers(StringPtr argument);

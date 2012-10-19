@@ -4,7 +4,6 @@
 #include "TagsSet.hpp"
 #include "Stopwatch.hpp"
 #include "LookupTable.hpp"
-#include "Teleprompter.hpp"
 #include "Algorithm.hpp"
 
 OmegaComplete* OmegaComplete::instance_ = NULL;
@@ -16,9 +15,6 @@ void OmegaComplete::InitStatic()
     LookupTable::InitStatic();
     TagsSet::InitStatic();
     Algorithm::InitStatic();
-#if defined (_WIN32) && defined (TELEPROMPTER)
-    Teleprompter::InitStatic();
-#endif
 
     instance_ = new OmegaComplete;
 }
@@ -78,9 +74,6 @@ void OmegaComplete::initCommandDispatcher()
 
     command_dispatcher_["prune"] = boost::bind(
         &OmegaComplete::cmdPrune, boost::ref(*this), _1);
-
-    command_dispatcher_["hide_teleprompter"] = boost::bind(
-        &OmegaComplete::cmdHideTeleprompter, boost::ref(*this), _1);
 
     command_dispatcher_["flush_caches"] = boost::bind(
         &OmegaComplete::cmdFlushCaches, boost::ref(*this), _1);
@@ -298,14 +291,6 @@ std::string OmegaComplete::cmdPrune(StringPtr argument)
     WordSet.Prune();
     //std::cout << count << " words pruned" << std::endl;
 
-    return default_response_;
-}
-
-std::string OmegaComplete::cmdHideTeleprompter(StringPtr argument)
-{
-#ifdef TELEPROMPTER
-        Teleprompter::Instance()->Show(false);
-#endif
     return default_response_;
 }
 
