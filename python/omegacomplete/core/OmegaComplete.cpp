@@ -31,10 +31,6 @@ is_corrections_only_(false)
     worker_thread_ = boost::thread(
         &OmegaComplete::workerThreadLoop,
         this);
-
-#ifdef ENABLE_CLANG_COMPLETION
-    clang_.Init();
-#endif
 }
 
 void OmegaComplete::initCommandDispatcher()
@@ -196,10 +192,6 @@ std::string OmegaComplete::queueBufferContents(StringPtr argument)
 
     ParseJob job(current_buffer_id_, current_contents_);
     queueParseJob(job);
-
-#ifdef ENABLE_CLANG_COMPLETION
-    clang_.CreateOrUpdate(current_buffer_absolute_path_, current_contents_);
-#endif
 
     return default_response_;
 }
@@ -376,18 +368,6 @@ void OmegaComplete::calculateCompletionCandidates(
     const std::string& line,
     std::string& result)
 {
-#ifdef ENABLE_CLANG_COMPLETION
-    if (boost::ends_with(current_buffer_absolute_path_, ".cpp"))
-    {
-        clang_.DoCompletion(
-            current_buffer_absolute_path_,
-            line,
-            cursor_pos_,
-            current_contents_,
-            result);
-    }
-#endif
-
     genericKeywordCompletion(line, result);
 }
 

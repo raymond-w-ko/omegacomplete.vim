@@ -68,10 +68,6 @@
 #define foreach BOOST_FOREACH
 #define reverse_foreach BOOST_REVERSE_FOREACH
 
-#ifdef ENABLE_CLANG_COMPLETION
-    #include <clang-c/Index.h>
-#endif
-
 #include "ustring.hpp"
 
 /*
