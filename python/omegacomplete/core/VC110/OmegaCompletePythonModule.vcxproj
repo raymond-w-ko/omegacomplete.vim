@@ -188,7 +188,6 @@
   <ItemGroup>
     <ClCompile Include="..\Algorithm.cpp" />
     <ClCompile Include="..\Buffer.cpp" />
-    <ClCompile Include="..\ClangCompleter.cpp" />
     <ClCompile Include="..\DllMain.cpp" />
     <ClCompile Include="..\GlobalWordSet.cpp" />
     <ClCompile Include="..\LookupTable.cpp" />
@@ -213,7 +212,6 @@
     <ClInclude Include="..\AbbreviationInfo.hpp" />
     <ClInclude Include="..\Algorithm.hpp" />
     <ClInclude Include="..\Buffer.hpp" />
-    <ClInclude Include="..\ClangCompleter.hpp" />
     <ClInclude Include="..\CompleteItem.hpp" />
     <ClInclude Include="..\CompletionPriorities.hpp" />
     <ClInclude Include="..\GlobalWordSet.hpp" />
