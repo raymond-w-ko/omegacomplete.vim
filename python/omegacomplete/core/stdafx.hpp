@@ -7,16 +7,12 @@
 
     // Debug Mode
     #ifdef _DEBUG
-        #define _CRTDBG_MAP_ALLOC
-        #include <stdlib.h>
-        #include <crtdbg.h>
     // Release Mode
     #else
         // disable checked iterators for performance reasons
         #define _SECURE_SCL 0
     #endif
 
-    #include <winsock2.h>
     #include <windows.h>
 
     inline
@@ -25,23 +21,13 @@
         return static_cast<int64_t>(ft.dwHighDateTime) << 32 | ft.dwLowDateTime;
     }
 #else
-        #include <stdlib.h>
+    #include <stdlib.h>
 #endif
 
-#include <stdio.h>
-
-#include <algorithm>
-#include <iostream>
 #include <string>
-#include <functional>
-#include <sstream>
-#include <memory>
-#include <utility>
-#include <fstream>
 #include <vector>
 #include <set>
 #include <map>
-#include <fstream>
 #include <queue>
 
 #include <boost/noncopyable.hpp>
@@ -70,20 +56,6 @@
 
 #include "ustring.hpp"
 
-/*
-inline void LogAsioError(
-    const boost::system::error_code& error,
-    std::string message)
-{
-    std::string msg = boost::str(boost::format(
-        "code: %d, code_str: %s, %s")
-        % error.value()
-        % error.category().message(error.value())
-        % message.c_str());
-    std::cerr << msg << std::endl;
-}
-*/
-
 template <typename Container, typename Item>
 bool Contains(const Container& container, const Item& item)
 {
@@ -106,6 +78,11 @@ inline void NormalizeToUnixPathSeparators(std::string& pathname)
 inline void NormalizeToWindowsPathSeparators(std::string& pathname)
 {
     boost::replace_all(pathname, "/", "\\");
+}
+
+inline char LastChar(const std::string& s)
+{
+    return s[s.size() - 1];
 }
 
 struct FileLocation
@@ -141,10 +118,3 @@ typedef std::pair<String, String> StringPair;
 typedef std::pair<unsigned, String> UnsignedStringPair;
 typedef std::vector<UnsignedStringPair> UnsignedStringPairVector;
 typedef boost::shared_ptr<UnsignedStringPairVector> UnsignedStringPairVectorPtr;
-
-#ifdef _WIN32
-    #ifdef _DEBUG
-        #define DEBUG_NEW new(_NORMAL_BLOCK, __FILE__, __LINE__)
-        #define new DEBUG_NEW
-    #endif
-#endif

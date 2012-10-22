@@ -358,8 +358,10 @@ std::string OmegaComplete::cmdGetAutocomplete(StringPtr argument)
     if (!suffix0_ || !suffix1_)
         return "";
 
-    if (!autocomplete_completions_ || autocomplete_completions_->size() == 0)
+    if (!autocomplete_completions_ || autocomplete_completions_->size() == 0) {
+        suffix0_ = suffix1_ = false;
         return "";
+    }
 
     // create autcompletion string
     std::string result;
@@ -425,22 +427,18 @@ void OmegaComplete::genericKeywordCompletion(
         return;
 
     // check to see if autocomplete is tripped
-    if (input[input.size() - 1] == config_["autcomplete_suffix"][0]) {
+    if (suffix0_ &&
+        input.size() >= 3 &&
+        input.substr(input.size() - 2) == config_["autcomplete_suffix"])
+    {
+        suffix1_ = true;
+        autocomplete_input_trigger_ = input;
+        should_autocomplete_ = true;
+        return;
+    }
+    else if (!suffix0_ && LastChar(input) == config_["autcomplete_suffix"][0]) {
         suffix0_ = true;
         autocomplete_completions_ = prev_completions_;
-    }
-    else if (suffix0_) {
-        if (input.size() > 2 &&
-            input[input.size() - 1] == config_["autcomplete_suffix"][1])
-        {
-            suffix1_ = true;
-            autocomplete_input_trigger_ = input;
-            should_autocomplete_ = true;
-            return;
-        }
-        else {
-            suffix0_ = suffix1_ = false;
-        }
     }
 
     // keep a trailing list of previous inputs
@@ -531,6 +529,9 @@ retry_completion:
     result += "]";
 
     prev_completions_ = completions;
+
+    if (completions->size() > 0)
+        suffix0_ = false;
 }
 
 std::string OmegaComplete::getWordToComplete(const std::string& line)

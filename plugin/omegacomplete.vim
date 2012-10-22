@@ -28,7 +28,7 @@ if !exists("g:omegacomplete_corrections_hi_cmds")
 endif
 
 if !exists("g:omegacomplete_autocomplete_suffix")
-    let g:omegacomplete_autocomplete_suffix="fj"
+    let g:omegacomplete_autocomplete_suffix="jj"
 endif
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
