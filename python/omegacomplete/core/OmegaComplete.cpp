@@ -19,15 +19,14 @@ void OmegaComplete::InitStatic()
     instance_ = new OmegaComplete;
 }
 
-OmegaComplete::OmegaComplete()
-:
-is_quitting_(0),
-buffer_contents_follow_(false),
-prev_input_(3),
-is_corrections_only_(false),
-should_autocomplete_(false),
-suffix0_(false),
-suffix1_(false)
+OmegaComplete::OmegaComplete() :
+    is_quitting_(0),
+    buffer_contents_follow_(false),
+    prev_input_(3),
+    is_corrections_only_(false),
+    should_autocomplete_(false),
+    suffix0_(false),
+    suffix1_(false)
 {
     initCommandDispatcher();
 

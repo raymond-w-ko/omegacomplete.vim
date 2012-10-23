@@ -42,7 +42,7 @@ template<> struct hash<Buffer>
 {
     size_t operator()(const Buffer& buffer) const
     {
-        return boost::hash<unsigned>()(buffer.GetBufferId());
+        return buffer.GetBufferId();
     }
 };
 }

@@ -7,27 +7,27 @@
 
 using namespace std;
 
-Buffer::Buffer()
-:
-parent_(NULL)
+Buffer::Buffer() :
+    parent_(NULL)
 {
 }
 
 Buffer::~Buffer()
 {
-    if (parent_ == NULL) return;
-    if (words_ == NULL) return;
+    if (parent_ == NULL)
+        return;
+    if (words_ == NULL)
+        return;
 
     auto(i, words_->begin());
-    for (; i != words_->end(); ++i)
-    {
+    for (; i != words_->end(); ++i) {
         parent_->WordSet.UpdateWord(i->first, -i->second);
     }
 }
 
 bool Buffer::operator==(const Buffer& other)
 {
-    return (this->buffer_id_ == other.buffer_id_);
+    return this->buffer_id_ == other.buffer_id_;
 }
 
 bool Buffer::Init(OmegaComplete* parent, unsigned buffer_id)
@@ -46,21 +46,21 @@ unsigned Buffer::GetBufferId() const
 void Buffer::ReplaceContentsWith(StringPtr new_contents)
 {
     // null pointer passed in
-    if (!new_contents) return;
+    if (!new_contents)
+        return;
 
     // we already have parsed something before and the
     // new content we replace with is the exact samething
-    if (contents_ && *contents_ == *new_contents) return;
+    if (contents_ && *contents_ == *new_contents)
+        return;
 
-    StringIntMapPtr new_words =
-        boost::make_shared<StringIntMap>();
+    StringIntMapPtr new_words = boost::make_shared<StringIntMap>();
     Buffer::TokenizeContentsIntoKeywords(new_contents, new_words);
 
     if (!contents_) {
         // easy first case, just increment reference count for each word
         auto(i, new_words->begin());
-        for (; i != new_words->end(); ++i)
-        {
+        for (; i != new_words->end(); ++i) {
             parent_->WordSet.UpdateWord(i->first, +i->second);
         }
     } else {
@@ -70,31 +70,30 @@ void Buffer::ReplaceContentsWith(StringPtr new_contents)
         StringIntMap to_be_added;
         StringIntMap to_be_changed;
 
-        // calculated words to be removed, by checking lack of existsnce in
+        // calculated words to be removed, by checking lack of existence in
         // new_words set
         auto(i, words_->begin());
-        for (; i != words_->end(); ++i)
-        {
+        for (; i != words_->end(); ++i) {
             const std::string& word = i->first;
             const int ref_count = i->second;
             if (!Contains(*new_words, word))
                 to_be_removed[word] += ref_count;
         }
 
-        // calcule words to be added, by checking checking lack of existence in
-        // the old set
+        // calculate words to be added, by checking checking lack of existence
+        // in the old set
         auto(j, new_words->begin());
-        for (; j != new_words->end(); ++j)
-        {
+        for (; j != new_words->end(); ++j) {
             const std::string& word = j->first;
             const int ref_count = j->second;
             if (!Contains(*words_, word))
                 to_be_added[word] += ref_count;
         }
 
+        // update refernce count for words that both exist in  new_words and
+        // words_ 
         auto(k, words_->begin());
-        for (; k != words_->end(); ++k)
-        {
+        for (; k != words_->end(); ++k) {
             const std::string& word = k->first;
             const int ref_count = k->second;
             if (Contains(*new_words, word))
@@ -134,7 +133,7 @@ void Buffer::TokenizeContentsIntoKeywords(
     size_t contents_size = text.size();
     for (size_t ii = 0; ii < contents_size; ++ii)
     {
-        // initial case, find character in the set of ([a-z][A-Z][0-9]_)
+        // initial case, find character in the set of ([a-z][A-Z][0-9]_\-)
         // this will be what is considered a word
         // I guess we have unicode stuff we are screwed :
         uchar c = static_cast<uchar>(text[ii]);
