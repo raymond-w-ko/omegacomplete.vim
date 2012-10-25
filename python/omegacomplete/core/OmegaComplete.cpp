@@ -439,6 +439,9 @@ void OmegaComplete::genericKeywordCompletion(
         suffix0_ = true;
         autocomplete_completions_ = prev_completions_;
     }
+    else {
+        suffix0_ = suffix1_ = false;
+    }
 
     // keep a trailing list of previous inputs
     prev_input_[2] = prev_input_[1];
