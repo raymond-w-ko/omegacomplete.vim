@@ -162,8 +162,6 @@ size_t GlobalWordSet::Prune()
             }
         }
         
-        // we must erase the things that contains a const& to the word before
-        // removing the actual word for safety reasons
         words_.erase(word);
 
         {
