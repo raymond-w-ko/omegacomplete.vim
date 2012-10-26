@@ -45,8 +45,11 @@ private:
         std::string& tag_name,
         TagInfo& tag_info);
 
+    bool win32_CheckIfModified();
+
     std::string pathname_;
     int64_t last_write_time_;
+    double last_tick_count_;
     std::string parent_directory_;
 
     typedef

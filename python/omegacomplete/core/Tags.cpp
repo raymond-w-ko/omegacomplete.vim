@@ -6,9 +6,9 @@
 #include "Algorithm.hpp"
 #include "CompletionPriorities.hpp"
 
-Tags::Tags()
-:
-last_write_time_(0)
+Tags::Tags() :
+    last_write_time_(0),
+    last_tick_count_(-1.0)
 {
     ;
 }
@@ -244,43 +244,27 @@ void Tags::GetAbbrCompletions(
 
 void Tags::Update()
 {
+    const double check_time = 60.0 * 1000.0;
     bool reparse_needed = false;
 
 #ifdef _WIN32
-    HANDLE hFile = ::CreateFile(
-        pathname_.c_str(),
-        GENERIC_READ,
-        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-        NULL,
-        OPEN_EXISTING,
-        FILE_ATTRIBUTE_NORMAL,
-        NULL);
-    if (hFile == INVALID_HANDLE_VALUE)
-    {
-        std::cout << "could not open file to check last modified time" << std::endl;
-        return;
-    }
-
-    FILETIME ft_last_write_time;
-    ::GetFileTime(
-        hFile,
-        NULL,
-        NULL,
-        &ft_last_write_time);
-
-    __int64 last_write_time = to_int64(ft_last_write_time);
-    if (last_write_time > last_write_time_)
-    {
+    if (last_tick_count_ == -1) {
         reparse_needed = true;
-
-        last_write_time_ = last_write_time;
+        last_tick_count_ = static_cast<double>(::GetTickCount());
     }
-
-    CloseHandle(hFile); hFile = INVALID_HANDLE_VALUE;
+    else {
+        double new_count = static_cast<double>(::GetTickCount());
+        if (::fabs(new_count - last_tick_count_) > check_time) {
+            reparse_needed = win32_CheckIfModified();
+            last_tick_count_ = new_count;
+        }
+        else {
+            reparse_needed = false;
+        }
+    }
 #else
     // TODO(rko): implement for UNIX OSes
-    if (last_write_time_ == 0)
-    {
+    if (last_write_time_ == 0) {
         last_write_time_ = 1;
         reparse_needed = true;
         //std::cout << "in UNIX, deciding to parse: " << pathname_ << std::endl;
@@ -392,4 +376,42 @@ bool Tags::calculateTagInfo(
     }
 
     return true;
+}
+
+bool Tags::win32_CheckIfModified()
+{
+#ifdef _WIN32
+    bool reparse_needed = false;
+
+    HANDLE hFile = ::CreateFile(
+        pathname_.c_str(),
+        GENERIC_READ,
+        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+        NULL,
+        OPEN_EXISTING,
+        FILE_ATTRIBUTE_NORMAL,
+        NULL);
+    if (hFile == INVALID_HANDLE_VALUE) {
+        return false;
+    }
+
+    FILETIME ft_last_write_time;
+    ::GetFileTime(
+        hFile,
+        NULL,
+        NULL,
+        &ft_last_write_time);
+
+    __int64 last_write_time = to_int64(ft_last_write_time);
+    if (last_write_time > last_write_time_) {
+        reparse_needed = true;
+        last_write_time_ = last_write_time;
+    }
+
+    CloseHandle(hFile); hFile = INVALID_HANDLE_VALUE;
+
+    return reparse_needed;
+#else
+    return false;
+#endif
 }
