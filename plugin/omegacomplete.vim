@@ -50,7 +50,8 @@ function s:Init()
     command OmegaCompleteFlushServerCaches :call <SID>FlushServerCaches()
 
     " find and load the omegacomplete Python code
-python << PYTHON
+    " --------------------------------------------------------------------------
+    python << EOF
 import vim
 import os
 
@@ -67,7 +68,8 @@ sys.path.append(omegacomplete_path)
 # load omegacomplete python functions
 client_path = omegacomplete_path + '/helper.py'
 exec(compile(open(client_path).read(), client_path, 'exec'))
-PYTHON
+EOF
+    " --------------------------------------------------------------------------
 
     " send config options to the C++ portion
     exe 'py oc_eval("config autcomplete_suffix ' .
@@ -122,9 +124,9 @@ function s:UnmapForMappingDriven()
 endfunction
 
 function s:SendCurrentBuffer()
-    python << PYTHON
+    python << EOF
 oc_send_current_buffer()
-PYTHON
+EOF
 endfunction
 
 function <SID>FeedPopup()
@@ -170,24 +172,28 @@ function <SID>FeedPopup()
     exe 'py oc_server_result = oc_eval("complete " + vim.eval("partial_line"))'
 
     let autocomplete=""
-python << EOF
+    " --------------------------------------------------------------------------
+    python << EOF
 should_autocomplete = oc_eval('should_autocomplete ?')
 if should_autocomplete != '0':
     temp = oc_eval('get_autocomplete please')
     vim.command('let autocomplete="' + temp + '"')
 EOF
+    " --------------------------------------------------------------------------
     if len(autocomplete) > 0
         echom len(autocomplete)
         return autocomplete
     endif
 
 " check to make sure we get something
-python << EOF
+    " --------------------------------------------------------------------------
+    python << EOF
 if len(oc_server_result) == 0:
     vim.command('let g:omegacomplete_server_results=[]')
 else:
     vim.command('let g:omegacomplete_server_results=' + oc_server_result)
 EOF
+    " --------------------------------------------------------------------------
 
     if (len(g:omegacomplete_server_results) == 0)
         " try to show popup menu, but fail and reset completion status
@@ -195,12 +201,14 @@ EOF
     else
         exe 'py is_corrections_only = oc_eval("is_corrections_only ?")'
         let is_corrections_only=0
-python << EOF
+    " --------------------------------------------------------------------------
+        python << EOF
 if is_corrections_only == '0':
     vim.command('let is_corrections_only=0')
 else:
     vim.command('let is_corrections_only=1')
 EOF
+    " --------------------------------------------------------------------------
         if (is_corrections_only)
             for cmd in g:omegacomplete_corrections_hi_cmds
                 exe cmd
@@ -306,7 +314,11 @@ augroup END
 function OmegaCompleteFunc(findstart, base)
     if a:findstart
         if len(g:omegacomplete_server_results) == 0
-            return -3
+            if (v:version > 702)
+                return -3
+            else
+                return -1
+            endif
         endif
 
         let index = col('.') - 2
@@ -353,10 +365,10 @@ function omegacomplete#taglist(expr)
     exe 'py oc_server_result = oc_eval("vim_taglist_function " + "' . a:expr . '")'
 
 " check to make sure we get something
-python << PYTHON
+python << EOF
 if len(oc_server_result) == 0:
     vim.command("return []")
-PYTHON
+EOF
 
     " try to show popup menu
     exe 'py vim.command("let taglist_results=" + oc_server_result)'
