@@ -29,6 +29,7 @@
 #include <set>
 #include <map>
 #include <queue>
+#include <fstream>
 
 #include <boost/noncopyable.hpp>
 #include <boost/bind.hpp>
