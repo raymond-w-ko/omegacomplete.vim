@@ -48,6 +48,7 @@ function s:Init()
     nnoremap <silent> R R<C-r>=<SID>FeedPopup()<CR>
 
     command OmegaCompleteFlushServerCaches :call <SID>FlushServerCaches()
+    command OmegaCompleteUpdateConfig :call <SID>UpdateConfig()
 
     " find and load the omegacomplete Python code
     " --------------------------------------------------------------------------
@@ -71,9 +72,7 @@ exec(compile(open(client_path).read(), client_path, 'exec'))
 EOF
     " --------------------------------------------------------------------------
 
-    " send config options to the C++ portion
-    exe 'py oc_eval("config autcomplete_suffix ' .
-       \ g:omegacomplete_autocomplete_suffix . '")'
+    call <SID>UpdateConfig()
 endfunction
 
 " utility functions that any script can use really
@@ -398,6 +397,12 @@ endfunction
 
 function <SID>FlushServerCaches()
     exe 'py oc_eval("flush_caches 1")'
+endfunction
+
+function <SID>UpdateConfig()
+    " send config options to the C++ portion
+    exe 'py oc_eval("config autcomplete_suffix ' .
+       \ g:omegacomplete_autocomplete_suffix . '")'
 endfunction
 
 " do initialization
