@@ -123,9 +123,7 @@ function s:UnmapForMappingDriven()
 endfunction
 
 function s:SendCurrentBuffer()
-    python << EOF
-oc_send_current_buffer()
-EOF
+    py oc_send_current_buffer()
 endfunction
 
 function <SID>FeedPopup()
