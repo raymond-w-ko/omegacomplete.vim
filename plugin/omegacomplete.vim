@@ -16,14 +16,18 @@ let g:omegacomplete_server_results=[]
 
 if !exists("g:omegacomplete_normal_hi_cmds")
     let g:omegacomplete_normal_hi_cmds=[
-        \ "hi Pmenu guifg=#00ff00 guibg=#003700 gui=none",
-        \ "hi PmenuSel guifg=#003700 guibg=#00ff00 gui=none",
+    \ "hi Pmenu guifg=#00ff00 guibg=#003300 gui=none " .
+             \ "ctermbg=022 ctermfg=046 cterm=none",
+    \ "hi PmenuSel guifg=#003300 guibg=#00ff00 gui=none " .
+                \ "ctermbg=046 ctermfg=022 cterm=none",
         \ ]
 endif
 if !exists("g:omegacomplete_corrections_hi_cmds")
     let g:omegacomplete_corrections_hi_cmds=[
-        \ "hi Pmenu guifg=#ffff00 guibg=#373700 gui=none",
-        \ "hi PmenuSel guifg=#373700 guibg=#ffff00 gui=none",
+    \ "hi Pmenu guifg=#ffff00 guibg=#333300 gui=none " .
+              \"ctermbg=058 ctermfg=011 cterm=none",
+    \ "hi PmenuSel guifg=#333300 guibg=#ffff00 gui=none " .
+                \ "ctermbg=011 ctermfg=058 cterm=none",
         \ ]
 endif
 
