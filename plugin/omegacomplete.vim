@@ -31,6 +31,10 @@ if !exists("g:omegacomplete_autocomplete_suffix")
     let g:omegacomplete_autocomplete_suffix="jj"
 endif
 
+if !exists("g:omegacomplete_server_side_disambiguate")
+    let g:omegacomplete_server_side_disambiguate=0
+endif
+
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " init
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -324,7 +328,7 @@ function OmegaCompleteFunc(findstart, base)
             if (index == -1)
                 break
             endif
-            if ( match(line[index], '[a-zA-Z0-9_]') == -1 )
+            if ( match(line[index], '[a-zA-Z0-9_\-]') == -1 )
                 break
             endif
 
