@@ -48,7 +48,7 @@ function s:Init()
     set completeopt+=menu
     set completeopt+=menuone
 
-    call s:MapForMappingDriven()
+    call s:ApplyMappings()
     nnoremap <silent> i i<C-r>=<SID>FeedPopup()<CR>
     nnoremap <silent> I I<C-r>=<SID>FeedPopup()<CR>
     nnoremap <silent> a a<C-r>=<SID>FeedPopup()<CR>
@@ -97,8 +97,8 @@ function <SID>GetCurrentBufferPathname()
 endfunction
 
 " if you want imap's to trigger the popup menu
-function s:MapForMappingDriven()
-    call s:UnmapForMappingDriven()
+function s:ApplyMappings()
+    call s:UnapplyMappings()
     let s:keys_mapping_driven =
         \ [
         \ 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
@@ -119,7 +119,7 @@ function s:MapForMappingDriven()
 endfunction
 
 " undo the effects of the previous function
-function s:UnmapForMappingDriven()
+function s:UnapplyMappings()
     if !exists('s:keys_mapping_driven')
         return
     endif
