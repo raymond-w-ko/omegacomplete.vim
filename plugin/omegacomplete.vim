@@ -11,6 +11,10 @@ let g:omegacomplete_loaded = 1
 " buffer contents twice in a row
 let s:just_did_insertenter = 0
 
+" this variable indicates whether client side disambiguation mappings were
+" performed
+let s:performed_client_disambiguate_mappings = 0
+
 " initialize this to be safe
 let g:omegacomplete_server_results=[]
 
@@ -94,6 +98,25 @@ endfunction
 
 function <SID>GetCurrentBufferPathname()
     return <SID>EscapePathname(expand('%:p'))
+endfunction
+
+function <SID>CurrentCursorWord()
+    let end_index = col('.') - 2
+    let start_index = end_index
+    let line = getline('.')
+    while (1)
+        if (start_index == -1)
+            break
+        endif
+        if (match(line[start_index], '[a-zA-Z0-9_\-]') == -1)
+            break
+        endif
+
+        let start_index = start_index - 1
+    endwhile
+    let start_index = start_index + 1
+
+    return line[start_index : end_index]
 endfunction
 
 " if you want imap's to trigger the popup menu
@@ -228,6 +251,30 @@ EOF
     endif
 endfunction
 
+function <SID>PerformDisambiguate(index)
+    let index = str2nr(a:index)
+    if (index == 0)
+        let lndex = 10
+    endif
+
+    " arrays are zero-indexed
+    let index = index - 1
+
+    if (index >= len(g:omegacomplete_server_results))
+        return ''
+    endif
+
+    let keys = ''
+    let num_to_delete = strlen(<SID>CurrentCursorWord())
+    for i in range(num_to_delete)
+        let keys = keys . "\<BS>"
+    endfor
+
+    let keys = keys . g:omegacomplete_server_results[index].word
+
+    return keys
+endfunction
+
 " When we want to sync a buffer in normal mode. This mainly occurs when we
 " are entering a buffer for the first time (i.e. it just opened), or we are
 " switching windows and need it to be synced with the server in case you
@@ -332,7 +379,7 @@ function OmegaCompleteFunc(findstart, base)
             if (index == -1)
                 break
             endif
-            if ( match(line[index], '[a-zA-Z0-9_\-]') == -1 )
+            if (match(line[index], '[a-zA-Z0-9_\-]') == -1)
                 break
             endif
 
@@ -405,13 +452,37 @@ function <SID>FlushServerCaches()
     exe 'py oc_eval("flush_caches 1")'
 endfunction
 
+" send config options to the C++ portion
 function <SID>UpdateConfig()
-    " send config options to the C++ portion
     exe 'py oc_eval("config autcomplete_suffix ' .
        \ g:omegacomplete_autocomplete_suffix . '")'
 
+    call <SID>ConfigureDisambiguateMode()
+endfunction
+
+function <SID>ConfigureDisambiguateMode()
+    " configure server
     exe 'py oc_eval("config server_side_disambiguate ' .
        \ g:omegacomplete_server_side_disambiguate . '")'
+
+    " perform or remove mappings
+    if (!g:omegacomplete_server_side_disambiguate)
+        let s:disambiguate_mode_keys =
+            \ ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9',]
+
+        for key in s:disambiguate_mode_keys
+            exe printf('inoremap <silent> <A-%s> ' .
+                     \ '<C-r>=<SID>PerformDisambiguate(%s)<CR>' .
+                     \ '', key, key)
+        endfor
+    elseif (s:performed_client_disambiguate_mappings)
+        for key in s:disambiguate_mode_keys
+            exe 'iunmap ' . key
+        endfor
+        let s:disambiguate_mode_keys = []
+
+        s:performed_client_disambiguate_mappings = 0
+    endif
 endfunction
 
 " do initialization
