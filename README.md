@@ -4,7 +4,7 @@
 This is my crazy side project which attempts to provide the fastest and most useful keyword completions for VIM.
 
 To accomplish this, OmegaComplete uses a Python extension module coded in C++03 to do the
-acutal parsing and completions. Tiny bits of Python are used to "glue" VIM and the C++ module together.
+actual parsing and completions. Tiny bits of Python are used to "glue" VIM and the C++ module together.
 
 Processing of buffers, which include keyword extraction, abbreviation calculation,
 and maintaining a trie of all words, is done asynchronously,
