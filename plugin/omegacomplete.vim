@@ -409,6 +409,9 @@ function <SID>UpdateConfig()
     " send config options to the C++ portion
     exe 'py oc_eval("config autcomplete_suffix ' .
        \ g:omegacomplete_autocomplete_suffix . '")'
+
+    exe 'py oc_eval("config server_side_disambiguate ' .
+       \ g:omegacomplete_server_side_disambiguate . '")'
 endfunction
 
 " do initialization

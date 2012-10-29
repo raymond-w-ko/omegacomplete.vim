@@ -449,7 +449,9 @@ void OmegaComplete::genericKeywordCompletion(
     prev_input_[0] = input;
 
     unsigned disambiguate_index = UINT_MAX;
-    bool disambiguate_mode = shouldEnableDisambiguateMode(input, disambiguate_index);
+    bool disambiguate_mode =
+        config_["server_side_disambiguate"] != "0" &&
+        shouldEnableDisambiguateMode(input, disambiguate_index);
     if (disambiguate_mode &&
         prev_completions_ &&
         disambiguate_index < prev_completions_->size())
