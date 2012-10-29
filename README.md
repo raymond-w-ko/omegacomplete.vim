@@ -55,6 +55,33 @@ Example of what to place in your vimrc:
 inoremap &lt;expr&gt; &lt;Tab&gt; pumvisible() ? "\&lt;C-n&gt;\&lt;C-y&gt;" : "\&lt;Tab&gt;"
 </pre>
 
+## Configurable Options
+<pre>
+
+" normal mode completion menu colorscheme
+let g:omegacomplete_normal_hi_cmds=[
+    \ "hi Pmenu guifg=#00ff00 guibg=#003300 gui=none " . 
+             \ "ctermbg=022 ctermfg=046 cterm=none",
+    \ "hi PmenuSel guifg=#003300 guibg=#00ff00 gui=none " .
+                \ "ctermbg=046 ctermfg=022 cterm=none",
+    \ ]
+" spell check (Levenshtein) completion menu colorscheme
+let g:omegacomplete_corrections_hi_cmds=[
+    \ "hi Pmenu guifg=#ffff00 guibg=#333300 gui=none " .
+              \"ctermbg=058 ctermfg=011 cterm=none",
+    \ "hi PmenuSel guifg=#333300 guibg=#ffff00 gui=none " .
+                \ "ctermbg=011 ctermfg=058 cterm=none",
+    \ ]
+
+" client-side disambiguate mode
+let g:omegacomplete_server_side_disambiguate=0
+" server-side disambiguate mode
+let g:omegacomplete_server_side_disambiguate=1
+
+" suffix completion trigger
+let g:omegacomplete_autocomplete_suffix="jj"
+</pre>
+
 ## Completion Types
 
 ### Prefix Completion
