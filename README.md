@@ -215,10 +215,10 @@ or corrections.
 ## Other features
 
 ### Suffix Trigger Completion (experimental)
-Inspired by how some people use "inoremap jj <ESC>", I decided to put something similar in OmegaComplete.
+Inspired by how some people use "inoremap jj &lt;ESC&gt;", I decided to put something similar in OmegaComplete.
 Ending a word with "jj" (configurable) will automatically remove the suffix, and use the first completion available.
-Basically equivalent to "<BS><BS><Tab>", except the results use are cached and therefore not affected by the
-asynchronous nature of OmegaComplete.
+Basically equivalent to "&lt;BS&gt;&lt;BS&gt;&lt;Tab&gt;", except the results use are cached and therefore
+not affected by the asynchronous nature of OmegaComplete.
 
 This might be useful if you have RSI or limited wrist motion.
 
