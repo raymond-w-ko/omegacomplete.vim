@@ -101,7 +101,7 @@ As of now this is always on, so I hope you don't do subtraction in other infix l
 having a space between the operator ("vector1-vector2" vs "vector1 - vector2"), otherwise there will be false
 positives.
 
-### Sematic Completion (of the above two completions)
+### Sematic Completion (of the above three completions)
 There is no good way to briefly explain this in a few words, so you will have to read
 through the example I have.
 
