@@ -120,6 +120,16 @@ This is so that you may append that number and cause that to be the only match t
 In the cases where there are 10 or so ambiguous entries, this is useful because you don't have to use
 Ctrl-N or Ctrl-P to select that entry.
 
+Right now this has two sub-modes: client-side and server-side.
+
+Client-side mode is the default. 
+To get a completion in this mode, just press ALT + <number>, where <number> is the number displayed
+after an entry.
+
+Server-side mode is the alternate. This was the only mode before, and is I began to dislike it since
+having a number at the end of a word would trigger this and mask other completions. I suppose this is
+useful if you can't client-side mode (terminal VIM where ALT does not register well / correctly in keybinds).
+
 #### Example of completions offered
 <pre>
 GetCode GetChar GarbageCollect
@@ -129,7 +139,7 @@ GetChar         2
 GetCode         3
 </pre>
 
-#### Disambiguate Mode triggered by '2'
+#### server-side Disambiguate Mode triggered by '2'
 <pre>
 GetCode GetChar GarbageCollect
 gc2|
