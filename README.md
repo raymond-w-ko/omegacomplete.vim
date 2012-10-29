@@ -16,13 +16,30 @@ to the C++ module. For large (greater than 5MB) files, there might be pauses in 
 If anyone has a better solution, please, please let me know. For now I am not treating it
 as a problem, because you are screwed anyways if you have to maintain source code files that big.
 
-## Prerequisites for Use
+## Prerequisites for Use and Installation
 To compile the server portion you need a relatively standards compliant C++03 compiler
 along with the compiled Boost C++ libraries for boost threads. Your version of VIM also needs
 to have the Python 2.X bindings.
 
-If you use Visual Studio 2010 and have Boost compiled and installed in "C:\Boost", then you
-can just use with the solution file provided.
+### Windows
+
+If you have Visual Studio 2012 and have Boost installed in "C:\boost",
+and the libraries installed in "C:\boost\stage\lib32" or "C:\boost\stage\lib64",
+then you can use with the solution file provided.
+
+With other version of Visual Studio, it should be fairly simple to setup your project file,
+just create project for a DLL and have a post-build event to copy the DLL to
+python/omegacomplete/omegacomplete/core.pyd
+
+### Linux / Mac OS X / Cygwin / UNIX
+
+#### Summary
+<pre>
+cd python/omegacomplete/core
+make
+</pre>
+
+You can optionally strip the executable to save space (8MB -> 300 KB in Cygwin!)
 
 ## Important Tip
 You really should map 'Tab' (or favorite equivalent completion key) to this.
