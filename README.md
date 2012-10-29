@@ -57,7 +57,6 @@ inoremap &lt;expr&gt; &lt;Tab&gt; pumvisible() ? "\&lt;C-n&gt;\&lt;C-y&gt;" : "\
 
 ## Configurable Options
 <pre>
-
 " normal mode completion menu colorscheme
 let g:omegacomplete_normal_hi_cmds=[
     \ "hi Pmenu guifg=#00ff00 guibg=#003300 gui=none " . 
