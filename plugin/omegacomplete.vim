@@ -473,7 +473,7 @@ function <SID>ConfigureDisambiguateMode()
         for key in s:disambiguate_mode_keys
             exe printf('inoremap <silent> <A-%s> ' .
                      \ '<C-r>=<SID>PerformDisambiguate(%s)<CR>' .
-                     \ '', key, key)
+                     \ '<C-r>=<SID>FeedPopup()<CR>', key, key)
         endfor
     elseif (s:performed_client_disambiguate_mappings)
         for key in s:disambiguate_mode_keys
