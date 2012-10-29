@@ -123,12 +123,12 @@ Ctrl-N or Ctrl-P to select that entry.
 Right now this has two sub-modes: client-side and server-side.
 
 Client-side mode is the default. 
-To get a completion in this mode, just press ALT + <number>, where <number> is the number displayed
+To get a completion in this mode, just press ALT + &lt;number&gt;, where &lt;number&gt; is the number displayed
 after an entry.
 
-Server-side mode is the alternate. This was the only mode before, and is I began to dislike it since
+Server-side mode is the alternate. This was the only mode before, and I began to dislike it since
 having a number at the end of a word would trigger this and mask other completions. I suppose this is
-useful if you can't client-side mode (terminal VIM where ALT does not register well / correctly in keybinds).
+useful if you can't use client-side mode (terminal VIM where ALT does not register well / correctly in keybinds).
 
 #### Example of completions offered
 <pre>
@@ -166,7 +166,7 @@ camera_list  2
 camera_list_ 3
 </pre>
 
-#### Disambiguate Mode triggered by 'S'
+#### Undescore Terminus Mode Active
 <pre>
 camera_list_ camera_list CommonLisp
 cl_|
@@ -174,7 +174,7 @@ camera_list_ 1
 </pre>
 ***
 
-### Levenshtein Distance Correction Completion
+### Levenshtein Distance Correction Completion (Spell Check)
 OmegaComplete calculates the Levenshtein distance of the current word against all known words in all buffers.
 If the Levenshtein distance between the current word and a candidate word is less than or equal to X,
 it offers the word as a correction candidate.  Right now this only
