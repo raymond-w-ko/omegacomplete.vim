@@ -31,6 +31,8 @@ With other version of Visual Studio, it should be fairly simple to setup your pr
 just create project for a DLL and have a post-build event to copy the DLL to
 python/omegacomplete/omegacomplete/core.pyd
 
+Let me know if you need any help.
+
 ### Linux / Mac OS X / Cygwin / UNIX
 
 #### Summary
