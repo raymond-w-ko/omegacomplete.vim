@@ -43,6 +43,8 @@ make
 
 You can optionally strip the executable to save space (8MB -> 300 KB in Cygwin!)
 
+The Makefile basically just calls setup.py, which uses Python distutils to compile with the appropriate options.
+
 ## Important Tip
 You really should map 'Tab' (or favorite equivalent completion key) to this.
 Otherwise, this plugin becomes somewhat useless. I didn't map this by default because I don't want
