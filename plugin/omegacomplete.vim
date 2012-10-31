@@ -15,6 +15,10 @@ let s:just_did_insertenter = 0
 " performed
 let s:performed_client_disambiguate_mappings = 0
 
+" how many <C-p> to issue before <C-n> is issued so pressing ALT+number always
+" goes to that selection
+let s:last_disambiguate_index = -1
+
 " initialize this to be safe
 let g:omegacomplete_server_results=[]
 
@@ -223,6 +227,8 @@ else:
 EOF
     " --------------------------------------------------------------------------
 
+    let s:last_disambiguate_index = -1
+
     if (len(g:omegacomplete_server_results) == 0)
         " try to show popup menu, but fail and reset completion status
         return "\<C-x>\<C-u>"
@@ -257,20 +263,21 @@ function <SID>PerformDisambiguate(index)
         let lndex = 10
     endif
 
-    " arrays are zero-indexed
-    let index = index - 1
-
-    if (index >= len(g:omegacomplete_server_results))
+    if (index > len(g:omegacomplete_server_results))
         return ''
     endif
 
     let keys = ''
-    let num_to_delete = strlen(<SID>CurrentCursorWord())
-    for i in range(num_to_delete)
-        let keys = keys . "\<BS>"
+    if (s:last_disambiguate_index > 0)
+        for i in range(s:last_disambiguate_index)
+            let keys = keys . "\<C-p>"
+        endfor
+    endif
+    for i in range(index)
+        let keys = keys . "\<C-n>"
     endfor
 
-    let keys = keys . g:omegacomplete_server_results[index].word
+    let s:last_disambiguate_index = index
 
     return keys
 endfunction
@@ -472,8 +479,8 @@ function <SID>ConfigureDisambiguateMode()
 
         for key in s:disambiguate_mode_keys
             exe printf('inoremap <silent> <A-%s> ' .
-                     \ '<C-r>=<SID>PerformDisambiguate(%s)<CR>' .
-                     \ '<C-r>=<SID>FeedPopup()<CR>', key, key)
+                     \ '<C-r>=<SID>PerformDisambiguate(%s)<CR>'
+                     \ , key, key)
         endfor
     elseif (s:performed_client_disambiguate_mappings)
         for key in s:disambiguate_mode_keys
