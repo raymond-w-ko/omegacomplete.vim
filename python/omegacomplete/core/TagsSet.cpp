@@ -139,7 +139,7 @@ std::string TagsSet::ResolveFullPathname(
 
     // we have an absolute pathname of the form "C:\X"
     if (full_tags_pathname.size() >= 4 &&
-        ::isalpha(full_tags_pathname[0]) &&
+        ::isalpha(static_cast<unsigned char>(full_tags_pathname[0])) &&
         full_tags_pathname[1] == ':' &&
         full_tags_pathname[2] == '\\')
     {

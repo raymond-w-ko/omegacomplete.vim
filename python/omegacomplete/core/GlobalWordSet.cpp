@@ -27,7 +27,7 @@ void GlobalWordSet::UpdateWord(const std::string& word, int reference_count_delt
         return;
 
     {
-        boost::mutex::scoped_lock lock(trie_mutex_);
+        boost::mutex::scoped_lock trie_lock(trie_mutex_);
         trie_.Insert(word);
     }
 
@@ -129,13 +129,13 @@ size_t GlobalWordSet::Prune()
     // simply just looping through words_ and removing things might cause
     // iterator invalidation, so be safe and built a set of things to remove
     std::vector<std::string> to_be_pruned;
-    auto(iter, words_.begin());
-    for (; iter != words_.end(); ++iter)
+    auto(i, words_.begin());
+    for (; i != words_.end(); ++i)
     {
-        if (iter->second.ReferenceCount > 0)
+        if (i->second.ReferenceCount > 0)
             continue;
 
-        to_be_pruned.push_back(iter->first);
+        to_be_pruned.push_back(i->first);
     }
 
     foreach (const std::string& word, to_be_pruned) {
@@ -149,12 +149,12 @@ size_t GlobalWordSet::Prune()
             foreach (UnsignedStringPair w, *collection) {
                 std::set<AbbreviationInfo>& set = abbreviations_[w.second];
 
-                auto (iter, set.begin());
-                while (iter != set.end()) {
-                    if (iter->Word == word)
-                        set.erase(iter++);
+                auto (j, set.begin());
+                while (j != set.end()) {
+                    if (j->Word == word)
+                        set.erase(j++);
                     else
-                        ++iter;
+                        ++j;
                 }
 
                 if (abbreviations_[w.second].size() == 0)
@@ -165,7 +165,7 @@ size_t GlobalWordSet::Prune()
         words_.erase(word);
 
         {
-            boost::mutex::scoped_lock lock(trie_mutex_);
+            boost::mutex::scoped_lock trie_lock(trie_mutex_);
             trie_.Erase(word);
         }
     }
@@ -266,12 +266,12 @@ void GlobalWordSet::LevenshteinSearchRecursive(
             iter != node.Children.cend();
             ++iter)
         {
-            char letter = iter->first;
+            char next_letter = iter->first;
             TrieNode* next_node = iter->second;
 
             LevenshteinSearchRecursive(
                 *next_node,
-                letter,
+                next_letter,
                 word,
                 current_row,
                 results,
