@@ -46,6 +46,7 @@ private:
         TagInfo& tag_info);
 
     bool win32_CheckIfModified();
+    bool unix_CheckIfModified();
 
     std::string pathname_;
     int64_t last_write_time_;

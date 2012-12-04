@@ -251,8 +251,7 @@ void Tags::Update()
     if (last_tick_count_ == -1) {
         reparse_needed = true;
         last_tick_count_ = static_cast<double>(::GetTickCount());
-    }
-    else {
+    } else {
         double new_count = static_cast<double>(::GetTickCount());
         if (::fabs(new_count - last_tick_count_) > check_time) {
             reparse_needed = win32_CheckIfModified();
@@ -263,11 +262,20 @@ void Tags::Update()
         }
     }
 #else
-    // TODO(rko): implement for UNIX OSes
-    if (last_write_time_ == 0) {
-        last_write_time_ = 1;
+    timespec ts;
+    ::clock_gettime(CLOCK_MONOTONIC, &ts);
+    if (last_tick_count_ == -1) {
         reparse_needed = true;
-        //std::cout << "in UNIX, deciding to parse: " << pathname_ << std::endl;
+        last_tick_count_ = ts.tv_sec * 1000.0;
+    } else {
+        double new_count = ts.tv_sec * 1000.0;
+        if (::fabs(new_count - last_tick_count_) > check_time) {
+            reparse_needed = unix_CheckIfModified();
+            last_tick_count_ = new_count;
+        }
+        else {
+            reparse_needed = false;
+        }
     }
 #endif
 
@@ -413,5 +421,26 @@ bool Tags::win32_CheckIfModified()
     return reparse_needed;
 #else
     return false;
+#endif
+}
+
+bool Tags::unix_CheckIfModified()
+{
+#ifdef _WIN32
+    return false;
+#else
+    bool reparse_needed = false;
+    struct stat statbuf;
+    if (::stat(pathname_.c_str(), &statbuf) == -1) {
+        return false;
+    }
+
+    int64_t last_write_time = statbuf.st_mtime;
+    if (last_write_time > last_write_time_) {
+        reparse_needed = true;
+        last_write_time_ = last_write_time;
+    }
+
+    return reparse_needed;
 #endif
 }
