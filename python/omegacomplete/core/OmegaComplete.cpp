@@ -127,9 +127,6 @@ const std::string OmegaComplete::Eval(const char* request, const int request_len
 
         auto(iter, command_dispatcher_.find(command));
         if (iter == command_dispatcher_.end()) {
-            //std::cout << boost::str(boost::format(
-                //"unknown command %s %s") % command % *argument);
-
             return default_response_;
         }
         else {
@@ -203,11 +200,9 @@ std::string OmegaComplete::queueBufferContents(StringPtr argument)
 
 std::string OmegaComplete::cmdComplete(StringPtr argument)
 {
-    //Stopwatch watch; watch.Start();
     std::string response;
     response.reserve(8192);
     calculateCompletionCandidates(*argument, response);
-    //watch.Stop(); std::cout << "complete: "; watch.PrintResultMilliseconds();
 
     return response;
 }
@@ -285,7 +280,6 @@ std::string OmegaComplete::cmdVimTaglistFunction(StringPtr argument)
 std::string OmegaComplete::cmdPrune(StringPtr argument)
 {
     WordSet.Prune();
-    //std::cout << count << " words pruned" << std::endl;
 
     return default_response_;
 }
@@ -293,7 +287,6 @@ std::string OmegaComplete::cmdPrune(StringPtr argument)
 std::string OmegaComplete::cmdFlushCaches(StringPtr argument)
 {
     TagsSet::Instance()->Clear();
-    Algorithm::ClearGlobalCache();
 
     return default_response_;
 }

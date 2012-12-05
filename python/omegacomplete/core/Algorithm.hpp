@@ -21,12 +21,6 @@ public:
         std::vector<size_t>& indices,
         size_t digit_upper_bound);
 
-    static const StringVector* ComputeUnderscoreCached(
-        const std::string& word);
-    static const StringVector* ComputeTitleCaseCached(
-        const std::string& word);
-    static void ClearGlobalCache();
-
     static UnsignedStringPairVectorPtr ComputeUnderscore(
         const std::string& word);
     static UnsignedStringPairVectorPtr ComputeHyphens(
@@ -127,10 +121,4 @@ private:
     static
         boost::unordered_map<size_t, std::vector<std::vector<size_t> > >
         depth_list_cache_;
-
-    static boost::unordered_map<String, StringVector> underscore_cache_;
-    static boost::mutex underscore_mutex_;
-
-    static boost::unordered_map<String, StringVector> title_case_cache_;
-    static boost::mutex title_case_mutex_;
 };
