@@ -26,6 +26,10 @@
     #include <time.h>
     #include <sys/types.h>
     #include <sys/stat.h>
+    #ifdef __MACH__
+        #include <mach/clock.h>
+        #include <mach/mach.h>
+    #endif
 #endif
 
 #include <string>

@@ -6,6 +6,21 @@
 #include "Algorithm.hpp"
 #include "CompletionPriorities.hpp"
 
+static inline void MyClockGetTime(struct timespec& ts)
+{
+#ifdef __MACH__
+    clock_serv_t cclock;
+    mach_timespec_t mts;
+    host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock);
+    clock_get_time(cclock, &mts);
+    mach_port_deallocate(mach_task_self(), cclock);
+    ts.tv_sec = mts.tv_sec;
+    ts.tv_nsec = mts.tv_nsec;
+#else
+    clock_gettime(CLOCK_REALTIME, &ts);
+#endif
+}
+
 Tags::Tags() :
     last_write_time_(0),
     last_tick_count_(-1.0)
@@ -117,7 +132,7 @@ void Tags::reparse()
                 ai.Weight = kPriorityTagsSinglesAbbreviation;
             else if (ai.Weight == kPrioritySubsequenceAbbreviation)
                 ai.Weight = kPriorityTagsSubsequenceAbbreviation;
-            
+
             ai.Weight += kPriorityTitleCase;
 
             abbreviations_[title_case.second].insert(ai);
@@ -128,7 +143,7 @@ void Tags::reparse()
                 ai.Weight = kPriorityTagsSinglesAbbreviation;
             else if (ai.Weight == kPrioritySubsequenceAbbreviation)
                 ai.Weight = kPriorityTagsSubsequenceAbbreviation;
-            
+
             ai.Weight += kPriorityUnderscore;
 
             abbreviations_[underscore.second].insert(ai);
@@ -263,7 +278,7 @@ void Tags::Update()
     }
 #else
     timespec ts;
-    ::clock_gettime(CLOCK_MONOTONIC, &ts);
+    MyClockGetTime(ts);
     if (last_tick_count_ == -1) {
         reparse_needed = true;
         last_tick_count_ = ts.tv_sec * 1000.0;
