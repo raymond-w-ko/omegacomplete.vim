@@ -6,6 +6,7 @@
 #include "Algorithm.hpp"
 #include "CompletionPriorities.hpp"
 
+#ifndef _WIN32
 static inline void MyClockGetTime(struct timespec& ts)
 {
 #ifdef __MACH__
@@ -20,6 +21,7 @@ static inline void MyClockGetTime(struct timespec& ts)
     clock_gettime(CLOCK_REALTIME, &ts);
 #endif
 }
+#endif
 
 Tags::Tags() :
     last_write_time_(0),
