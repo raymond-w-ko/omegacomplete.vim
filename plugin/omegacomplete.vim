@@ -57,11 +57,11 @@ function s:Init()
     set completeopt+=menuone
 
     call s:ApplyMappings()
-    nnoremap <silent> i i<C-r>=<SID>FeedPopup()<CR>
-    nnoremap <silent> I I<C-r>=<SID>FeedPopup()<CR>
-    nnoremap <silent> a a<C-r>=<SID>FeedPopup()<CR>
-    nnoremap <silent> A A<C-r>=<SID>FeedPopup()<CR>
-    nnoremap <silent> R R<C-r>=<SID>FeedPopup()<CR>
+    nnoremap <silent> i i<C-r>=omegacomplete#FeedPopup()<CR>
+    nnoremap <silent> I I<C-r>=omegacomplete#FeedPopup()<CR>
+    nnoremap <silent> a a<C-r>=omegacomplete#FeedPopup()<CR>
+    nnoremap <silent> A A<C-r>=omegacomplete#FeedPopup()<CR>
+    nnoremap <silent> R R<C-r>=omegacomplete#FeedPopup()<CR>
 
     command OmegaCompleteFlushServerCaches :call <SID>FlushServerCaches()
     command OmegaCompleteUpdateConfig :call <SID>UpdateConfig()
@@ -140,7 +140,7 @@ function s:ApplyMappings()
         "'\'
  
     for key in s:keys_mapping_driven
-        exe printf('inoremap <silent> %s %s<C-r>=<SID>FeedPopup()<CR>',
+        exe printf('inoremap <silent> %s %s<C-r>=omegacomplete#FeedPopup()<CR>',
                  \ key, key)
     endfor
 endfunction
@@ -161,7 +161,7 @@ function s:SendCurrentBuffer()
     py oc_send_current_buffer()
 endfunction
 
-function <SID>FeedPopup()
+function omegacomplete#FeedPopup()
     " disable when paste mode is active
     if &paste
         return ''
@@ -444,11 +444,11 @@ function omegacomplete#UseFirstEntryOfPopup()
         if (index <= 0)
             return "\<Tab>"
         elseif (line[index] == '.')
-            return <SID>FeedPopup()
+            return <SID>omegacomplete#FeedPopup()
         elseif (index >= 2 && line[index - 1] == '-' && line[index] == '>')
-            return <SID>FeedPopup()
+            return <SID>omegacomplete#FeedPopup()
         elseif (index >= 2 && line[index - 1] == ':' && line[index] == ':')
-            return <SID>FeedPopup()
+            return <SID>omegacomplete#FeedPopup()
         else
             return "\<Tab>"
         endif
