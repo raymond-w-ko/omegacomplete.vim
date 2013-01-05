@@ -289,7 +289,7 @@ endfunction
 function <SID>NormalModeSyncBuffer()
     let buffer_number = <SID>GetCurrentBufferNumber()
     let buffer_name = bufname('%') 
-    let absolute_path = expand('%:p')
+    let absolute_path = escape(expand('%:p'), '\')
 
     " don't process these special buffers from other plugins
     if (match(buffer_name,
