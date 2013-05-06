@@ -53,7 +53,7 @@ def oc_send_current_buffer():
 
     header = "buffer_contents_follow 1"
     oc_core_eval(header)
-    buffer_contents = '\n'.join(vim.eval("getline(1, '$')"))
+    buffer_contents = '\n'.join(vim.current.buffer)
     return oc_core_eval(buffer_contents)
 
 def oc_prune_buffers():
@@ -67,7 +67,7 @@ def oc_prune_buffers():
         if vim.eval('buflisted(' + num + ')') == '0':
             continue
         valid_buffers.append(num)
-    
+
     active_buffer_list = ','.join(valid_buffers)
 
     return oc_core_eval('prune_buffers ' + active_buffer_list)
