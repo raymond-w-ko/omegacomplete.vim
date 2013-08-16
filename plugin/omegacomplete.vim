@@ -51,7 +51,7 @@ endif
 " init
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 function s:Init()
-    set completefunc=OmegaCompleteFunc
+    set completefunc=OmegacompleteFunc
 
     set completeopt+=menu
     set completeopt+=menuone
@@ -63,8 +63,8 @@ function s:Init()
     nnoremap <silent> A A<C-r>=omegacomplete#FeedPopup()<CR>
     nnoremap <silent> R R<C-r>=omegacomplete#FeedPopup()<CR>
 
-    command OmegaCompleteFlushServerCaches :call <SID>FlushServerCaches()
-    command OmegaCompleteUpdateConfig :call <SID>UpdateConfig()
+    command OmegacompleteFlushServerCaches :call <SID>FlushServerCaches()
+    command OmegacompleteUpdateConfig :call <SID>UpdateConfig()
 
     " find and load the omegacomplete Python code
     " --------------------------------------------------------------------------
@@ -336,7 +336,7 @@ function <SID>OnBufReadPost()
     call <SID>NormalModeSyncBuffer()
 endfunction
 
-augroup OmegaComplete
+augroup Omegacomplete
     autocmd!
     
     " whenever you delete a buffer, delete it from the server so that it
@@ -370,7 +370,7 @@ augroup END
 
 " this needs to have global scope and it is what <C-X><C-U> depends on.
 " don't think  it can use script / scope specific functions
-function OmegaCompleteFunc(findstart, base)
+function OmegacompleteFunc(findstart, base)
     if a:findstart
         if len(g:omegacomplete_server_results) == 0
             if (v:version > 702)
