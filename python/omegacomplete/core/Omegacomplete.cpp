@@ -1,25 +1,25 @@
 #include "stdafx.hpp"
 
-#include "OmegaComplete.hpp"
+#include "Omegacomplete.hpp"
 #include "TagsSet.hpp"
 #include "Stopwatch.hpp"
 #include "LookupTable.hpp"
 #include "Algorithm.hpp"
 
-OmegaComplete* OmegaComplete::instance_ = NULL;
-const std::string OmegaComplete::default_response_ = "ACK";
+Omegacomplete* Omegacomplete::instance_ = NULL;
+const std::string Omegacomplete::default_response_ = "ACK";
 
-void OmegaComplete::InitStatic()
+void Omegacomplete::InitStatic()
 {
     // dependencies in other classes that have to initialized first
     LookupTable::InitStatic();
     TagsSet::InitStatic();
     Algorithm::InitStatic();
 
-    instance_ = new OmegaComplete;
+    instance_ = new Omegacomplete;
 }
 
-OmegaComplete::OmegaComplete() :
+Omegacomplete::Omegacomplete() :
     is_quitting_(0),
     buffer_contents_follow_(false),
     prev_input_(3),
@@ -31,74 +31,74 @@ OmegaComplete::OmegaComplete() :
     initCommandDispatcher();
 
     worker_thread_ = boost::thread(
-        &OmegaComplete::workerThreadLoop,
+        &Omegacomplete::workerThreadLoop,
         this);
 }
 
-void OmegaComplete::initCommandDispatcher()
+void Omegacomplete::initCommandDispatcher()
 {
     command_dispatcher_["current_buffer_id"] = boost::bind(
-        &OmegaComplete::cmdCurrentBufferId, boost::ref(*this), _1);
+        &Omegacomplete::cmdCurrentBufferId, boost::ref(*this), _1);
 
     command_dispatcher_["current_buffer_absolute_path"] = boost::bind(
-        &OmegaComplete::cmdCurrentBufferAbsolutePath, boost::ref(*this), _1);
+        &Omegacomplete::cmdCurrentBufferAbsolutePath, boost::ref(*this), _1);
 
     command_dispatcher_["current_line"] = boost::bind(
-        &OmegaComplete::cmdCurrentLine, boost::ref(*this), _1);
+        &Omegacomplete::cmdCurrentLine, boost::ref(*this), _1);
 
     command_dispatcher_["cursor_position"] = boost::bind(
-        &OmegaComplete::cmdCursorPosition, boost::ref(*this), _1);
+        &Omegacomplete::cmdCursorPosition, boost::ref(*this), _1);
 
     command_dispatcher_["buffer_contents_follow"] = boost::bind(
-        &OmegaComplete::cmdBufferContentsFollow, boost::ref(*this), _1);
+        &Omegacomplete::cmdBufferContentsFollow, boost::ref(*this), _1);
 
     command_dispatcher_["complete"] = boost::bind(
-        &OmegaComplete::cmdComplete, boost::ref(*this), _1);
+        &Omegacomplete::cmdComplete, boost::ref(*this), _1);
 
     command_dispatcher_["free_buffer"] = boost::bind(
-        &OmegaComplete::cmdFreeBuffer, boost::ref(*this), _1);
+        &Omegacomplete::cmdFreeBuffer, boost::ref(*this), _1);
 
     command_dispatcher_["current_directory"] = boost::bind(
-        &OmegaComplete::cmdCurrentDirectory, boost::ref(*this), _1);
+        &Omegacomplete::cmdCurrentDirectory, boost::ref(*this), _1);
 
     command_dispatcher_["current_tags"] = boost::bind(
-        &OmegaComplete::cmdCurrentTags, boost::ref(*this), _1);
+        &Omegacomplete::cmdCurrentTags, boost::ref(*this), _1);
 
     command_dispatcher_["taglist_tags"] = boost::bind(
-        &OmegaComplete::cmdTaglistTags, boost::ref(*this), _1);
+        &Omegacomplete::cmdTaglistTags, boost::ref(*this), _1);
 
     command_dispatcher_["vim_taglist_function"] = boost::bind(
-        &OmegaComplete::cmdVimTaglistFunction, boost::ref(*this), _1);
+        &Omegacomplete::cmdVimTaglistFunction, boost::ref(*this), _1);
 
     command_dispatcher_["prune"] = boost::bind(
-        &OmegaComplete::cmdPrune, boost::ref(*this), _1);
+        &Omegacomplete::cmdPrune, boost::ref(*this), _1);
 
     command_dispatcher_["flush_caches"] = boost::bind(
-        &OmegaComplete::cmdFlushCaches, boost::ref(*this), _1);
+        &Omegacomplete::cmdFlushCaches, boost::ref(*this), _1);
 
     command_dispatcher_["is_corrections_only"] = boost::bind(
-        &OmegaComplete::cmdIsCorrectionsOnly, boost::ref(*this), _1);
+        &Omegacomplete::cmdIsCorrectionsOnly, boost::ref(*this), _1);
 
     command_dispatcher_["prune_buffers"] = boost::bind(
-        &OmegaComplete::cmdPruneBuffers, boost::ref(*this), _1);
+        &Omegacomplete::cmdPruneBuffers, boost::ref(*this), _1);
 
     command_dispatcher_["should_autocomplete"] = boost::bind(
-        &OmegaComplete::cmdShouldAutocomplete, boost::ref(*this), _1);
+        &Omegacomplete::cmdShouldAutocomplete, boost::ref(*this), _1);
 
     command_dispatcher_["config"] = boost::bind(
-        &OmegaComplete::cmdConfig, boost::ref(*this), _1);
+        &Omegacomplete::cmdConfig, boost::ref(*this), _1);
 
     command_dispatcher_["get_autocomplete"] = boost::bind(
-        &OmegaComplete::cmdGetAutocomplete, boost::ref(*this), _1);
+        &Omegacomplete::cmdGetAutocomplete, boost::ref(*this), _1);
 }
 
-OmegaComplete::~OmegaComplete()
+Omegacomplete::~Omegacomplete()
 {
     is_quitting_ = 1;
     worker_thread_.join();
 }
 
-const std::string OmegaComplete::Eval(const char* request, const int request_len)
+const std::string Omegacomplete::Eval(const char* request, const int request_len)
 {
     if (buffer_contents_follow_) {
         StringPtr argument = boost::make_shared<std::string>(
@@ -135,7 +135,7 @@ const std::string OmegaComplete::Eval(const char* request, const int request_len
     }
 }
 
-std::string OmegaComplete::cmdCurrentBufferId(StringPtr argument)
+std::string Omegacomplete::cmdCurrentBufferId(StringPtr argument)
 {
     current_buffer_id_ = boost::lexical_cast<unsigned>(*argument);
     if (Contains(buffers_, current_buffer_id_) == false)
@@ -146,21 +146,21 @@ std::string OmegaComplete::cmdCurrentBufferId(StringPtr argument)
     return default_response_;
 }
 
-std::string OmegaComplete::cmdCurrentBufferAbsolutePath(StringPtr argument)
+std::string Omegacomplete::cmdCurrentBufferAbsolutePath(StringPtr argument)
 {
     current_buffer_absolute_path_ = *argument;
 
     return default_response_;
 }
 
-std::string OmegaComplete::cmdCurrentLine(StringPtr argument)
+std::string Omegacomplete::cmdCurrentLine(StringPtr argument)
 {
     current_line_ = *argument;
 
     return default_response_;
 }
 
-std::string OmegaComplete::cmdCursorPosition(StringPtr argument)
+std::string Omegacomplete::cmdCursorPosition(StringPtr argument)
 {
     std::vector<std::string> position;
     boost::split(
@@ -179,14 +179,14 @@ std::string OmegaComplete::cmdCursorPosition(StringPtr argument)
     return default_response_;
 }
 
-std::string OmegaComplete::cmdBufferContentsFollow(StringPtr argument)
+std::string Omegacomplete::cmdBufferContentsFollow(StringPtr argument)
 {
     buffer_contents_follow_ = true;
 
     return default_response_;
 }
 
-std::string OmegaComplete::queueBufferContents(StringPtr argument)
+std::string Omegacomplete::queueBufferContents(StringPtr argument)
 {
     buffer_contents_follow_ = false;
 
@@ -198,7 +198,7 @@ std::string OmegaComplete::queueBufferContents(StringPtr argument)
     return default_response_;
 }
 
-std::string OmegaComplete::cmdComplete(StringPtr argument)
+std::string Omegacomplete::cmdComplete(StringPtr argument)
 {
     std::string response;
     response.reserve(8192);
@@ -207,7 +207,7 @@ std::string OmegaComplete::cmdComplete(StringPtr argument)
     return response;
 }
 
-std::string OmegaComplete::cmdFreeBuffer(StringPtr argument)
+std::string Omegacomplete::cmdFreeBuffer(StringPtr argument)
 {
     // make sure job queue is empty before we can delete buffer
     while (true) {
@@ -226,14 +226,14 @@ std::string OmegaComplete::cmdFreeBuffer(StringPtr argument)
     return default_response_;
 }
 
-std::string OmegaComplete::cmdCurrentDirectory(StringPtr argument)
+std::string Omegacomplete::cmdCurrentDirectory(StringPtr argument)
 {
     current_directory_ = *argument;
 
     return default_response_;
 }
 
-std::string OmegaComplete::cmdCurrentTags(StringPtr argument)
+std::string Omegacomplete::cmdCurrentTags(StringPtr argument)
 {
     current_tags_.clear();
 
@@ -251,7 +251,7 @@ std::string OmegaComplete::cmdCurrentTags(StringPtr argument)
     return default_response_;
 }
 
-std::string OmegaComplete::cmdTaglistTags(StringPtr argument)
+std::string Omegacomplete::cmdTaglistTags(StringPtr argument)
 {
     taglist_tags_.clear();
 
@@ -269,7 +269,7 @@ std::string OmegaComplete::cmdTaglistTags(StringPtr argument)
     return default_response_;
 }
 
-std::string OmegaComplete::cmdVimTaglistFunction(StringPtr argument)
+std::string Omegacomplete::cmdVimTaglistFunction(StringPtr argument)
 {
     const std::string& response = TagsSet::Instance()->VimTaglistFunction(
         *argument, taglist_tags_, current_directory_);
@@ -277,27 +277,27 @@ std::string OmegaComplete::cmdVimTaglistFunction(StringPtr argument)
     return response;
 }
 
-std::string OmegaComplete::cmdPrune(StringPtr argument)
+std::string Omegacomplete::cmdPrune(StringPtr argument)
 {
     WordSet.Prune();
 
     return default_response_;
 }
 
-std::string OmegaComplete::cmdFlushCaches(StringPtr argument)
+std::string Omegacomplete::cmdFlushCaches(StringPtr argument)
 {
     TagsSet::Instance()->Clear();
 
     return default_response_;
 }
 
-std::string OmegaComplete::cmdIsCorrectionsOnly(StringPtr argument)
+std::string Omegacomplete::cmdIsCorrectionsOnly(StringPtr argument)
 {
     const std::string& response = is_corrections_only_ ? "1" : "0";
     return response;
 }
 
-std::string OmegaComplete::cmdPruneBuffers(StringPtr argument)
+std::string Omegacomplete::cmdPruneBuffers(StringPtr argument)
 {
     std::vector<std::string> numbers;
     boost::split(
@@ -327,13 +327,13 @@ std::string OmegaComplete::cmdPruneBuffers(StringPtr argument)
     return default_response_;
 }
 
-std::string OmegaComplete::cmdShouldAutocomplete(StringPtr argument)
+std::string Omegacomplete::cmdShouldAutocomplete(StringPtr argument)
 {
     const std::string& response = should_autocomplete_ ? "1" : "0";
     return response;
 }
 
-std::string OmegaComplete::cmdConfig(StringPtr argument)
+std::string Omegacomplete::cmdConfig(StringPtr argument)
 {
     std::vector<std::string> tokens;
     boost::split(tokens, *argument, boost::is_any_of(" "), boost::token_compress_on);
@@ -345,7 +345,7 @@ std::string OmegaComplete::cmdConfig(StringPtr argument)
     return default_response_;
 }
 
-std::string OmegaComplete::cmdGetAutocomplete(StringPtr argument)
+std::string Omegacomplete::cmdGetAutocomplete(StringPtr argument)
 {
     if (!suffix0_ || !suffix1_)
         return "";
@@ -369,7 +369,7 @@ std::string OmegaComplete::cmdGetAutocomplete(StringPtr argument)
     return result;
 }
 
-void OmegaComplete::queueParseJob(ParseJob job)
+void Omegacomplete::queueParseJob(ParseJob job)
 {
     boost::mutex::scoped_lock lock(job_queue_mutex_);
     job_queue_.push(job);
@@ -377,7 +377,7 @@ void OmegaComplete::queueParseJob(ParseJob job)
     job_queue_conditional_variable_.notify_one();
 }
 
-void OmegaComplete::workerThreadLoop()
+void Omegacomplete::workerThreadLoop()
 {
     ParseJob job;
     while (!is_quitting_) {
@@ -403,14 +403,14 @@ void OmegaComplete::workerThreadLoop()
     }
 }
 
-void OmegaComplete::calculateCompletionCandidates(
+void Omegacomplete::calculateCompletionCandidates(
     const std::string& line,
     std::string& result)
 {
     genericKeywordCompletion(line, result);
 }
 
-void OmegaComplete::genericKeywordCompletion(
+void Omegacomplete::genericKeywordCompletion(
     const std::string& line,
     std::string& result)
 {
@@ -531,7 +531,7 @@ retry_completion:
         suffix0_ = false;
 }
 
-std::string OmegaComplete::getWordToComplete(const std::string& line)
+std::string Omegacomplete::getWordToComplete(const std::string& line)
 {
     if (line.length() == 0)
         return "";
@@ -554,7 +554,7 @@ std::string OmegaComplete::getWordToComplete(const std::string& line)
     return partial;
 }
 
-bool OmegaComplete::shouldEnableDisambiguateMode(
+bool Omegacomplete::shouldEnableDisambiguateMode(
     const std::string& word, unsigned& index)
 {
     if (word.size() < 2)
@@ -570,7 +570,7 @@ bool OmegaComplete::shouldEnableDisambiguateMode(
     return false;
 }
 
-bool OmegaComplete::shouldEnableTerminusMode(
+bool Omegacomplete::shouldEnableTerminusMode(
     const std::string& word, std::string& prefix)
 {
     if (word.size() < 2)
@@ -585,7 +585,7 @@ bool OmegaComplete::shouldEnableTerminusMode(
     return false;
 }
 
-void OmegaComplete::addLevenshteinCorrections(
+void Omegacomplete::addLevenshteinCorrections(
     const std::string& input,
     CompleteItemVectorPtr& completions,
     std::set<std::string>& added_words)

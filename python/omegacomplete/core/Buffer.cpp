@@ -1,7 +1,7 @@
 #include "stdafx.hpp"
 
 #include "Buffer.hpp"
-#include "OmegaComplete.hpp"
+#include "Omegacomplete.hpp"
 #include "Stopwatch.hpp"
 #include "LookupTable.hpp"
 
@@ -30,7 +30,7 @@ bool Buffer::operator==(const Buffer& other)
     return this->buffer_id_ == other.buffer_id_;
 }
 
-bool Buffer::Init(OmegaComplete* parent, unsigned buffer_id)
+bool Buffer::Init(Omegacomplete* parent, unsigned buffer_id)
 {
     parent_ = parent;
     buffer_id_ = buffer_id;
@@ -91,7 +91,7 @@ void Buffer::ReplaceContentsWith(StringPtr new_contents)
         }
 
         // update refernce count for words that both exist in  new_words and
-        // words_ 
+        // words_
         auto(k, words_->begin());
         for (; k != words_->end(); ++k) {
             const std::string& word = k->first;

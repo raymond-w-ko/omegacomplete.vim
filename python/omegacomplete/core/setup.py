@@ -5,7 +5,7 @@ module1 = Extension('core',
                     libraries = ['boost_thread-mt', 'boost_system-mt'],
                     sources = ['Algorithm.cpp', 'Buffer.cpp', 'DllMain.cpp',
                         'GlobalWordSet.cpp', 'LookupTable.cpp',
-                        'OmegaComplete.cpp', 'PythonMain.cpp', 'stdafx.cpp',
+                        'Omegacomplete.cpp', 'PythonMain.cpp', 'stdafx.cpp',
                         'Tags.cpp', 'TagsSet.cpp', 'TrieNode.cpp',
                         'ustring.cpp'])
 
@@ -18,18 +18,18 @@ module1 = Extension('core',
                     #libraries = ['boost_thread', 'boost_system'],
                     #sources = ['Algorithm.cpp', 'Buffer.cpp', 'DllMain.cpp',
                         #'GlobalWordSet.cpp', 'LookupTable.cpp',
-                        #'OmegaComplete.cpp', 'PythonMain.cpp', 'stdafx.cpp',
+                        #'Omegacomplete.cpp', 'PythonMain.cpp', 'stdafx.cpp',
                         #'Tags.cpp', 'TagsSet.cpp', 'TrieNode.cpp',
                         #'ustring.cpp'])
 
 setup(name = 'core',
       version = '1.0',
-      description = 'OmegaComplete Core',
+      description = 'Omegacomplete Core',
       author = 'Raymond W. Ko',
       author_email = 'raymond.w.ko@gmail.com',
       url = 'https://github.com/raymond-w-ko/omegacomplete.vim',
       long_description = '''
-This is the C++ portion of OmegaComplete. It is responsible for parsing buffers
+This is the C++ portion of Omegacomplete. It is responsible for parsing buffers
 and calculating completions.
 ''',
       ext_modules = [module1])

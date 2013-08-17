@@ -4,11 +4,11 @@
 #include "GlobalWordSet.hpp"
 #include "CompleteItem.hpp"
 
-class OmegaComplete : public boost::noncopyable {
+class Omegacomplete : public boost::noncopyable {
 public:
     static void InitStatic();
-    static OmegaComplete* GetInstance() { return instance_; }
-    ~OmegaComplete();
+    static Omegacomplete* GetInstance() { return instance_; }
+    ~Omegacomplete();
 
     const std::string Eval(const char* request, const int request_len);
 
@@ -40,7 +40,7 @@ private:
         StringPtr Contents;
     };
 
-    OmegaComplete();
+    Omegacomplete();
     void initCommandDispatcher();
 
     ////////////////////////////////////////////////////////////////////////////
@@ -67,7 +67,7 @@ private:
     std::string cmdGetAutocomplete(StringPtr argument);
 
     ////////////////////////////////////////////////////////////////////////////
-    // OmegaComplete Core
+    // Omegacomplete Core
     ////////////////////////////////////////////////////////////////////////////
     void queueParseJob(ParseJob job);
     void workerThreadLoop();
@@ -95,9 +95,9 @@ private:
         std::set<std::string>& added_words);
 
     ////////////////////////////////////////////////////////////////////////////
-    // OmegaComplete Core
+    // Omegacomplete Core
     ////////////////////////////////////////////////////////////////////////////
-    static OmegaComplete* instance_;
+    static Omegacomplete* instance_;
 
     boost::thread worker_thread_;
     volatile int is_quitting_;
