@@ -1,7 +1,6 @@
 #pragma once
 
-class LookupTable : public boost::noncopyable
-{
+class LookupTable : public boost::noncopyable {
 public:
     static void InitStatic();
 

@@ -3,6 +3,7 @@
 #include "Buffer.hpp"
 #include "GlobalWordSet.hpp"
 #include "CompleteItem.hpp"
+#include "Stopwatch.hpp"
 
 class Omegacomplete : public boost::noncopyable {
 public:
@@ -65,6 +66,8 @@ private:
     std::string cmdShouldAutocomplete(StringPtr argument);
     std::string cmdConfig(StringPtr argument);
     std::string cmdGetAutocomplete(StringPtr argument);
+    std::string cmdStartStopwatch(StringPtr argument);
+    std::string cmdStopStopwatch(StringPtr argument);
 
     ////////////////////////////////////////////////////////////////////////////
     // Omegacomplete Core
@@ -136,4 +139,7 @@ private:
     std::string autocomplete_input_trigger_;
 
     std::map<std::string, std::string> config_;
+
+    Stopwatch stopwatch_;
+    std::ofstream log_file_;
 };

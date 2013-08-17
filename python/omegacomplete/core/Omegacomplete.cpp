@@ -2,7 +2,6 @@
 
 #include "Omegacomplete.hpp"
 #include "TagsSet.hpp"
-#include "Stopwatch.hpp"
 #include "LookupTable.hpp"
 #include "Algorithm.hpp"
 
@@ -26,7 +25,8 @@ Omegacomplete::Omegacomplete() :
     is_corrections_only_(false),
     should_autocomplete_(false),
     suffix0_(false),
-    suffix1_(false)
+    suffix1_(false),
+    log_file_("C:\\SVN\\omegacomplete.txt", std::ios::app)
 {
     initCommandDispatcher();
 
@@ -90,6 +90,12 @@ void Omegacomplete::initCommandDispatcher()
 
     command_dispatcher_["get_autocomplete"] = boost::bind(
         &Omegacomplete::cmdGetAutocomplete, boost::ref(*this), _1);
+
+    command_dispatcher_["start_stopwatch"] = boost::bind(
+        &Omegacomplete::cmdStartStopwatch, boost::ref(*this), _1);
+
+    command_dispatcher_["stop_stopwatch"] = boost::bind(
+        &Omegacomplete::cmdStopStopwatch, boost::ref(*this), _1);
 }
 
 Omegacomplete::~Omegacomplete()
@@ -619,4 +625,18 @@ void Omegacomplete::addLevenshteinCorrections(
             completions->push_back(completion);
         }
     }
+}
+
+std::string Omegacomplete::cmdStartStopwatch(StringPtr argument)
+{
+    stopwatch_.Start();
+    return default_response_;
+}
+
+std::string Omegacomplete::cmdStopStopwatch(StringPtr argument)
+{
+    stopwatch_.Stop();
+    const std::string& ns = stopwatch_.ResultNanosecondsToString();
+    log_file_ << ns << std::endl;
+    return default_response_;
 }

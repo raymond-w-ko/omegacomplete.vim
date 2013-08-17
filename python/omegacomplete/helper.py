@@ -19,7 +19,6 @@ def oc_eval(cmd):
     except:
         oc_is_disabled = True
 
-
 def oc_get_current_buffer_contents():
     global oc_is_disabled
     if oc_is_disabled:
@@ -42,19 +41,22 @@ def oc_disable_check():
         return '0'
 
 def oc_get_cursor_pos():
-    row = str(vim.current.window.cursor[0])
-    col = str(vim.current.window.cursor[1])
-    return row + ' ' + col
+    w = vim.current.window
+    return str(w.cursor[0]) + ' ' + str(w.cursor[1])
 
 def oc_send_current_buffer():
     global oc_is_disabled
     if oc_is_disabled:
         return
 
+    # this approach takes around 0.8 to 1.8 ms for 3700 - 6751 line file that
+    # is 180 to 208 KB, which is acceptable for my tastes
     header = "buffer_contents_follow 1"
     oc_core_eval(header)
     buffer_contents = '\n'.join(vim.current.buffer)
-    return oc_core_eval(buffer_contents)
+    ret = oc_core_eval(buffer_contents)
+
+    return ret
 
 def oc_prune_buffers():
     global oc_is_disabled

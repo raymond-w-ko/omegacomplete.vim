@@ -165,6 +165,8 @@ function s:SendCurrentBuffer()
 endfunction
 
 function omegacomplete#ShowPopup()
+    "py oc_eval('start_stopwatch now')
+
     " disable when paste mode is active
     if &paste
         return ''
@@ -247,6 +249,7 @@ EOF
             let s:current_hi_mode = 'normal'
         endif
         " finally show completions!
+        "py oc_eval('stop_stopwatch now')
         return "\<C-x>\<C-u>\<C-p>"
     endif
 endfunction

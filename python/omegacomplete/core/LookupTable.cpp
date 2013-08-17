@@ -12,8 +12,7 @@ char LookupTable::IsNumber[256];
 std::vector<char> LookupTable::QuickMatchKey;
 boost::unordered_map<char, unsigned> LookupTable::ReverseQuickMatch;
 
-void LookupTable::InitStatic()
-{
+void LookupTable::InitStatic() {
     // generate lookup tables
     for (size_t index = 0; index <= 255; ++index) {
         LookupTable::IsPartOfWord[index] =
