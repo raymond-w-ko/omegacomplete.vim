@@ -1,31 +1,27 @@
-#include <Python.h>
-
+#include <time.h>
+#include <stdlib.h>
 #include <stdint.h>
+
+#include <Python.h>
 
 #ifdef _WIN32
     #include "targetver.h"
 
-    // Debug Mode
-    #ifdef _DEBUG
-    // Release Mode
-    #else
-        // disable checked iterators for performance reasons
+    #ifndef _DEBUG
+        // disable checked iterators for performance
         #define _SECURE_SCL 0
     #endif
 
     #include <windows.h>
 
     inline
-    int64_t to_int64(const FILETIME& ft)
-    {
+    int64_t to_int64(const FILETIME& ft) {
         return static_cast<int64_t>(ft.dwHighDateTime) << 32 | ft.dwLowDateTime;
     }
 #else
-    #include <stdlib.h>
-
-    #include <time.h>
     #include <sys/types.h>
     #include <sys/stat.h>
+    // Mac OS X specific includes
     #ifdef __MACH__
         #include <mach/clock.h>
         #include <mach/mach.h>
@@ -58,6 +54,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/chrono.hpp>
 
 #define auto BOOST_AUTO
 #define foreach BOOST_FOREACH
