@@ -22,6 +22,9 @@ let s:last_disambiguate_index = -1
 " initialize this to be safe
 let g:omegacomplete_server_results=[]
 
+" current hilight mode (either normal or corrections)
+let s:current_hi_mode = 'unitialized'
+
 if !exists("g:omegacomplete_normal_hi_cmds")
     let g:omegacomplete_normal_hi_cmds=[
     \ "hi Pmenu guifg=#00ff00 guibg=#003300 gui=none " .
@@ -57,11 +60,11 @@ function s:Init()
     set completeopt+=menuone
 
     call s:ApplyMappings()
-    nnoremap <silent> i i<C-r>=omegacomplete#FeedPopup()<CR>
-    nnoremap <silent> I I<C-r>=omegacomplete#FeedPopup()<CR>
-    nnoremap <silent> a a<C-r>=omegacomplete#FeedPopup()<CR>
-    nnoremap <silent> A A<C-r>=omegacomplete#FeedPopup()<CR>
-    nnoremap <silent> R R<C-r>=omegacomplete#FeedPopup()<CR>
+    nnoremap <silent> i i<C-r>=omegacomplete#ShowPopup()<CR>
+    nnoremap <silent> I I<C-r>=omegacomplete#ShowPopup()<CR>
+    nnoremap <silent> a a<C-r>=omegacomplete#ShowPopup()<CR>
+    nnoremap <silent> A A<C-r>=omegacomplete#ShowPopup()<CR>
+    nnoremap <silent> R R<C-r>=omegacomplete#ShowPopup()<CR>
 
     command OmegacompleteFlushServerCaches :call <SID>FlushServerCaches()
     command OmegacompleteUpdateConfig :call <SID>UpdateConfig()
@@ -140,7 +143,7 @@ function s:ApplyMappings()
         "'\'
  
     for key in s:keys_mapping_driven
-        exe printf('inoremap <silent> %s %s<C-r>=omegacomplete#FeedPopup()<CR>',
+        exe printf('inoremap <silent> %s %s<C-r>=omegacomplete#ShowPopup()<CR>',
                  \ key, key)
     endfor
 endfunction
@@ -158,101 +161,92 @@ function s:UnapplyMappings()
 endfunction
 
 function s:SendCurrentBuffer()
-    py oc_send_current_buffer()
+    python oc_send_current_buffer()
 endfunction
 
-function omegacomplete#FeedPopup()
+function omegacomplete#ShowPopup()
     " disable when paste mode is active
     if &paste
         return ''
     endif
-    
-    " let server know what is the current buffer
-    let buffer_number = <SID>GetCurrentBufferNumber()
-    exe 'py oc_eval("current_buffer_id ' . buffer_number . '")'
 
     " check if plugin has disabled itself because of connection problems
     " we can only do this only after 1 oc_eval() has occurred
-    let is_oc_disabled=''
-    exe 'py vim.command("let is_oc_disabled = " + oc_disable_check())'
-    if (is_oc_disabled == "1")
+    let is_oc_disabled = 0
+    python vim.command('let is_oc_disabled = ' + oc_disable_check())
+    if is_oc_disabled == "1"
         return ''
     endif
 
-    " send server the contents of the current line the cursor is at
-    exe 'py oc_eval("current_line " + oc_get_current_line())'
+    python << EOF
+# let server know what is the current buffer
+b = vim.current.buffer
+oc_eval('current_buffer_id ' + str(b.number))
+# send server the contents of the current line the cursor is at
+oc_eval('current_line ' + oc_get_current_line())
+# tell server what the current cursor position is
+oc_eval('cursor_position ' + oc_get_cursor_pos())
+EOF
 
-    " tell server what the current cursor position is
-    exe 'py oc_eval("cursor_position " + oc_get_cursor_pos())'
-
-    " send server contents of the entire buffer in case reparse is needed
-    if (s:just_did_insertenter != 1)
+    " send server contents of the entire buffer to update buffer state
+    if s:just_did_insertenter != 1
         call s:SendCurrentBuffer()
     endif
     let s:just_did_insertenter = 0
 
-    " send current directory to server in preparation for sending tags
-    exe 'py current_directory = vim.eval("getcwd()")'
-    exe 'py oc_eval("current_directory " + current_directory)'
-
-    " send tags we are using to the server
-    exe 'py current_tags = vim.eval("&tags")'
-    exe 'py oc_eval("current_tags " + current_tags)'
-
-    " send current line up to the cursor
     let partial_line = strpart(getline('.'), 0, col('.') - 1)
-    exe 'py oc_server_result = oc_eval("complete " + vim.eval("partial_line"))'
-
-    let autocomplete=""
-    " --------------------------------------------------------------------------
+    let autocomplete_chars = ''
     python << EOF
+# send current directory to server in preparation for sending tags
+oc_eval("current_directory " + vim.eval('getcwd()'))
+# send tags we are using to the server
+oc_eval("current_tags " + vim.eval("&tags"))
+# send current line up to the cursor, triggering a complete event
+oc_server_result = oc_eval('complete ' + vim.eval('partial_line'))
 should_autocomplete = oc_eval('should_autocomplete ?')
 if should_autocomplete != '0':
     temp = oc_eval('get_autocomplete please')
-    vim.command('let autocomplete="' + temp + '"')
+    vim.command('let autocomplete_chars = "' + temp + '"')
 EOF
-    " --------------------------------------------------------------------------
-    if len(autocomplete) > 0
-        echom len(autocomplete)
-        return autocomplete
+
+    if len(autocomplete_chars) > 0
+        return autocomplete_chars
     endif
 
-" check to make sure we get something
-    " --------------------------------------------------------------------------
     python << EOF
+# check to make sure we got some completions
 if len(oc_server_result) == 0:
     vim.command('let g:omegacomplete_server_results=[]')
 else:
     vim.command('let g:omegacomplete_server_results=' + oc_server_result)
 EOF
-    " --------------------------------------------------------------------------
 
     let s:last_disambiguate_index = -1
 
-    if (len(g:omegacomplete_server_results) == 0)
+    if len(g:omegacomplete_server_results) == 0
         " try to show popup menu, but fail and reset completion status
         return "\<C-x>\<C-u>"
     else
-        exe 'py is_corrections_only = oc_eval("is_corrections_only ?")'
         let is_corrections_only=0
-    " --------------------------------------------------------------------------
         python << EOF
+is_corrections_only = oc_eval("is_corrections_only ?")
 if is_corrections_only == '0':
-    vim.command('let is_corrections_only=0')
+    vim.command('let is_corrections_only = 0')
 else:
-    vim.command('let is_corrections_only=1')
+    vim.command('let is_corrections_only = 1')
 EOF
-    " --------------------------------------------------------------------------
-        if (is_corrections_only)
+        if is_corrections_only && s:current_hi_mode != 'corrections'
             for cmd in g:omegacomplete_corrections_hi_cmds
                 exe cmd
             endfor
-        else
+            let s:current_hi_mode = 'corrections'
+        elseif !is_corrections_only && s:current_hi_mode != 'normal'
             for cmd in g:omegacomplete_normal_hi_cmds
                 exe cmd
             endfor
+            let s:current_hi_mode = 'normal'
         endif
-        " show actual popup
+        " finally show completions!
         return "\<C-x>\<C-u>\<C-p>"
     endif
 endfunction
@@ -444,11 +438,11 @@ function omegacomplete#UseFirstEntryOfPopup()
         if (index <= 0)
             return "\<Tab>"
         elseif (line[index] == '.')
-            return <SID>omegacomplete#FeedPopup()
+            return <SID>omegacomplete#ShowPopup()
         elseif (index >= 2 && line[index - 1] == '-' && line[index] == '>')
-            return <SID>omegacomplete#FeedPopup()
+            return <SID>omegacomplete#ShowPopup()
         elseif (index >= 2 && line[index - 1] == ':' && line[index] == ':')
-            return <SID>omegacomplete#FeedPopup()
+            return <SID>omegacomplete#ShowPopup()
         else
             return "\<Tab>"
         endif
