@@ -18,9 +18,6 @@ TestCases::TestCases()
     std::cout << "running test cases" << std::endl;
     std::cout << std::endl;
 
-    ustringTest();
-    std::cout << std::endl;
-
     TrieNodeTest();
     std::cout << std::endl;
 
@@ -34,12 +31,6 @@ TestCases::TestCases()
 TestCases::~TestCases()
 {
     ;
-}
-
-void TestCases::ustringTest()
-{
-    std::cout << "checking ustring<8>" << std::endl;
-    ustring<8> dummy("lelouch");
 }
 
 void TestCases::TrieNodeTest()

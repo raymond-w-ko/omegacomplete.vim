@@ -204,7 +204,6 @@
     <ClCompile Include="..\TagsSet.cpp" />
     <ClCompile Include="..\TestCases.cpp" />
     <ClCompile Include="..\TrieNode.cpp" />
-    <ClCompile Include="..\ustring.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\AbbreviationInfo.hpp" />
@@ -221,7 +220,6 @@
     <ClInclude Include="..\TagsSet.hpp" />
     <ClInclude Include="..\TestCases.hpp" />
     <ClInclude Include="..\TrieNode.hpp" />
-    <ClInclude Include="..\ustring.hpp" />
     <ClInclude Include="..\WordInfo.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

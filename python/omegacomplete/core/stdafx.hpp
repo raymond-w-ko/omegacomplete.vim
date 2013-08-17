@@ -60,8 +60,6 @@
 #define foreach BOOST_FOREACH
 #define reverse_foreach BOOST_REVERSE_FOREACH
 
-#include "ustring.hpp"
-
 template <typename Container, typename Item>
 bool Contains(const Container& container, const Item& item)
 {
@@ -100,7 +98,6 @@ struct FileLocation
 typedef unsigned char uchar;
 
 typedef std::string String;
-//typedef ustring String;
 
 typedef boost::shared_ptr<String> StringPtr;
 

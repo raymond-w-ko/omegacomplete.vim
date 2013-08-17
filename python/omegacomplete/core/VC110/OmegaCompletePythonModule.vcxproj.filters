@@ -47,9 +47,6 @@
     <ClCompile Include="..\TrieNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\ustring.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\AbbreviationInfo.hpp">
@@ -92,9 +89,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\TrieNode.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ustring.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\WordInfo.hpp">
