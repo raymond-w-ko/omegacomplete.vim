@@ -1,8 +1,7 @@
 #include "stdafx.hpp"
 #include "OmegaComplete.hpp"
 
-static PyObject* eval(PyObject* self, PyObject* args)
-{
+static PyObject* eval(PyObject* self, PyObject* args) {
     const char* input;
     int len;
     if (!PyArg_ParseTuple(args, "s#", &input, &len))
@@ -12,13 +11,13 @@ static PyObject* eval(PyObject* self, PyObject* args)
     return Py_BuildValue("s", result.c_str());
 }
 
-static PyMethodDef CoreMethods[] =
-{
+static PyMethodDef CoreMethods[] = {
     {
         "eval", eval,
         METH_VARARGS,
         "Send a message to the completion core and possibly receive a response"
-    },
+    }
+    ,
     {NULL, NULL, 0, NULL}
 };
 

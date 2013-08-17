@@ -13,6 +13,17 @@
 #include "TagsSet.hpp"
 #include "Algorithm.hpp"
 
+static void always_assert(bool condition) {
+    if (condition == false) {
+#ifdef _WIN32
+        DebugBreak();
+#endif
+        throw std::exception();
+    }
+
+    return;
+}
+
 TestCases::TestCases()
 {
     std::cout << "running test cases" << std::endl;
@@ -93,8 +104,8 @@ void TestCases::TrieNodeTest()
     delta = (end_time - start_time);
     std::cout << "wordlist removal time: " << delta << " ms" << std::endl;
 
-    always_assert( root_node.Children.size() == 0 );
-    always_assert( root_node.Word.empty() );
+    always_assert(root_node.Children.size() == 0);
+    always_assert(root_node.Word.empty());
 #endif
 }
 

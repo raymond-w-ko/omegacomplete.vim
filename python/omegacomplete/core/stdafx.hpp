@@ -61,36 +61,19 @@
 #define reverse_foreach BOOST_REVERSE_FOREACH
 
 template <typename Container, typename Item>
-bool Contains(const Container& container, const Item& item)
-{
+bool Contains(const Container& container, const Item& item) {
     return container.find(item) != container.end();
 }
 
-inline void always_assert(bool condition)
-{
-    if (condition == false)
-        throw std::exception();
-
-    return;
-}
-
-inline void NormalizeToUnixPathSeparators(std::string& pathname)
-{
+inline void NormalizeToUnixPathSeparators(std::string& pathname) {
     boost::replace_all(pathname, "\\", "/");
 }
 
-inline void NormalizeToWindowsPathSeparators(std::string& pathname)
-{
+inline void NormalizeToWindowsPathSeparators(std::string& pathname) {
     boost::replace_all(pathname, "/", "\\");
 }
 
-inline char LastChar(const std::string& s)
-{
-    return s[s.size() - 1];
-}
-
-struct FileLocation
-{
+struct FileLocation {
     unsigned Line;
     unsigned Column;
 };
@@ -98,7 +81,6 @@ struct FileLocation
 typedef unsigned char uchar;
 
 typedef std::string String;
-
 typedef boost::shared_ptr<String> StringPtr;
 
 typedef std::set<String> StringSet;

@@ -384,7 +384,7 @@ void OmegaComplete::workerThreadLoop()
         {
             boost::mutex::scoped_lock lock(job_queue_mutex_);
             while (job_queue_.empty()) {
-                const boost::system_time timeout = 
+                const boost::system_time timeout =
                     boost::get_system_time() +
                     boost::posix_time::milliseconds(5 * 1000);
                 job_queue_conditional_variable_.timed_wait(lock, timeout);
@@ -428,7 +428,7 @@ void OmegaComplete::genericKeywordCompletion(
         should_autocomplete_ = true;
         return;
     }
-    else if (!suffix0_ && LastChar(input) == config_["autcomplete_suffix"][0]) {
+    else if (!suffix0_ && input.back() == config_["autcomplete_suffix"][0]) {
         suffix0_ = true;
         autocomplete_completions_ = prev_completions_;
     }

@@ -4,10 +4,7 @@
 #include "GlobalWordSet.hpp"
 #include "CompleteItem.hpp"
 
-class OmegaComplete
-:
-public boost::noncopyable
-{
+class OmegaComplete : public boost::noncopyable {
 public:
     static void InitStatic();
     static OmegaComplete* GetInstance() { return instance_; }
