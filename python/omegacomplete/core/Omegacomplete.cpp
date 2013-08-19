@@ -28,8 +28,7 @@ Omegacomplete::Omegacomplete()
       is_corrections_only_(false),
       should_autocomplete_(false),
       suffix0_(false),
-      suffix1_(false),
-      log_file_("C:\\SVN\\omegacomplete.txt", std::ios::app) {
+      suffix1_(false) {
   initCommandDispatcher();
 
   worker_thread_ = boost::thread(&Omegacomplete::workerThreadLoop, this);
@@ -89,6 +88,9 @@ void Omegacomplete::initCommandDispatcher() {
 
   command_dispatcher_["get_autocomplete"] = boost::bind(
       &Omegacomplete::cmdGetAutocomplete, boost::ref(*this), _1);
+
+  command_dispatcher_["set_log_file"] = boost::bind(
+      &Omegacomplete::cmdSetLogFile, boost::ref(*this), _1);
 
   command_dispatcher_["start_stopwatch"] = boost::bind(
       &Omegacomplete::cmdStartStopwatch, boost::ref(*this), _1);
@@ -342,6 +344,12 @@ std::string Omegacomplete::cmdGetAutocomplete(StringPtr argument) {
   autocomplete_completions_.reset();
 
   return result;
+}
+
+std::string Omegacomplete::cmdSetLogFile(StringPtr argument) {
+  log_file_.close();
+  log_file_.open(*argument, std::ios::app) ;
+  return kDefaultResponse;
 }
 
 std::string Omegacomplete::cmdStartStopwatch(StringPtr argument) {

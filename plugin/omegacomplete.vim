@@ -19,6 +19,12 @@ let s:performed_client_disambiguate_mappings = 0
 " goes to that selection
 let s:last_disambiguate_index = -1
 
+" path of log file to write debug output
+" right now the only thing that uses this the stopwatch
+if !exists('g:omegacomplete_log_file')
+  let g:omegacomplete_log_file = ''
+endif
+
 " initialize this to be safe
 let g:omegacomplete_server_results=[]
 
@@ -462,6 +468,10 @@ function <SID>UpdateConfig()
        \ g:omegacomplete_autocomplete_suffix . '")'
 
     call <SID>ConfigureDisambiguateMode()
+
+    if len(g:omegacomplete_log_file) > 0
+      exe 'py oc_eval("set_log_file ' . g:omegacomplete_log_file . '")'
+    endif
 endfunction
 
 function <SID>ConfigureDisambiguateMode()

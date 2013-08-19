@@ -58,6 +58,7 @@ class Omegacomplete : public boost::noncopyable {
   std::string cmdShouldAutocomplete(StringPtr argument);
   std::string cmdConfig(StringPtr argument);
   std::string cmdGetAutocomplete(StringPtr argument);
+  std::string cmdSetLogFile(StringPtr argument);
   std::string cmdStartStopwatch(StringPtr argument);
   std::string cmdStopStopwatch(StringPtr argument);
 
