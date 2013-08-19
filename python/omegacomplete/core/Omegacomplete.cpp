@@ -210,23 +210,20 @@ std::string Omegacomplete::cmdFreeBuffer(StringPtr argument) {
   return kDefaultResponse;
 }
 
-std::string Omegacomplete::cmdCurrentDirectory(StringPtr argument)
-{
+std::string Omegacomplete::cmdCurrentDirectory(StringPtr argument) {
   current_directory_ = *argument;
-
   return kDefaultResponse;
 }
 
-std::string Omegacomplete::cmdCurrentTags(StringPtr argument)
-{
+std::string Omegacomplete::cmdCurrentTags(StringPtr argument) {
   current_tags_.clear();
 
   std::vector<std::string> tags_list;
   boost::split(tags_list, *argument,
                boost::is_any_of(","), boost::token_compress_on);
-  foreach (const std::string& tags, tags_list)
-  {
-    if (tags.size() == 0) continue;
+  foreach (const std::string& tags, tags_list) {
+    if (tags.size() == 0)
+      continue;
 
     TagsSet::Instance()->CreateOrUpdate(tags, current_directory_);
     current_tags_.push_back(tags);
@@ -235,8 +232,7 @@ std::string Omegacomplete::cmdCurrentTags(StringPtr argument)
   return kDefaultResponse;
 }
 
-std::string Omegacomplete::cmdTaglistTags(StringPtr argument)
-{
+std::string Omegacomplete::cmdTaglistTags(StringPtr argument) {
   taglist_tags_.clear();
 
   std::vector<std::string> tags_list;
@@ -244,7 +240,8 @@ std::string Omegacomplete::cmdTaglistTags(StringPtr argument)
                boost::is_any_of(","), boost::token_compress_on);
   foreach (const std::string& tags, tags_list)
   {
-    if (tags.size() == 0) continue;
+    if (tags.size() == 0)
+      continue;
 
     TagsSet::Instance()->CreateOrUpdate(tags, current_directory_);
     taglist_tags_.push_back(tags);
@@ -253,40 +250,37 @@ std::string Omegacomplete::cmdTaglistTags(StringPtr argument)
   return kDefaultResponse;
 }
 
-std::string Omegacomplete::cmdVimTaglistFunction(StringPtr argument)
-{
+std::string Omegacomplete::cmdVimTaglistFunction(StringPtr argument) {
   const std::string& response = TagsSet::Instance()->VimTaglistFunction(
       *argument, taglist_tags_, current_directory_);
 
   return response;
 }
 
-std::string Omegacomplete::cmdPrune(StringPtr argument)
-{
+std::string Omegacomplete::cmdPrune(StringPtr argument) {
   WordSet.Prune();
 
   return kDefaultResponse;
 }
 
-std::string Omegacomplete::cmdFlushCaches(StringPtr argument)
-{
+std::string Omegacomplete::cmdFlushCaches(StringPtr argument) {
   TagsSet::Instance()->Clear();
 
   return kDefaultResponse;
 }
 
-std::string Omegacomplete::cmdIsCorrectionsOnly(StringPtr argument)
-{
+std::string Omegacomplete::cmdIsCorrectionsOnly(StringPtr argument) {
   const std::string& response = is_corrections_only_ ? "1" : "0";
   return response;
 }
 
-std::string Omegacomplete::cmdPruneBuffers(StringPtr argument)
-{
+std::string Omegacomplete::cmdPruneBuffers(StringPtr argument) {
   std::vector<std::string> numbers;
   boost::split(
-      numbers, *argument,
-      boost::is_any_of(","), boost::token_compress_on);
+      numbers,
+      *argument,
+      boost::is_any_of(","),
+      boost::token_compress_on);
   std::set<unsigned> valid_buffers;
   foreach (const std::string& number, numbers) {
     valid_buffers.insert(boost::lexical_cast<unsigned>(number));
@@ -311,14 +305,12 @@ std::string Omegacomplete::cmdPruneBuffers(StringPtr argument)
   return kDefaultResponse;
 }
 
-std::string Omegacomplete::cmdShouldAutocomplete(StringPtr argument)
-{
+std::string Omegacomplete::cmdShouldAutocomplete(StringPtr argument) {
   const std::string& response = should_autocomplete_ ? "1" : "0";
   return response;
 }
 
-std::string Omegacomplete::cmdConfig(StringPtr argument)
-{
+std::string Omegacomplete::cmdConfig(StringPtr argument) {
   std::vector<std::string> tokens;
   boost::split(tokens, *argument, boost::is_any_of(" "), boost::token_compress_on);
 
@@ -329,8 +321,7 @@ std::string Omegacomplete::cmdConfig(StringPtr argument)
   return kDefaultResponse;
 }
 
-std::string Omegacomplete::cmdGetAutocomplete(StringPtr argument)
-{
+std::string Omegacomplete::cmdGetAutocomplete(StringPtr argument) {
   if (!suffix0_ || !suffix1_)
     return "";
 
@@ -353,14 +344,12 @@ std::string Omegacomplete::cmdGetAutocomplete(StringPtr argument)
   return result;
 }
 
-std::string Omegacomplete::cmdStartStopwatch(StringPtr argument)
-{
+std::string Omegacomplete::cmdStartStopwatch(StringPtr argument) {
   stopwatch_.Start();
   return kDefaultResponse;
 }
 
-std::string Omegacomplete::cmdStopStopwatch(StringPtr argument)
-{
+std::string Omegacomplete::cmdStopStopwatch(StringPtr argument) {
   stopwatch_.Stop();
   const std::string& ns = stopwatch_.ResultNanosecondsToString();
   log_file_ << ns << std::endl;
@@ -374,8 +363,7 @@ void Omegacomplete::queueParseJob(ParseJob job) {
   job_queue_conditional_variable_.notify_one();
 }
 
-void Omegacomplete::workerThreadLoop()
-{
+void Omegacomplete::workerThreadLoop() {
   ParseJob job;
   while (!is_quitting_) {
     {
@@ -408,8 +396,7 @@ void Omegacomplete::calculateCompletionCandidates(
 
 void Omegacomplete::genericKeywordCompletion(
     const std::string& line,
-    std::string& result)
-{
+    std::string& result) {
   std::string input = getWordToComplete(line);
   if (input.empty())
     return;
@@ -417,18 +404,15 @@ void Omegacomplete::genericKeywordCompletion(
   // check to see if autocomplete is tripped
   if (suffix0_ &&
       input.size() >= 3 &&
-      input.substr(input.size() - 2) == config_["autcomplete_suffix"])
-  {
+      input.substr(input.size() - 2) == config_["autcomplete_suffix"]) {
     suffix1_ = true;
     autocomplete_input_trigger_ = input;
     should_autocomplete_ = true;
     return;
-  }
-  else if (!suffix0_ && input.back() == config_["autcomplete_suffix"][0]) {
+  } else if (!suffix0_ && input.back() == config_["autcomplete_suffix"][0]) {
     suffix0_ = true;
     autocomplete_completions_ = prev_completions_;
-  }
-  else {
+  } else {
     suffix0_ = suffix1_ = false;
   }
 
@@ -443,8 +427,7 @@ void Omegacomplete::genericKeywordCompletion(
       shouldEnableDisambiguateMode(input, disambiguate_index);
   if (disambiguate_mode &&
       prev_completions_ &&
-      disambiguate_index < prev_completions_->size())
-  {
+      disambiguate_index < prev_completions_->size()) {
     const CompleteItem& completion = (*prev_completions_)[disambiguate_index];
     result += "[";
     result += completion.SerializeToVimDict();
@@ -458,8 +441,7 @@ void Omegacomplete::genericKeywordCompletion(
   // this is to prevent completions from being considered
   // that are basically the word from before you press Backspace.
   if (prev_input_[1].size() == (input.size() + 1) &&
-      boost::starts_with(prev_input_[1], input))
-  {
+      boost::starts_with(prev_input_[1], input)) {
     added_words.insert(prev_input_[1]);
   }
 
@@ -527,8 +509,7 @@ retry_completion:
     suffix0_ = false;
 }
 
-std::string Omegacomplete::getWordToComplete(const std::string& line)
-{
+std::string Omegacomplete::getWordToComplete(const std::string& line) {
   if (line.length() == 0)
     return "";
 
@@ -551,8 +532,7 @@ std::string Omegacomplete::getWordToComplete(const std::string& line)
 }
 
 bool Omegacomplete::shouldEnableDisambiguateMode(
-    const std::string& word, unsigned& index)
-{
+    const std::string& word, unsigned& index) {
   if (word.size() < 2)
     return false;
 
@@ -567,8 +547,7 @@ bool Omegacomplete::shouldEnableDisambiguateMode(
 }
 
 bool Omegacomplete::shouldEnableTerminusMode(
-    const std::string& word, std::string& prefix)
-{
+    const std::string& word, std::string& prefix) {
   if (word.size() < 2)
     return false;
 
@@ -584,8 +563,7 @@ bool Omegacomplete::shouldEnableTerminusMode(
 void Omegacomplete::addLevenshteinCorrections(
     const std::string& input,
     CompleteItemVectorPtr& completions,
-    std::set<std::string>& added_words)
-{
+    std::set<std::string>& added_words) {
   if (completions->size() == 0) {
     is_corrections_only_ = true;
   } else {
