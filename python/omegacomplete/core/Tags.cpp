@@ -170,8 +170,8 @@ void Tags::VimTaglistFunction(
     const std::string& word,
     std::stringstream& ss)
 {
-    auto(bounds, tags_.equal_range(word));
-    auto(&iter, bounds.first);
+    AUTO(bounds, tags_.equal_range(word));
+    AUTO(&iter, bounds.first);
     for (; iter != bounds.second; ++iter)
     {
         const std::string& tag_name = iter->first;
@@ -206,7 +206,7 @@ void Tags::GetPrefixCompletions(
     CompleteItemVectorPtr& completions, std::set<std::string>& added_words,
     bool terminus_mode)
 {
-    auto(iter, tags_.lower_bound(input));
+    AUTO(iter, tags_.lower_bound(input));
     for (; iter != tags_.end(); ++iter) {
         const std::string& candidate = iter->first;
 
@@ -238,8 +238,8 @@ void Tags::GetAbbrCompletions(
     if (input.length() < 2)
         return;
 
-    auto(const &set, abbreviations_[input]);
-    auto(iter, set.begin());
+    AUTO(const &set, abbreviations_[input]);
+    AUTO(iter, set.begin());
     for (; iter != set.end(); ++iter) {
         const AbbreviationInfo& candidate = *iter;
 

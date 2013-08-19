@@ -56,7 +56,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/chrono.hpp>
 
-#define auto BOOST_AUTO
+#define AUTO BOOST_AUTO
 #define foreach BOOST_FOREACH
 #define reverse_foreach BOOST_REVERSE_FOREACH
 

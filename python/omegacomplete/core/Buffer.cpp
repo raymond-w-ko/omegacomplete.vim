@@ -19,7 +19,7 @@ Buffer::~Buffer()
     if (words_ == NULL)
         return;
 
-    auto(i, words_->begin());
+    AUTO(i, words_->begin());
     for (; i != words_->end(); ++i) {
         parent_->WordSet.UpdateWord(i->first, -i->second);
     }
@@ -59,7 +59,7 @@ void Buffer::ReplaceContentsWith(StringPtr new_contents)
 
     if (!contents_) {
         // easy first case, just increment reference count for each word
-        auto(i, new_words->begin());
+        AUTO(i, new_words->begin());
         for (; i != new_words->end(); ++i) {
             parent_->WordSet.UpdateWord(i->first, +i->second);
         }
@@ -72,7 +72,7 @@ void Buffer::ReplaceContentsWith(StringPtr new_contents)
 
         // calculated words to be removed, by checking lack of existence in
         // new_words set
-        auto(i, words_->begin());
+        AUTO(i, words_->begin());
         for (; i != words_->end(); ++i) {
             const std::string& word = i->first;
             const int ref_count = i->second;
@@ -82,7 +82,7 @@ void Buffer::ReplaceContentsWith(StringPtr new_contents)
 
         // calculate words to be added, by checking checking lack of existence
         // in the old set
-        auto(j, new_words->begin());
+        AUTO(j, new_words->begin());
         for (; j != new_words->end(); ++j) {
             const std::string& word = j->first;
             const int ref_count = j->second;
@@ -92,7 +92,7 @@ void Buffer::ReplaceContentsWith(StringPtr new_contents)
 
         // update refernce count for words that both exist in  new_words and
         // words_
-        auto(k, words_->begin());
+        AUTO(k, words_->begin());
         for (; k != words_->end(); ++k) {
             const std::string& word = k->first;
             const int ref_count = k->second;

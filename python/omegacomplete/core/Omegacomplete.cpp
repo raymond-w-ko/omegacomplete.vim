@@ -35,68 +35,73 @@ Omegacomplete::Omegacomplete()
 }
 
 void Omegacomplete::initCommandDispatcher() {
-  command_dispatcher_["current_buffer_id"] = boost::bind(
-      &Omegacomplete::cmdCurrentBufferId, boost::ref(*this), _1);
+  using boost::bind;
+  using boost::ref;
 
-  command_dispatcher_["current_buffer_absolute_path"] = boost::bind(
-      &Omegacomplete::cmdCurrentBufferAbsolutePath, boost::ref(*this), _1);
+  AUTO(&m, command_dispatcher_);
 
-  command_dispatcher_["current_line"] = boost::bind(
-      &Omegacomplete::cmdCurrentLine, boost::ref(*this), _1);
+  m["current_buffer_id"] = boost::bind(
+      &Omegacomplete::cmdCurrentBufferId, ref(*this), _1);
 
-  command_dispatcher_["cursor_position"] = boost::bind(
-      &Omegacomplete::cmdCursorPosition, boost::ref(*this), _1);
+  m["current_buffer_absolute_path"] = boost::bind(
+      &Omegacomplete::cmdCurrentBufferAbsolutePath, ref(*this), _1);
 
-  command_dispatcher_["buffer_contents_follow"] = boost::bind(
-      &Omegacomplete::cmdBufferContentsFollow, boost::ref(*this), _1);
+  m["current_line"] = boost::bind(
+      &Omegacomplete::cmdCurrentLine, ref(*this), _1);
 
-  command_dispatcher_["complete"] = boost::bind(
-      &Omegacomplete::cmdComplete, boost::ref(*this), _1);
+  m["cursor_position"] = boost::bind(
+      &Omegacomplete::cmdCursorPosition, ref(*this), _1);
 
-  command_dispatcher_["free_buffer"] = boost::bind(
-      &Omegacomplete::cmdFreeBuffer, boost::ref(*this), _1);
+  m["buffer_contents_follow"] = boost::bind(
+      &Omegacomplete::cmdBufferContentsFollow, ref(*this), _1);
 
-  command_dispatcher_["current_directory"] = boost::bind(
-      &Omegacomplete::cmdCurrentDirectory, boost::ref(*this), _1);
+  m["complete"] = boost::bind(
+      &Omegacomplete::cmdComplete, ref(*this), _1);
 
-  command_dispatcher_["current_tags"] = boost::bind(
-      &Omegacomplete::cmdCurrentTags, boost::ref(*this), _1);
+  m["free_buffer"] = boost::bind(
+      &Omegacomplete::cmdFreeBuffer, ref(*this), _1);
 
-  command_dispatcher_["taglist_tags"] = boost::bind(
-      &Omegacomplete::cmdTaglistTags, boost::ref(*this), _1);
+  m["current_directory"] = boost::bind(
+      &Omegacomplete::cmdCurrentDirectory, ref(*this), _1);
 
-  command_dispatcher_["vim_taglist_function"] = boost::bind(
-      &Omegacomplete::cmdVimTaglistFunction, boost::ref(*this), _1);
+  m["current_tags"] = boost::bind(
+      &Omegacomplete::cmdCurrentTags, ref(*this), _1);
 
-  command_dispatcher_["prune"] = boost::bind(
-      &Omegacomplete::cmdPrune, boost::ref(*this), _1);
+  m["taglist_tags"] = boost::bind(
+      &Omegacomplete::cmdTaglistTags, ref(*this), _1);
 
-  command_dispatcher_["flush_caches"] = boost::bind(
-      &Omegacomplete::cmdFlushCaches, boost::ref(*this), _1);
+  m["vim_taglist_function"] = boost::bind(
+      &Omegacomplete::cmdVimTaglistFunction, ref(*this), _1);
 
-  command_dispatcher_["is_corrections_only"] = boost::bind(
-      &Omegacomplete::cmdIsCorrectionsOnly, boost::ref(*this), _1);
+  m["prune"] = boost::bind(
+      &Omegacomplete::cmdPrune, ref(*this), _1);
 
-  command_dispatcher_["prune_buffers"] = boost::bind(
-      &Omegacomplete::cmdPruneBuffers, boost::ref(*this), _1);
+  m["flush_caches"] = boost::bind(
+      &Omegacomplete::cmdFlushCaches, ref(*this), _1);
 
-  command_dispatcher_["should_autocomplete"] = boost::bind(
-      &Omegacomplete::cmdShouldAutocomplete, boost::ref(*this), _1);
+  m["is_corrections_only"] = boost::bind(
+      &Omegacomplete::cmdIsCorrectionsOnly, ref(*this), _1);
 
-  command_dispatcher_["config"] = boost::bind(
-      &Omegacomplete::cmdConfig, boost::ref(*this), _1);
+  m["prune_buffers"] = boost::bind(
+      &Omegacomplete::cmdPruneBuffers, ref(*this), _1);
 
-  command_dispatcher_["get_autocomplete"] = boost::bind(
-      &Omegacomplete::cmdGetAutocomplete, boost::ref(*this), _1);
+  m["should_autocomplete"] = boost::bind(
+      &Omegacomplete::cmdShouldAutocomplete, ref(*this), _1);
 
-  command_dispatcher_["set_log_file"] = boost::bind(
-      &Omegacomplete::cmdSetLogFile, boost::ref(*this), _1);
+  m["config"] = boost::bind(
+      &Omegacomplete::cmdConfig, ref(*this), _1);
 
-  command_dispatcher_["start_stopwatch"] = boost::bind(
-      &Omegacomplete::cmdStartStopwatch, boost::ref(*this), _1);
+  m["get_autocomplete"] = boost::bind(
+      &Omegacomplete::cmdGetAutocomplete, ref(*this), _1);
 
-  command_dispatcher_["stop_stopwatch"] = boost::bind(
-      &Omegacomplete::cmdStopStopwatch, boost::ref(*this), _1);
+  m["set_log_file"] = boost::bind(
+      &Omegacomplete::cmdSetLogFile, ref(*this), _1);
+
+  m["start_stopwatch"] = boost::bind(
+      &Omegacomplete::cmdStartStopwatch, ref(*this), _1);
+
+  m["stop_stopwatch"] = boost::bind(
+      &Omegacomplete::cmdStopStopwatch, ref(*this), _1);
 }
 
 Omegacomplete::~Omegacomplete() {
@@ -128,7 +133,7 @@ const std::string Omegacomplete::Eval(const char* request, const int request_len
         request + index + 1,
         static_cast<size_t>(request_len - command.size() - 1));
 
-    auto(iter, command_dispatcher_.find(command));
+    AUTO(iter, command_dispatcher_.find(command));
     if (iter == command_dispatcher_.end()) {
       return kUnknownCommandResponse;
     } else {
@@ -291,7 +296,7 @@ std::string Omegacomplete::cmdPruneBuffers(StringPtr argument) {
   buffers_mutex_.lock();
 
   std::vector<unsigned> to_be_erased;
-  auto (iter, buffers_.begin());
+  AUTO (iter, buffers_.begin());
   for (; iter != buffers_.end(); ++iter) {
     unsigned num = iter->second.GetBufferId();
     if (!Contains(valid_buffers, num))
@@ -582,7 +587,7 @@ void Omegacomplete::addLevenshteinCorrections(
   LevenshteinSearchResults levenshtein_completions;
   WordSet.GetLevenshteinCompletions(input, levenshtein_completions);
 
-  auto (iter, levenshtein_completions.begin());
+  AUTO (iter, levenshtein_completions.begin());
   for (; iter != levenshtein_completions.end(); ++iter) {
     foreach (const std::string& word, iter->second) {
       if (completions->size() >= LookupTable::kMaxNumCompletions)

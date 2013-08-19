@@ -62,7 +62,7 @@ void GlobalWordSet::GetPrefixCompletions(
 {
     boost::mutex::scoped_lock lock(mutex_);
 
-    auto(iter, words_.lower_bound(input));
+    AUTO(iter, words_.lower_bound(input));
     for (; iter != words_.end(); ++iter) {
         const std::string& candidate = iter->first;
         const WordInfo& wi = iter->second;
@@ -97,8 +97,8 @@ void GlobalWordSet::GetAbbrCompletions(
 {
     boost::mutex::scoped_lock lock(mutex_);
 
-    auto(const &set, abbreviations_[input]);
-    auto(iter, set.begin());
+    AUTO(const &set, abbreviations_[input]);
+    AUTO(iter, set.begin());
     for (; iter != set.end(); ++iter) {
         const AbbreviationInfo& candidate = *iter;
         const WordInfo& wi = words_[candidate.Word];
@@ -129,7 +129,7 @@ size_t GlobalWordSet::Prune()
     // simply just looping through words_ and removing things might cause
     // iterator invalidation, so be safe and built a set of things to remove
     std::vector<std::string> to_be_pruned;
-    auto(i, words_.begin());
+    AUTO(i, words_.begin());
     for (; i != words_.end(); ++i)
     {
         if (i->second.ReferenceCount > 0)
@@ -149,7 +149,7 @@ size_t GlobalWordSet::Prune()
             foreach (UnsignedStringPair w, *collection) {
                 std::set<AbbreviationInfo>& set = abbreviations_[w.second];
 
-                auto (j, set.begin());
+                AUTO (j, set.begin());
                 while (j != set.end()) {
                     if (j->Word == word)
                         set.erase(j++);
@@ -161,7 +161,7 @@ size_t GlobalWordSet::Prune()
                     abbreviations_.erase(w.second);
             }
         }
-        
+
         words_.erase(word);
 
         {
