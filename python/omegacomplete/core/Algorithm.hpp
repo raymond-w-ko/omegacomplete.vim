@@ -43,6 +43,11 @@ class Algorithm {
       int end,
       const std::string& input);
   static int GetWordScore(const std::string& word, const std::string& input);
+  static bool IsTitleCaseMatch(const std::string& word, const std::string& input);
+  static bool IsSeparatorMatch(
+      const std::string& word, const std::string& input, const uchar separator);
+  static bool IsUnderScoreMatch(const std::string& word, const std::string& input);
+  static bool IsHyphenMatch(const std::string& word, const std::string& input);
 
  private:
   template <char Separator, bool AllowedOnHeadOrTail>

@@ -43,6 +43,7 @@ Omegacomplete::Omegacomplete()
   for (int i = 0; i < Omegacomplete::NumThreads(); ++i) {
     threads_.create_thread(
         boost::bind(&boost::asio::io_service::run, &io_service_));
+    mutexes_.push_back(boost::make_shared<boost::mutex>());
   }
 
   worker_thread_ = boost::thread(&Omegacomplete::workerThreadLoop, this);
@@ -463,34 +464,31 @@ void Omegacomplete::genericKeywordCompletion(
 
   int num_threads = Omegacomplete::NumThreads();
   Completions completions;
-  std::vector<boost::shared_ptr<boost::mutex> > mutexes;
 
   completions.Items = boost::make_shared<CompleteItemVector>();
-
   Words.Lock();
 
   AUTO(const & word_list, Words.GetWordList());
 
   for (int i = 0; i < num_threads; ++i) {
-    mutexes.push_back(boost::make_shared<boost::mutex>());
-    mutexes[i]->lock();
+    mutexes_[i]->lock();
     const int begin = ((i + 0) * (unsigned)word_list.size()) / num_threads;
     const int end = ((i + 1) * (unsigned)word_list.size()) / num_threads;
     io_service_.post(boost::bind(
             Algorithm::ProcessWords,
             boost::ref(completions),
-            mutexes[i],
+            mutexes_[i],
             boost::cref(word_list), begin, end, input));
   }
 
   for (int i = 0; i < num_threads; ++i) {
-    mutexes[i]->lock();
-    mutexes[i]->unlock();
+    mutexes_[i]->lock();
+    mutexes_[i]->unlock();
   }
   Words.Unlock();
 
-  std::set<std::string> added_words;
   /*
+  std::set<std::string> added_words;
   added_words.insert(input);
   // this is to prevent completions from being considered
   // that are basically the word from before you press Backspace.
@@ -551,7 +549,9 @@ retry_completion:
 
   */
 
-  addLevenshteinCorrections(input, completions.Items, added_words);
+  addLevenshteinCorrections(input, completions.Items);
+
+  std::sort(completions.Items->begin(), completions.Items->end());
 
   result += "[";
   foreach (const CompleteItem& completion, *completions.Items) {
@@ -583,7 +583,7 @@ std::string Omegacomplete::getWordToComplete(const std::string& line) {
   if ((partial_begin + 1) == partial_end)
     return "";
 
-  std::string partial( &line[partial_begin + 1], &line[partial_end] );
+  std::string partial(&line[partial_begin + 1], &line[partial_end]);
   return partial;
 }
 
@@ -618,8 +618,7 @@ bool Omegacomplete::shouldEnableTerminusMode(
 
 void Omegacomplete::addLevenshteinCorrections(
     const std::string& input,
-    CompleteItemVectorPtr& completions,
-    std::set<std::string>& added_words) {
+    CompleteItemVectorPtr& completions) {
   if (completions->size() == 0) {
     is_corrections_only_ = true;
   } else {
@@ -641,8 +640,6 @@ void Omegacomplete::addLevenshteinCorrections(
       if (boost::starts_with(input, word))
         continue;
       if (boost::ends_with(word, "-"))
-        continue;
-      if (Contains(added_words, word))
         continue;
 
       CompleteItem completion(word);

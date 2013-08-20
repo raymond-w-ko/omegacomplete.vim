@@ -156,7 +156,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <Optimization>Disabled</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;OMEGACOMPLETEPYTHONMODULE_EXPORTS;HAVE_RECENT_BOOST_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>C:\opt\Python27\include;C:\opt\boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

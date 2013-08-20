@@ -144,8 +144,7 @@ void Algorithm::ProcessWords(
     const boost::unordered_map<int, String>& word_list,
     int begin,
     int end,
-    const std::string& input)
-{
+    const std::string& input) {
   CompleteItem item;
   for (int i = begin; i < end; ++i) {
     AUTO(const & iter, word_list.find(i));
@@ -169,10 +168,72 @@ void Algorithm::ProcessWords(
   mutex->unlock();
 }
 
-int Algorithm::GetWordScore(const std::string& word, const std::string& input)
-{
-  if (boost::starts_with(word, input))
-    return 100;
+int Algorithm::GetWordScore(const std::string& word, const std::string& input) {
+  if (word == input)
+    return 0;
+
+  if (IsTitleCaseMatch(word, input))
+    return 1000;
+  else if (IsUnderScoreMatch(word, input))
+    return 2000;
+  else if (IsHyphenMatch(word, input))
+    return 3000;
+  else if (boost::starts_with(word, input))
+    return 4000;
   else
     return 0;
+}
+
+bool Algorithm::IsTitleCaseMatch(const std::string& word, const std::string& input) {
+  if (word.size() < 4 || input.size() < 2)
+    return false;
+  if (word == input)
+    return false;
+
+  std::string abbrev;
+  abbrev += LookupTable::ToLower[word[0]];
+  size_t len = word.size();
+  uchar ch;
+  for (size_t i = 1; i < len; ++i) {
+    ch = word[i];
+    if (LookupTable::IsUpper[ch]) {
+      abbrev += LookupTable::ToLower[ch];
+    }
+  }
+
+  if (input == abbrev)
+    return true;
+  else
+    return false;
+}
+
+bool Algorithm::IsSeparatorMatch(
+    const std::string& word, const std::string& input, const uchar separator) {
+  if (word.size() < 3 || input.size() < 2)
+    return false;
+  if (word == input)
+    return false;
+
+  std::string abbrev;
+  abbrev += LookupTable::ToLower[word[0]];
+
+  size_t len = word.size();
+  for (size_t i = 2; i < len; ++i) {
+    if (word[i - 1] == separator) {
+      abbrev += LookupTable::ToLower[word[i]];
+    }
+  }
+
+  if (input == abbrev)
+    return true;
+  else
+    return false;
+}
+
+bool Algorithm::IsUnderScoreMatch(const std::string& word, const std::string& input) {
+  return IsSeparatorMatch(word, input, '_');
+}
+
+bool Algorithm::IsHyphenMatch(const std::string& word, const std::string& input) {
+  return IsSeparatorMatch(word, input, '-');
 }

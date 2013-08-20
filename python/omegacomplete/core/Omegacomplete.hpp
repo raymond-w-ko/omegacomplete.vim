@@ -93,8 +93,7 @@ class Omegacomplete : public boost::noncopyable {
       const std::string& word, std::string& prefix);
   void addLevenshteinCorrections(
       const std::string& input,
-      CompleteItemVectorPtr& completions,
-      std::set<std::string>& added_words);
+      CompleteItemVectorPtr& completions);
 
   ////////////////////////////////////////////////////////////////////////////
   // Omegacomplete Core
@@ -104,6 +103,7 @@ class Omegacomplete : public boost::noncopyable {
   boost::asio::io_service io_service_;
   boost::asio::io_service::work io_service_work_;
   boost::thread_group threads_;
+  std::vector<boost::shared_ptr<boost::mutex> > mutexes_;
 
   boost::thread worker_thread_;
   volatile int is_quitting_;
