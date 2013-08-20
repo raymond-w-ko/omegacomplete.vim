@@ -21,8 +21,16 @@ void Omegacomplete::InitStatic() {
   instance_ = new Omegacomplete;
 }
 
+unsigned Omegacomplete::NumThreads()
+{
+  unsigned num_hardware_threads = boost::thread::hardware_concurrency();
+  unsigned num_threads = max(num_hardware_threads, (unsigned)2);
+  return num_threads;
+}
+
 Omegacomplete::Omegacomplete()
-    : is_quitting_(0),
+    : io_service_work_(io_service_),
+      is_quitting_(0),
       buffer_contents_follow_(false),
       prev_input_(3),
       is_corrections_only_(false),
@@ -30,6 +38,12 @@ Omegacomplete::Omegacomplete()
       suffix0_(false),
       suffix1_(false) {
   initCommandDispatcher();
+
+  // hardware_concurrency() can return 0
+  for (size_t i = 0; i < Omegacomplete::NumThreads(); ++i) {
+    threads_.create_thread(
+        boost::bind(&boost::asio::io_service::run, &io_service_));
+  }
 
   worker_thread_ = boost::thread(&Omegacomplete::workerThreadLoop, this);
 }
@@ -107,6 +121,8 @@ void Omegacomplete::initCommandDispatcher() {
 Omegacomplete::~Omegacomplete() {
   is_quitting_ = 1;
   worker_thread_.join();
+  io_service_.stop();
+  threads_.join_all();
 }
 
 const std::string Omegacomplete::Eval(const char* request, const int request_len) {

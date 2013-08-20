@@ -1,12 +1,10 @@
 #pragma once
 
-struct WordInfo
-{
+struct WordInfo {
     WordInfo()
-    :
-    ReferenceCount(0),
-    GeneratedAbbreviations(false)
-    { }
+        : ReferenceCount(0),
+          GeneratedAbbreviations(false) {
+    }
 
     ~WordInfo() { }
 

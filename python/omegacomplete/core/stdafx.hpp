@@ -4,6 +4,12 @@
 
 #include <Python.h>
 
+// must be included before <windows.h> or an error occurs
+#ifdef _WIN32
+    #define _WIN32_WINNT 0x0501
+#endif
+#include <boost/asio.hpp>
+
 #ifdef _WIN32
     #include "targetver.h"
 

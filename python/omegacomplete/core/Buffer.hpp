@@ -8,7 +8,7 @@ class Buffer {
  public:
   static void TokenizeContentsIntoKeywords(
       StringPtr contents,
-      StringIntMapPtr words);
+      UnorderedStringIntMapPtr words);
 
  public:
   Buffer() : parent_(NULL) {}
@@ -29,7 +29,7 @@ class Buffer {
   // the buffer's contents
   StringPtr contents_;
   // set of all unique words generated from this buffer's contents
-  StringIntMapPtr words_;
+  UnorderedStringIntMapPtr words_;
 };
 
 namespace boost {

@@ -9,6 +9,7 @@ class Omegacomplete : public boost::noncopyable {
  public:
   static void InitStatic();
   static Omegacomplete* GetInstance() { return instance_; }
+  static unsigned NumThreads();
 
   ~Omegacomplete();
   const std::string Eval(const char* request, const int request_len);
@@ -94,6 +95,10 @@ class Omegacomplete : public boost::noncopyable {
   // Omegacomplete Core
   ////////////////////////////////////////////////////////////////////////////
   static Omegacomplete* instance_;
+
+  boost::asio::io_service io_service_;
+  boost::asio::io_service::work io_service_work_;
+  boost::thread_group threads_;
 
   boost::thread worker_thread_;
   volatile int is_quitting_;

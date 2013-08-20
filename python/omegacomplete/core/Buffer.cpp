@@ -9,7 +9,7 @@ using namespace std;
 
 void Buffer::TokenizeContentsIntoKeywords(
     StringPtr contents,
-    StringIntMapPtr words) {
+    UnorderedStringIntMapPtr words) {
   const std::string& text = *contents;
   size_t len = text.size();
   for (size_t i = 0; i < len; ++i) {
@@ -77,7 +77,15 @@ void Buffer::ReplaceContentsWith(StringPtr new_contents) {
   if (contents_ && *contents_ == *new_contents)
     return;
 
-  StringIntMapPtr new_words = boost::make_shared<StringIntMap>();
+  UnorderedStringIntMapPtr new_words;
+  if (words_) {
+    // prevent unnecessary rehashing by allocating at least the number of
+    // buckets of the previous hash table.
+    new_words = boost::make_shared<UnorderedStringIntMap>(
+        words_->bucket_count());
+  } else {
+    new_words = boost::make_shared<UnorderedStringIntMap>();
+  }
   Buffer::TokenizeContentsIntoKeywords(new_contents, new_words);
 
   if (!contents_) {
