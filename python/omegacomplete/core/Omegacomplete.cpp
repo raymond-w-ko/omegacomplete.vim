@@ -170,10 +170,6 @@ std::string Omegacomplete::cmdCursorPosition(StringPtr argument) {
   unsigned y = lexical_cast<unsigned>(position[1]);
   cursor_pos_.Line = x; cursor_pos_.Column = y;
 
-  buffers_[current_buffer_id_].CalculateCurrentWordOfCursor(
-      current_line_,
-      cursor_pos_);
-
   return kDefaultResponse;
 }
 
@@ -298,7 +294,7 @@ std::string Omegacomplete::cmdPruneBuffers(StringPtr argument) {
   std::vector<unsigned> to_be_erased;
   AUTO (iter, buffers_.begin());
   for (; iter != buffers_.end(); ++iter) {
-    unsigned num = iter->second.GetBufferId();
+    unsigned num = iter->second.GetNumber();
     if (!Contains(valid_buffers, num))
       to_be_erased.push_back(num);
   }

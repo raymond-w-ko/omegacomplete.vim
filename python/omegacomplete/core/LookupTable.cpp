@@ -47,18 +47,16 @@ void LookupTable::InitStatic() {
     }
 }
 
-bool LookupTable::isPartOfWord(char c)
-{
-    if ((('a' <= c) && (c <= 'z')) ||
-        (('A' <= c) && (c <= 'Z')) ||
-        (c == '-') ||
-        (c == '_') ||
-        (('0' <= c) && (c <= '9')))
-    {
-        return true;
-    }
+bool LookupTable::isPartOfWord(char c) {
+  if ((('a' <= c) && (c <= 'z')) ||
+      (('A' <= c) && (c <= 'Z')) ||
+      (c == '-') ||
+      (c == '_') ||
+      (('0' <= c) && (c <= '9'))) {
+    return true;
+  }
 
-    return false;
+  return false;
 }
 
 bool LookupTable::isUpper(char c)
