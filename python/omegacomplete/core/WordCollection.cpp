@@ -99,13 +99,36 @@ void WordCollection::UpdateWord(const std::string& word, int reference_count_del
 
   WordInfo& wi = words_[word];
   wi.ReferenceCount += reference_count_delta;
-  if (wi.ReferenceCount <= 0)
+  if (wi.ReferenceCount > 0) {
+    // < 0 implies it doesn't exist in word_list_ yet
+    if (wi.WordListIndex < 0) {
+      int index;
+      if (empty_indices_.size() > 0) {
+        index = *empty_indices_.begin();
+        empty_indices_.erase(index);
+      } else {
+        index = static_cast<int>(word_list_.size());
+      }
+      wi.WordListIndex = index;
+      word_list_[index] = word;
+    }
+  } else {
+    // >= 0 implies that it exist in the world list and we need to free it
+    if (wi.WordListIndex >= 0) {
+      int index = wi.WordListIndex;
+      wi.WordListIndex = -1;
+      word_list_[index].clear();
+      empty_indices_.insert(index);
+    }
     return;
+  }
 
   {
     boost::mutex::scoped_lock trie_lock(trie_mutex_);
     trie_.Insert(word);
   }
+
+  return;
 
   if (wi.GeneratedAbbreviations)
     return;

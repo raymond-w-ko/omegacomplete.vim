@@ -60,7 +60,7 @@ Buffer::~Buffer() {
 
     AUTO(i, words_->begin());
     for (; i != words_->end(); ++i) {
-        parent_->WordSet.UpdateWord(i->first, -i->second);
+        parent_->Words.UpdateWord(i->first, -i->second);
     }
 }
 
@@ -92,7 +92,7 @@ void Buffer::ReplaceContentsWith(StringPtr new_contents) {
     // easy first case, just increment reference count for each word
     AUTO(i, new_words->begin());
     for (; i != new_words->end(); ++i) {
-      parent_->WordSet.UpdateWord(i->first, +i->second);
+      parent_->Words.UpdateWord(i->first, +i->second);
     }
   } else {
     // otherwise we have to a slow calculation of words to add and words to
@@ -135,17 +135,17 @@ void Buffer::ReplaceContentsWith(StringPtr new_contents) {
     for (StringIntMapConstIter iter = to_be_added.begin();
          iter != to_be_added.end();
          ++iter) {
-      parent_->WordSet.UpdateWord(iter->first, +iter->second);
+      parent_->Words.UpdateWord(iter->first, +iter->second);
     }
     for (StringIntMapConstIter iter = to_be_removed.begin();
          iter != to_be_removed.end();
          ++iter) {
-      parent_->WordSet.UpdateWord(iter->first, -iter->second);
+      parent_->Words.UpdateWord(iter->first, -iter->second);
     }
     for (StringIntMapConstIter iter = to_be_changed.begin();
          iter != to_be_changed.end();
          ++iter) {
-      parent_->WordSet.UpdateWord(iter->first, iter->second);
+      parent_->Words.UpdateWord(iter->first, iter->second);
     }
   }
 

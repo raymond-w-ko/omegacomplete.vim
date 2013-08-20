@@ -61,6 +61,7 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/chrono.hpp>
+#include <boost/interprocess/sync/interprocess_semaphore.hpp>
 
 #define AUTO BOOST_AUTO
 #define foreach BOOST_FOREACH

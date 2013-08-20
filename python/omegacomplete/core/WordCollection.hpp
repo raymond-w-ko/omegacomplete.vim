@@ -43,11 +43,20 @@ class WordCollection : public boost::noncopyable {
       const std::string& prefix,
       LevenshteinSearchResults& results);
 
+  void Lock() { mutex_.lock(); }
+  void Unlock() { mutex_.unlock(); }
+
+  const boost::unordered_map<int, String>& GetWordList() const {
+    return word_list_;
+  }
+
  private:
   boost::mutex mutex_;
 
   std::map<String, WordInfo> words_;
   std::map<String, std::set<AbbreviationInfo> > abbreviations_;
+  boost::unordered_map<int, String> word_list_;
+  boost::unordered_set<int> empty_indices_;
 
   boost::mutex trie_mutex_;
   TrieNode trie_;

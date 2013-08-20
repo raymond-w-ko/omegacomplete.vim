@@ -137,3 +137,42 @@ UnsignedStringPairVectorPtr Algorithm::ComputeTitleCase(
 
     return results;
 }
+
+void Algorithm::ProcessWords(
+    Omegacomplete::Completions& completions,
+    boost::shared_ptr<boost::mutex> mutex,
+    const boost::unordered_map<int, String>& word_list,
+    int begin,
+    int end,
+    const std::string& input)
+{
+  CompleteItem item;
+  for (int i = begin; i < end; ++i) {
+    AUTO(const & iter, word_list.find(i));
+    if (iter == word_list.end())
+      continue;
+    const std::string& word = iter->second;
+    if (word.empty())
+      continue;
+    if (word == input)
+      continue;
+
+    item.Score = Algorithm::GetWordScore(word, input);
+
+    if (item.Score > 0) {
+      item.Word = word;
+      completions.Mutex.lock();
+      completions.Items->push_back(item);
+      completions.Mutex.unlock();
+    }
+  }
+  mutex->unlock();
+}
+
+int Algorithm::GetWordScore(const std::string& word, const std::string& input)
+{
+  if (boost::starts_with(word, input))
+    return 100;
+  else
+    return 0;
+}

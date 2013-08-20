@@ -21,11 +21,11 @@ void Omegacomplete::InitStatic() {
   instance_ = new Omegacomplete;
 }
 
-unsigned Omegacomplete::NumThreads()
+int Omegacomplete::NumThreads()
 {
   unsigned num_hardware_threads = boost::thread::hardware_concurrency();
   unsigned num_threads = max(num_hardware_threads, (unsigned)2);
-  return num_threads;
+  return static_cast<int>(num_threads);
 }
 
 Omegacomplete::Omegacomplete()
@@ -40,7 +40,7 @@ Omegacomplete::Omegacomplete()
   initCommandDispatcher();
 
   // hardware_concurrency() can return 0
-  for (size_t i = 0; i < Omegacomplete::NumThreads(); ++i) {
+  for (int i = 0; i < Omegacomplete::NumThreads(); ++i) {
     threads_.create_thread(
         boost::bind(&boost::asio::io_service::run, &io_service_));
   }
@@ -277,7 +277,7 @@ std::string Omegacomplete::cmdVimTaglistFunction(StringPtr argument) {
 }
 
 std::string Omegacomplete::cmdPrune(StringPtr argument) {
-  WordSet.Prune();
+  Words.Prune();
 
   return kDefaultResponse;
 }
@@ -409,7 +409,7 @@ void Omegacomplete::workerThreadLoop() {
       continue;
     buffers_[job.BufferNumber].ReplaceContentsWith(job.Contents);
 
-    this->WordSet.Prune();
+    this->Words.Prune();
   }
 }
 
@@ -434,7 +434,8 @@ void Omegacomplete::genericKeywordCompletion(
     autocomplete_input_trigger_ = input;
     should_autocomplete_ = true;
     return;
-  } else if (!suffix0_ && input.back() == config_["autcomplete_suffix"][0]) {
+  } else if (!suffix0_ &&
+             input[input.size() - 1] == config_["autcomplete_suffix"][0]) {
     suffix0_ = true;
     autocomplete_completions_ = prev_completions_;
   } else {
@@ -460,8 +461,36 @@ void Omegacomplete::genericKeywordCompletion(
     return;
   }
 
-  CompleteItemVectorPtr completions = boost::make_shared<CompleteItemVector>();
+  int num_threads = Omegacomplete::NumThreads();
+  Completions completions;
+  std::vector<boost::shared_ptr<boost::mutex> > mutexes;
+
+  completions.Items = boost::make_shared<CompleteItemVector>();
+
+  Words.Lock();
+
+  AUTO(const & word_list, Words.GetWordList());
+
+  for (int i = 0; i < num_threads; ++i) {
+    mutexes.push_back(boost::make_shared<boost::mutex>());
+    mutexes[i]->lock();
+    const int begin = ((i + 0) * (unsigned)word_list.size()) / num_threads;
+    const int end = ((i + 1) * (unsigned)word_list.size()) / num_threads;
+    io_service_.post(boost::bind(
+            Algorithm::ProcessWords,
+            boost::ref(completions),
+            mutexes[i],
+            boost::cref(word_list), begin, end, input));
+  }
+
+  for (int i = 0; i < num_threads; ++i) {
+    mutexes[i]->lock();
+    mutexes[i]->unlock();
+  }
+  Words.Unlock();
+
   std::set<std::string> added_words;
+  /*
   added_words.insert(input);
   // this is to prevent completions from being considered
   // that are basically the word from before you press Backspace.
@@ -469,6 +498,7 @@ void Omegacomplete::genericKeywordCompletion(
       boost::starts_with(prev_input_[1], input)) {
     added_words.insert(prev_input_[1]);
   }
+
 
   // terminus_prefix is only filled in if terminus_mode would be set to true
   bool terminus_mode;
@@ -481,7 +511,7 @@ void Omegacomplete::genericKeywordCompletion(
   }
 
 retry_completion:
-  WordSet.GetAbbrCompletions(
+  Words.GetAbbrCompletions(
       input,
       completions, added_words,
       terminus_mode);
@@ -492,7 +522,7 @@ retry_completion:
       completions, added_words,
       terminus_mode);
 
-  WordSet.GetPrefixCompletions(
+  Words.GetPrefixCompletions(
       input,
       completions, added_words,
       terminus_mode);
@@ -515,22 +545,23 @@ retry_completion:
       break;
 
     CompleteItem& item = (*completions)[i];
-    item.Menu =
-        lexical_cast<std::string>(LookupTable::QuickMatchKey[i]) +
+    item.Menu = lexical_cast<string>(LookupTable::QuickMatchKey[i]) +
         " " + item.Menu;
   }
 
-  addLevenshteinCorrections(input, completions, added_words);
+  */
+
+  addLevenshteinCorrections(input, completions.Items, added_words);
 
   result += "[";
-  foreach (const CompleteItem& completion, *completions) {
+  foreach (const CompleteItem& completion, *completions.Items) {
     result += completion.SerializeToVimDict();
   }
   result += "]";
 
-  prev_completions_ = completions;
+  prev_completions_ = completions.Items;
 
-  if (completions->size() > 0)
+  if (completions.Items->size() > 0)
     suffix0_ = false;
 }
 
@@ -597,7 +628,7 @@ void Omegacomplete::addLevenshteinCorrections(
   }
 
   LevenshteinSearchResults levenshtein_completions;
-  WordSet.GetLevenshteinCompletions(input, levenshtein_completions);
+  Words.GetLevenshteinCompletions(input, levenshtein_completions);
 
   AUTO (iter, levenshtein_completions.begin());
   for (; iter != levenshtein_completions.end(); ++iter) {

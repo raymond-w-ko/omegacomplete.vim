@@ -7,14 +7,19 @@
 
 class Omegacomplete : public boost::noncopyable {
  public:
+  struct Completions {
+    boost::mutex Mutex;
+    CompleteItemVectorPtr Items;
+  };
+
   static void InitStatic();
   static Omegacomplete* GetInstance() { return instance_; }
-  static unsigned NumThreads();
+  static int NumThreads();
 
   ~Omegacomplete();
   const std::string Eval(const char* request, const int request_len);
 
-  WordCollection WordSet;
+  WordCollection Words;
 
  private:
   struct ParseJob {
