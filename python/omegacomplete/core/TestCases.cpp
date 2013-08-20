@@ -9,7 +9,7 @@
 
 #include "TestCases.hpp"
 #include "TrieNode.hpp"
-#include "GlobalWordSet.hpp"
+#include "WordCollection.hpp"
 #include "TagsSet.hpp"
 #include "Algorithm.hpp"
 
@@ -85,7 +85,7 @@ void TestCases::TrieNodeTest()
     for (size_t ii = 0; ii < num_searches; ++ii)
     {
         const std::string& word = words.at(dist(gen));
-        GlobalWordSet::LevenshteinSearch(word, 2, root_node, results);
+        WordCollection::LevenshteinSearch(word, 2, root_node, results);
     }
     end_time = ::GetTickCount();
     delta = (end_time - start_time);

@@ -190,7 +190,6 @@
     <ClCompile Include="..\Algorithm.cpp" />
     <ClCompile Include="..\Buffer.cpp" />
     <ClCompile Include="..\DllMain.cpp" />
-    <ClCompile Include="..\GlobalWordSet.cpp" />
     <ClCompile Include="..\LookupTable.cpp" />
     <ClCompile Include="..\OmegaComplete.cpp" />
     <ClCompile Include="..\PythonMain.cpp" />
@@ -204,6 +203,7 @@
     <ClCompile Include="..\TagsSet.cpp" />
     <ClCompile Include="..\TestCases.cpp" />
     <ClCompile Include="..\TrieNode.cpp" />
+    <ClCompile Include="..\WordCollection.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\AbbreviationInfo.hpp" />
@@ -211,7 +211,6 @@
     <ClInclude Include="..\Buffer.hpp" />
     <ClInclude Include="..\CompleteItem.hpp" />
     <ClInclude Include="..\CompletionPriorities.hpp" />
-    <ClInclude Include="..\GlobalWordSet.hpp" />
     <ClInclude Include="..\LookupTable.hpp" />
     <ClInclude Include="..\OmegaComplete.hpp" />
     <ClInclude Include="..\stdafx.hpp" />
@@ -220,6 +219,7 @@
     <ClInclude Include="..\TagsSet.hpp" />
     <ClInclude Include="..\TestCases.hpp" />
     <ClInclude Include="..\TrieNode.hpp" />
+    <ClInclude Include="..\WordCollection.hpp" />
     <ClInclude Include="..\WordInfo.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

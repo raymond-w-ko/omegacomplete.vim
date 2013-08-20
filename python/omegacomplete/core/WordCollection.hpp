@@ -7,7 +7,7 @@
 
 typedef std::map< size_t, std::set<std::string> > LevenshteinSearchResults;
 
-class GlobalWordSet : public boost::noncopyable
+class WordCollection : public boost::noncopyable
 {
 public:
     static void LevenshteinSearch(
@@ -24,8 +24,8 @@ public:
         LevenshteinSearchResults& results,
         size_t max_cost);
 
-    GlobalWordSet();
-    ~GlobalWordSet();
+    WordCollection();
+    ~WordCollection();
 
     void UpdateWord(const std::string& word, int reference_count_delta);
     size_t Prune();

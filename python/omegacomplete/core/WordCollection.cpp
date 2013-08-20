@@ -1,23 +1,23 @@
 #include "stdafx.hpp"
 #include "LookupTable.hpp"
 #include "Algorithm.hpp"
-#include "GlobalWordSet.hpp"
+#include "WordCollection.hpp"
 #include "CompletionPriorities.hpp"
 
 static const int kLevenshteinMaxCost = 2;
 static const size_t kMinLengthForLevenshteinCompletion = 4;
 
-GlobalWordSet::GlobalWordSet()
+WordCollection::WordCollection()
 {
     ;
 }
 
-GlobalWordSet::~GlobalWordSet()
+WordCollection::~WordCollection()
 {
     ;
 }
 
-void GlobalWordSet::UpdateWord(const std::string& word, int reference_count_delta)
+void WordCollection::UpdateWord(const std::string& word, int reference_count_delta)
 {
     boost::mutex::scoped_lock lock(mutex_);
 
@@ -55,7 +55,7 @@ void GlobalWordSet::UpdateWord(const std::string& word, int reference_count_delt
     wi.GeneratedAbbreviations = true;
 }
 
-void GlobalWordSet::GetPrefixCompletions(
+void WordCollection::GetPrefixCompletions(
     const std::string& input,
     CompleteItemVectorPtr& completions, std::set<std::string>& added_words,
     bool terminus_mode)
@@ -90,7 +90,7 @@ void GlobalWordSet::GetPrefixCompletions(
     }
 }
 
-void GlobalWordSet::GetAbbrCompletions(
+void WordCollection::GetAbbrCompletions(
     const std::string& input,
     CompleteItemVectorPtr& completions, std::set<std::string>& added_words,
     bool terminus_mode)
@@ -122,7 +122,7 @@ void GlobalWordSet::GetAbbrCompletions(
     }
 }
 
-size_t GlobalWordSet::Prune()
+size_t WordCollection::Prune()
 {
     boost::mutex::scoped_lock lock(mutex_);
 
@@ -173,7 +173,7 @@ size_t GlobalWordSet::Prune()
     return to_be_pruned.size();
 }
 
-void GlobalWordSet::GetLevenshteinCompletions(
+void WordCollection::GetLevenshteinCompletions(
     const std::string& prefix,
     LevenshteinSearchResults& results)
 {
@@ -188,7 +188,7 @@ void GlobalWordSet::GetLevenshteinCompletions(
 
 // translated from Python code provided by
 // http://stevehanov.ca/blog/index.php?id=114
-void GlobalWordSet::LevenshteinSearch(
+void WordCollection::LevenshteinSearch(
     const std::string& word,
     const size_t max_cost,
     const TrieNode& trie,
@@ -207,7 +207,7 @@ void GlobalWordSet::LevenshteinSearch(
         char letter = iter->first;
         TrieNode* next_node = iter->second;
 
-        GlobalWordSet::LevenshteinSearchRecursive(
+        WordCollection::LevenshteinSearchRecursive(
             *next_node,
             letter,
             word,
@@ -219,7 +219,7 @@ void GlobalWordSet::LevenshteinSearch(
 
 // translated from Python code provided by
 // http://stevehanov.ca/blog/index.php?id=114
-void GlobalWordSet::LevenshteinSearchRecursive(
+void WordCollection::LevenshteinSearchRecursive(
     const TrieNode& node,
     char letter,
     const std::string& word,

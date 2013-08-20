@@ -1,7 +1,6 @@
 #include "stdafx.hpp"
 
 #include "Tags.hpp"
-#include "GlobalWordSet.hpp"
 #include "LookupTable.hpp"
 #include "Algorithm.hpp"
 #include "CompletionPriorities.hpp"

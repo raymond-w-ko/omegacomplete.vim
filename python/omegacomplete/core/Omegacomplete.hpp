@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Buffer.hpp"
-#include "GlobalWordSet.hpp"
+#include "WordCollection.hpp"
 #include "CompleteItem.hpp"
 #include "Stopwatch.hpp"
 
@@ -13,7 +13,7 @@ class Omegacomplete : public boost::noncopyable {
   ~Omegacomplete();
   const std::string Eval(const char* request, const int request_len);
 
-  GlobalWordSet WordSet;
+  WordCollection WordSet;
 
  private:
   struct ParseJob {
