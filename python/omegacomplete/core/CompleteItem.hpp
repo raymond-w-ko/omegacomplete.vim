@@ -83,9 +83,9 @@ struct CompleteItem {
   }
 
   bool operator<(const CompleteItem& other) const {
-    if (Score < other.Score)
+    if (Score > other.Score)
       return true;
-    else if (Score > other.Score)
+    else if (Score < other.Score)
       return false;
 
     int result;

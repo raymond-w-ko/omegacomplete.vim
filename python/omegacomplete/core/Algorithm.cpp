@@ -172,22 +172,30 @@ int Algorithm::GetWordScore(const std::string& word, const std::string& input) {
   if (word == input)
     return 0;
 
-  if (IsTitleCaseMatch(word, input))
-    return 10;
-  else if (IsUnderScoreMatch(word, input))
-    return 11;
-  else if (IsHyphenMatch(word, input))
-    return 12;
-  else if (boost::starts_with(word, input))
+  float score = 0;
+
+  score = 100 * TitleCaseMatchScore(word, input);
+  if (score > 0.0f)
+    return static_cast<int>(score);
+
+  score = 90 * UnderScoreMatchScore(word, input);
+  if (score > 0.0f)
+    return static_cast<int>(score);
+
+  score = 80 * HyphenMatchScore(word, input);
+  if (score > 0.0f)
+    return static_cast<int>(score);
+
+  if (boost::starts_with(word, input))
     return 40;
-  else
-    return 0;
+
+  return 0;
 }
 
-bool Algorithm::IsTitleCaseMatch(const std::string& word,
+float Algorithm::TitleCaseMatchScore(const std::string& word,
                                  const std::string& input) {
   if (word.size() < 4 || input.size() < 2)
-    return false;
+    return 0.0f;
 
   std::string abbrev;
   abbrev += LookupTable::ToLower[word[0]];
@@ -201,23 +209,23 @@ bool Algorithm::IsTitleCaseMatch(const std::string& word,
   }
 
   if (input == abbrev)
-    return true;
+    return 1.0f;
   if (abbrev.size() <= 1)
-    return false;
+    return 0.0f;
   if (abbrev.size() > input.size())
-    return false;
+    return 0.0f;
 
   if (IsSubsequence(word, input) && IsSubsequence(input, abbrev))
-    return true;
+    return 0.5f;
 
-  return false;
+  return 0.0f;
 }
 
-bool Algorithm::IsSeparatorMatch(const std::string& word,
+float Algorithm::SeparatorMatchScore(const std::string& word,
                                  const std::string& input,
                                  const uchar separator) {
   if (word.size() < 3 || input.size() < 2)
-    return false;
+    return 0.0f;;
 
   std::string abbrev;
   abbrev += LookupTable::ToLower[word[0]];
@@ -230,24 +238,24 @@ bool Algorithm::IsSeparatorMatch(const std::string& word,
   }
 
   if (input == abbrev)
-    return true;
+    return 1.0f;
   if (abbrev.size() <= 1)
-    return false;
+    return 0.0f;
   if (abbrev.size() > input.size())
-    return false;
+    return 0.0f;
 
   if (IsSubsequence(word, input) && IsSubsequence(input, abbrev))
-    return true;
+    return 0.5f;
 
-  return false;
+  return 0.0f;
 }
 
-bool Algorithm::IsUnderScoreMatch(const std::string& word, const std::string& input) {
-  return IsSeparatorMatch(word, input, '_');
+float Algorithm::UnderScoreMatchScore(const std::string& word, const std::string& input) {
+  return SeparatorMatchScore(word, input, '_');
 }
 
-bool Algorithm::IsHyphenMatch(const std::string& word, const std::string& input) {
-  return IsSeparatorMatch(word, input, '-');
+float Algorithm::HyphenMatchScore(const std::string& word, const std::string& input) {
+  return SeparatorMatchScore(word, input, '-');
 }
 
 bool Algorithm::IsSubsequence(const std::string& word, const std::string& input) {
