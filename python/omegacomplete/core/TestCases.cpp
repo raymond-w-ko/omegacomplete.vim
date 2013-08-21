@@ -10,7 +10,7 @@
 #include "TestCases.hpp"
 #include "TrieNode.hpp"
 #include "WordCollection.hpp"
-#include "TagsSet.hpp"
+#include "TagsCollection.hpp"
 #include "Algorithm.hpp"
 
 static void always_assert(bool condition) {
@@ -119,10 +119,9 @@ void TestCases::TagsTest()
 
     tags = "C:\\SVN\\Syandus_ALIVE4\\Platform\\ThirdParty\\OGRE\\Include\\tags";
     std::cout << tags << std::endl;
-    TagsSet::Instance()->CreateOrUpdate(tags, current_directory);
+    TagsCollection::Instance()->CreateOrUpdate(tags, current_directory);
 
-    //TagsSet::Instance()->Clear();
-    //Algorithm::ClearGlobalCache();
+    //TagsCollection::Instance()->Clear();
 }
 
 void TestCases::ClangTest()

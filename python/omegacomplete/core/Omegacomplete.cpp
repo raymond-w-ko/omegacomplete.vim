@@ -1,7 +1,7 @@
 #include "stdafx.hpp"
 
 #include "Omegacomplete.hpp"
-#include "TagsSet.hpp"
+#include "TagsCollection.hpp"
 #include "LookupTable.hpp"
 #include "Algorithm.hpp"
 
@@ -15,7 +15,7 @@ static const std::string kUnknownCommandResponse = "UNKNOWN_COMMAND";
 void Omegacomplete::InitStatic() {
   // dependencies in other classes that have to initialized first
   LookupTable::InitStatic();
-  TagsSet::InitStatic();
+  TagsCollection::InitStatic();
 
   instance_ = new Omegacomplete;
 }
@@ -245,7 +245,7 @@ std::string Omegacomplete::cmdCurrentTags(StringPtr argument) {
     if (tags.size() == 0)
       continue;
 
-    TagsSet::Instance()->CreateOrUpdate(tags, current_directory_);
+    TagsCollection::Instance()->CreateOrUpdate(tags, current_directory_);
     current_tags_.push_back(tags);
   }
 
@@ -263,7 +263,7 @@ std::string Omegacomplete::cmdTaglistTags(StringPtr argument) {
     if (tags.size() == 0)
       continue;
 
-    TagsSet::Instance()->CreateOrUpdate(tags, current_directory_);
+    TagsCollection::Instance()->CreateOrUpdate(tags, current_directory_);
     taglist_tags_.push_back(tags);
   }
 
@@ -271,7 +271,7 @@ std::string Omegacomplete::cmdTaglistTags(StringPtr argument) {
 }
 
 std::string Omegacomplete::cmdVimTaglistFunction(StringPtr argument) {
-  const std::string& response = TagsSet::Instance()->VimTaglistFunction(
+  const std::string& response = TagsCollection::Instance()->VimTaglistFunction(
       *argument, taglist_tags_, current_directory_);
 
   return response;
@@ -284,7 +284,7 @@ std::string Omegacomplete::cmdPrune(StringPtr argument) {
 }
 
 std::string Omegacomplete::cmdFlushCaches(StringPtr argument) {
-  TagsSet::Instance()->Clear();
+  TagsCollection::Instance()->Clear();
 
   return kDefaultResponse;
 }

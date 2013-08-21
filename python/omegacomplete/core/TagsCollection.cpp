@@ -1,15 +1,15 @@
 #include "stdafx.hpp"
 
-#include "TagsSet.hpp"
+#include "TagsCollection.hpp"
 
-TagsSet* TagsSet::instance_ = NULL;
+TagsCollection* TagsCollection::instance_ = NULL;
 #ifdef _WIN32
-std::string TagsSet::win32_system_drive_;
+std::string TagsCollection::win32_system_drive_;
 #endif
 
-bool TagsSet::InitStatic()
+bool TagsCollection::InitStatic()
 {
-    instance_ = new TagsSet;
+    instance_ = new TagsCollection;
 
 #ifdef _WIN32
     char* sys_drive;
@@ -31,17 +31,17 @@ bool TagsSet::InitStatic()
     return true;
 }
 
-TagsSet* TagsSet::Instance()
+TagsCollection* TagsCollection::Instance()
 {
     return instance_;
 }
 
-void TagsSet::GlobalShutdown()
+void TagsCollection::GlobalShutdown()
 {
     delete instance_; instance_ = NULL;
 }
 
-bool TagsSet::CreateOrUpdate(
+bool TagsCollection::CreateOrUpdate(
     std::string tags_pathname,
     const std::string& current_directory)
 {
@@ -58,17 +58,17 @@ bool TagsSet::CreateOrUpdate(
     return true;
 }
 
-TagsSet::TagsSet()
+TagsCollection::TagsCollection()
 {
     ;
 }
 
-TagsSet::~TagsSet()
+TagsCollection::~TagsCollection()
 {
     ;
 }
 
-std::string TagsSet::VimTaglistFunction(
+std::string TagsCollection::VimTaglistFunction(
     const std::string& word,
     const std::vector<std::string>& tags_list,
     const std::string& current_directory)
@@ -89,7 +89,7 @@ std::string TagsSet::VimTaglistFunction(
     return ss.str();
 }
 
-void TagsSet::GetPrefixCompletions(
+void TagsCollection::GetPrefixCompletions(
     const std::string& prefix,
     const std::vector<std::string>& tags_list,
     const std::string& current_directory,
@@ -108,7 +108,7 @@ void TagsSet::GetPrefixCompletions(
     }
 }
 
-void TagsSet::GetAbbrCompletions(
+void TagsCollection::GetAbbrCompletions(
     const std::string& prefix,
     const std::vector<std::string>& tags_list,
     const std::string& current_directory,
@@ -127,7 +127,7 @@ void TagsSet::GetAbbrCompletions(
     }
 }
 
-std::string TagsSet::ResolveFullPathname(
+std::string TagsCollection::ResolveFullPathname(
     const std::string& tags_pathname,
     const std::string& current_directory)
 {
@@ -173,7 +173,7 @@ std::string TagsSet::ResolveFullPathname(
     return full_tags_pathname;
 }
 
-void TagsSet::Clear()
+void TagsCollection::Clear()
 {
     tags_list_.clear();
 }
