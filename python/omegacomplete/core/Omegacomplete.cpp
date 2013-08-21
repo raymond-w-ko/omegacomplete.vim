@@ -237,8 +237,10 @@ std::string Omegacomplete::cmdCurrentTags(StringPtr argument) {
   current_tags_.clear();
 
   std::vector<std::string> tags_list;
-  boost::split(tags_list, *argument,
-               boost::is_any_of(","), boost::token_compress_on);
+  boost::split(tags_list,
+               *argument,
+               boost::is_any_of(","),
+               boost::token_compress_on);
   foreach (const std::string& tags, tags_list) {
     if (tags.size() == 0)
       continue;
@@ -564,20 +566,6 @@ bool Omegacomplete::shouldEnableDisambiguateMode(
   if (LookupTable::IsNumber[last]) {
     if (Contains(LookupTable::ReverseQuickMatch, last))
       index = LookupTable::ReverseQuickMatch[last];
-    return true;
-  }
-
-  return false;
-}
-
-bool Omegacomplete::shouldEnableTerminusMode(
-    const std::string& word, std::string& prefix) {
-  if (word.size() < 2)
-    return false;
-
-  if (word[word.size() - 1] == '_') {
-    prefix = word;
-    prefix.resize(word.size() - 1);
     return true;
   }
 

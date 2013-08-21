@@ -82,15 +82,7 @@ class Omegacomplete : public boost::noncopyable {
       const std::string& line,
       std::string& result);
 
-  void addWordsToResults(
-      const std::set<std::string>& words,
-      std::vector<StringPair>& result,
-      unsigned& num_completions_added,
-      boost::unordered_set<std::string>& added_words);
-
   bool shouldEnableDisambiguateMode(const std::string& word, unsigned& index);
-  bool shouldEnableTerminusMode(
-      const std::string& word, std::string& prefix);
   void addLevenshteinCorrections(
       const std::string& input,
       CompleteItemVectorPtr& completions);
@@ -100,11 +92,13 @@ class Omegacomplete : public boost::noncopyable {
   ////////////////////////////////////////////////////////////////////////////
   static Omegacomplete* instance_;
 
+  // primary thread pool
   boost::asio::io_service io_service_;
   boost::asio::io_service::work io_service_work_;
   boost::thread_group threads_;
   std::vector<boost::shared_ptr<boost::mutex> > mutexes_;
 
+  // single thread for sequential jobs
   boost::thread worker_thread_;
   volatile int is_quitting_;
 
