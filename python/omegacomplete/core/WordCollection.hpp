@@ -29,16 +29,6 @@ class WordCollection : public boost::noncopyable {
   void UpdateWord(const std::string& word, int reference_count_delta);
   size_t Prune();
 
-  void GetPrefixCompletions(
-      const std::string& input,
-      CompleteItemVectorPtr& completions, std::set<std::string>& added_words,
-      bool terminus_mode);
-
-  void GetAbbrCompletions(
-      const std::string& input,
-      CompleteItemVectorPtr& completions, std::set<std::string>& added_words,
-      bool terminus_mode);
-
   void GetLevenshteinCompletions(
       const std::string& prefix,
       LevenshteinSearchResults& results);
@@ -53,8 +43,7 @@ class WordCollection : public boost::noncopyable {
  private:
   boost::mutex mutex_;
 
-  std::map<String, WordInfo> words_;
-  std::map<String, std::set<AbbreviationInfo> > abbreviations_;
+  boost::unordered_map<String, WordInfo> words_;
   boost::unordered_map<int, String> word_list_;
   boost::unordered_set<int> empty_indices_;
 

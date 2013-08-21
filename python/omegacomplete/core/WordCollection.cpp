@@ -129,94 +129,6 @@ void WordCollection::UpdateWord(const std::string& word, int reference_count_del
   }
 
   return;
-
-  if (wi.GeneratedAbbreviations)
-    return;
-
-  UnsignedStringPairVectorPtr title_cases = Algorithm::ComputeTitleCase(word);
-  UnsignedStringPairVectorPtr underscores = Algorithm::ComputeUnderscore(word);
-  UnsignedStringPairVectorPtr hyphens = Algorithm::ComputeHyphens(word);
-
-  // generate and store abbreviations
-  foreach (const UnsignedStringPair& title_case, *title_cases) {
-    AbbreviationInfo ai(title_case.first + kPriorityTitleCase, word);
-    abbreviations_[title_case.second].insert(ai);
-  }
-  foreach (const UnsignedStringPair& underscore, *underscores) {
-    AbbreviationInfo ai(underscore.first + kPriorityUnderscore, word);
-    abbreviations_[underscore.second].insert(ai);
-  }
-  foreach (const UnsignedStringPair& hyphen, *hyphens) {
-    AbbreviationInfo ai(hyphen.first + kPriorityHyphen, word);
-    abbreviations_[hyphen.second].insert(ai);
-  }
-
-  wi.GeneratedAbbreviations = true;
-}
-
-void WordCollection::GetPrefixCompletions(
-    const std::string& input,
-    CompleteItemVectorPtr& completions, std::set<std::string>& added_words,
-    bool terminus_mode) {
-  boost::mutex::scoped_lock lock(mutex_);
-
-  AUTO(iter, words_.lower_bound(input));
-  for (; iter != words_.end(); ++iter) {
-    const std::string& candidate = iter->first;
-    const WordInfo& wi = iter->second;
-
-    if (completions->size() == LookupTable::kMaxNumCompletions)
-      break;
-    if (boost::starts_with(candidate, input) == false)
-      break;
-
-    if (wi.ReferenceCount == 0)
-      continue;
-    if (terminus_mode && !boost::ends_with(candidate, "_"))
-      continue;
-    if (boost::ends_with(candidate, "-"))
-      continue;
-    if (Contains(added_words, candidate))
-      continue;
-
-    CompleteItem completion(candidate);
-    completion.Menu = boost::str(boost::format("        [%d Counts]")
-                                 % wi.ReferenceCount);
-    completions->push_back(completion);
-
-    added_words.insert(candidate);
-  }
-}
-
-void WordCollection::GetAbbrCompletions(
-    const std::string& input,
-    CompleteItemVectorPtr& completions, std::set<std::string>& added_words,
-    bool terminus_mode) {
-  boost::mutex::scoped_lock lock(mutex_);
-
-  AUTO(const &set, abbreviations_[input]);
-  AUTO(iter, set.begin());
-  for (; iter != set.end(); ++iter) {
-    const AbbreviationInfo& candidate = *iter;
-    const WordInfo& wi = words_[candidate.Word];
-
-    if (completions->size() == LookupTable::kMaxNumCompletions)
-      break;
-
-    if (wi.ReferenceCount == 0)
-      continue;
-    if (terminus_mode && !boost::ends_with(candidate.Word, "_"))
-      continue;
-    if (Contains(added_words, candidate.Word))
-      continue;
-
-    CompleteItem completion(candidate.Word, candidate.Weight);
-    completion.Menu = boost::str(boost::format("        [%d Counts]")
-                                 % wi.ReferenceCount);
-    completions->push_back(completion);
-
-    added_words.insert(candidate.Word);
-  }
 }
 
 size_t WordCollection::Prune() {
@@ -229,40 +141,30 @@ size_t WordCollection::Prune() {
   for (; i != words_.end(); ++i) {
     if (i->second.ReferenceCount > 0)
       continue;
-
     to_be_pruned.push_back(i->first);
   }
 
   foreach (const std::string& word, to_be_pruned) {
-    std::vector<UnsignedStringPairVectorPtr> collections;
-
-    collections.push_back(Algorithm::ComputeTitleCase(word));
-    collections.push_back(Algorithm::ComputeUnderscore(word));
-    collections.push_back(Algorithm::ComputeHyphens(word));
-
-    foreach (UnsignedStringPairVectorPtr collection, collections) {
-      foreach (UnsignedStringPair w, *collection) {
-        std::set<AbbreviationInfo>& set = abbreviations_[w.second];
-
-        AUTO (j, set.begin());
-        while (j != set.end()) {
-          if (j->Word == word)
-            set.erase(j++);
-          else
-            ++j;
-        }
-
-        if (abbreviations_[w.second].size() == 0)
-          abbreviations_.erase(w.second);
-      }
-    }
-
     words_.erase(word);
 
     {
       boost::mutex::scoped_lock trie_lock(trie_mutex_);
       trie_.Erase(word);
     }
+  }
+
+  // rebuild word_list_ to eliminate any holes
+  empty_indices_.clear();
+  word_list_.clear();
+  AUTO(iter, words_.begin());
+  int index = 0;
+  for (; iter != words_.end(); ++iter) {
+    const std::string& word = iter->first;
+    WordInfo& wi = iter->second;
+
+    word_list_[index] = word;
+    wi.WordListIndex = index;
+    index++;
   }
 
   return to_be_pruned.size();

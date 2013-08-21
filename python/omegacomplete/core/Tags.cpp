@@ -6,198 +6,147 @@
 #include "CompletionPriorities.hpp"
 
 #ifndef _WIN32
-static inline void MyClockGetTime(struct timespec& ts)
-{
+static inline void UnixGetClockTime(struct timespec& ts) {
 #ifdef __MACH__
-    clock_serv_t cclock;
-    mach_timespec_t mts;
-    host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock);
-    clock_get_time(cclock, &mts);
-    mach_port_deallocate(mach_task_self(), cclock);
-    ts.tv_sec = mts.tv_sec;
-    ts.tv_nsec = mts.tv_nsec;
+  clock_serv_t cclock;
+  mach_timespec_t mts;
+  host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock);
+  clock_get_time(cclock, &mts);
+  mach_port_deallocate(mach_task_self(), cclock);
+  ts.tv_sec = mts.tv_sec;
+  ts.tv_nsec = mts.tv_nsec;
 #else
-    clock_gettime(CLOCK_REALTIME, &ts);
+  clock_gettime(CLOCK_REALTIME, &ts);
 #endif
 }
 #endif
 
-Tags::Tags() :
-    last_write_time_(0),
-    last_tick_count_(-1.0)
-{
-    ;
+Tags::Tags()
+    : last_write_time_(0),
+      last_tick_count_(-1.0) {
 }
 
-bool Tags::Init(const std::string& pathname)
-{
-    pathname_ = pathname;
+bool Tags::Init(const std::string& pathname) {
+  pathname_ = pathname;
 
-    if (calculateParentDirectory() == false) {
-        std::cout << "couldn't calculate parent directory for tags file, not parsing"
-                  << std::endl;
-        std::cout << pathname_ << std::endl;
-        return false;
-    }
+  if (!calculateParentDirectory()) {
+    //std::cout << "couldn't calculate parent directory for tags file, not parsing"
+        //<< std::endl;
+    //std::cout << pathname_ << std::endl;
+    return false;
+  }
 
-    this->Update();
+  this->Update();
 
-    return true;
+  return true;
 }
 
-bool Tags::calculateParentDirectory()
-{
-    std::string directory_separator;
+bool Tags::calculateParentDirectory() {
+  std::string directory_separator;
 
 #ifdef _WIN32
-    directory_separator = "\\";
+  directory_separator = "\\";
 #else
-    directory_separator = "/";
+  directory_separator = "/";
 #endif
 
-    size_t pos = pathname_.rfind(directory_separator);
-    // error out because we can't find the last directory separator
-    if (pos == std::string::npos) {
-        std::cout << "coulnd't find last directory separator" << std::endl;
-        std::cout << pathname_ << std::endl;
-        return false;
-    }
-    // there is nothing after the last directory separator
-    if (pos >= (pathname_.size() - 1)) {
-        std::cout << "there is nothing after the last directory separator" << std::endl;
-        std::cout << pathname_ << std::endl;
-        return false;
-    }
+  size_t pos = pathname_.rfind(directory_separator);
+  // error out because we can't find the last directory separator
+  if (pos == std::string::npos) {
+    //std::cout << "coulnd't find last directory separator" << std::endl;
+    //std::cout << pathname_ << std::endl;
+    return false;
+  }
+  // there is nothing after the last directory separator
+  if (pos >= (pathname_.size() - 1)) {
+    //std::cout << "there is nothing after the last directory separator" << std::endl;
+    //std::cout << pathname_ << std::endl;
+    return false;
+  }
 
-    parent_directory_ = std::string(pathname_.begin(), pathname_.begin() + pos);
+  parent_directory_ = std::string(pathname_.begin(), pathname_.begin() + pos);
 
-    return true;
+  return true;
 }
 
-Tags::Tags(const Tags& other)
-{
-    pathname_ = other.pathname_;
-    last_write_time_ = other.last_write_time_;
-    parent_directory_ = other.parent_directory_;
+Tags::Tags(const Tags& other) {
+  pathname_ = other.pathname_;
+  last_write_time_ = other.last_write_time_;
+  parent_directory_ = other.parent_directory_;
 
-    tags_ = other.tags_;
-    abbreviations_ = other.abbreviations_;
+  tags_ = other.tags_;
+  abbreviations_ = other.abbreviations_;
 }
 
-Tags::~Tags()
-{
-    ;
-}
+void Tags::reparse() {
+  tags_.clear();
+  abbreviations_.clear();
 
-void Tags::reparse()
-{
-    tags_.clear();
-    abbreviations_.clear();
+  std::ifstream file(pathname_.c_str());
+  unsigned line_num = 0;
 
-    std::ifstream file(pathname_.c_str());
-    unsigned line_num = 0;
+  for (std::string line; std::getline(file, line).good(); ++line_num) {
+    // the first 6 lines contain a description of the tags file, which we don't need
+    if (line_num < 6) continue;
 
-    for (std::string line; std::getline(file, line).good(); ++line_num) {
-        // the first 6 lines contain a description of the tags file, which we don't need
-        if (line_num < 6) continue;
+    std::vector<std::string> tokens;
+    boost::split(tokens, line, boost::is_any_of("\t"), boost::token_compress_off);
 
-        std::vector<std::string> tokens;
-        boost::split(tokens, line, boost::is_any_of("\t"), boost::token_compress_off);
-
-        if (tokens.size() < 3) {
-            std::cout << "invalid tag line detected!" << std::endl;
-            return;
-        }
-
-        const std::string tag_name = tokens[0];
-
-        tags_.insert( make_pair(tag_name, line) );
+    if (tokens.size() < 3) {
+      std::cout << "invalid tag line detected!" << std::endl;
+      return;
     }
 
-    std::string prev_word;
-    for (tags_iterator tag = tags_.begin();
-         tag != tags_.end();
-         ++tag)
-    {
-        const String& word = tag->first;
-        if (word == prev_word)
-            continue;
+    const std::string tag_name = tokens[0];
 
-        UnsignedStringPairVectorPtr title_cases = Algorithm::ComputeTitleCase(word);
-        UnsignedStringPairVectorPtr underscores = Algorithm::ComputeUnderscore(word);
-        UnsignedStringPairVectorPtr hyphens = Algorithm::ComputeHyphens(word);
+    tags_.insert( make_pair(tag_name, line) );
+  }
 
-        foreach (const UnsignedStringPair& title_case, *title_cases) {
-            AbbreviationInfo ai(title_case.first, word);
-            if (ai.Weight == kPrioritySinglesAbbreviation)
-                ai.Weight = kPriorityTagsSinglesAbbreviation;
-            else if (ai.Weight == kPrioritySubsequenceAbbreviation)
-                ai.Weight = kPriorityTagsSubsequenceAbbreviation;
+  std::string prev_word;
+  for (tags_iterator tag = tags_.begin();
+       tag != tags_.end();
+       ++tag)
+  {
+    const String& word = tag->first;
+    if (word == prev_word)
+      continue;
 
-            ai.Weight += kPriorityTitleCase;
+    // TODO: insert word to global word collection
 
-            abbreviations_[title_case.second].insert(ai);
-        }
-        foreach (const UnsignedStringPair& underscore, *underscores) {
-            AbbreviationInfo ai(underscore.first, word);
-            if (ai.Weight == kPrioritySinglesAbbreviation)
-                ai.Weight = kPriorityTagsSinglesAbbreviation;
-            else if (ai.Weight == kPrioritySubsequenceAbbreviation)
-                ai.Weight = kPriorityTagsSubsequenceAbbreviation;
-
-            ai.Weight += kPriorityUnderscore;
-
-            abbreviations_[underscore.second].insert(ai);
-        }
-        foreach (const UnsignedStringPair& hyphen, *hyphens) {
-            AbbreviationInfo ai(hyphen.first, word);
-            if (ai.Weight == kPrioritySinglesAbbreviation)
-                ai.Weight = kPriorityTagsSinglesAbbreviation;
-            else if (ai.Weight == kPrioritySubsequenceAbbreviation)
-                ai.Weight = kPriorityTagsSubsequenceAbbreviation;
-
-            ai.Weight += kPriorityHyphen;
-
-            abbreviations_[hyphen.second].insert(ai);
-        }
-
-        prev_word = word;
-    }
+    prev_word = word;
+  }
 }
 
 void Tags::VimTaglistFunction(
     const std::string& word,
-    std::stringstream& ss)
-{
-    AUTO(bounds, tags_.equal_range(word));
-    AUTO(&iter, bounds.first);
-    for (; iter != bounds.second; ++iter)
-    {
-        const std::string& tag_name = iter->first;
-        const std::string& line = iter->second;
-        std::string dummy;
-        TagInfo tag_info;
-        if (calculateTagInfo(line, dummy, tag_info) == false)
-            continue;
+    std::stringstream& ss) {
+  AUTO(bounds, tags_.equal_range(word));
+  AUTO(&iter, bounds.first);
+  for (; iter != bounds.second; ++iter) {
+    const std::string& tag_name = iter->first;
+    const std::string& line = iter->second;
+    std::string dummy;
+    TagInfo tag_info;
+    if (calculateTagInfo(line, dummy, tag_info) == false)
+      continue;
 
-        ss << "{";
+    ss << "{";
 
-        ss << boost::str(boost::format(
+    ss << boost::str(boost::format(
             "'name':'%s','filename':'%s','cmd':'%s',")
-            % tag_name
-            % tag_info.Location
-            % tag_info.Ex);
-        for (TagInfo::InfoIterator pair = tag_info.Info.begin();
-            pair != tag_info.Info.end();
-            ++pair)
-        {
-            ss << boost::str(boost::format(
-                "'%s':'%s',")
-                % pair->first % pair->second);
-        }
-
-        ss << "},";
+        % tag_name
+        % tag_info.Location
+        % tag_info.Ex);
+    for (TagInfo::InfoIterator pair = tag_info.Info.begin();
+         pair != tag_info.Info.end();
+         ++pair) {
+      ss << boost::str(boost::format(
+              "'%s':'%s',")
+          % pair->first % pair->second);
     }
+
+    ss << "},";
+  }
 }
 
 void Tags::GetPrefixCompletions(
@@ -258,55 +207,49 @@ void Tags::GetAbbrCompletions(
     }
 }
 
-void Tags::Update()
-{
-    const double check_time = 60.0 * 1000.0;
-    bool reparse_needed = false;
+void Tags::Update() {
+  const double check_time = 60.0 * 1000.0;
+  bool reparse_needed = false;
 
 #ifdef _WIN32
-    if (last_tick_count_ == -1) {
-        reparse_needed = true;
-        last_tick_count_ = static_cast<double>(::GetTickCount());
+  if (last_tick_count_ == -1) {
+    reparse_needed = true;
+    last_tick_count_ = static_cast<double>(::GetTickCount());
+  } else {
+    double new_count = static_cast<double>(::GetTickCount());
+    if (::fabs(new_count - last_tick_count_) > check_time) {
+      reparse_needed = win32_CheckIfModified();
+      last_tick_count_ = new_count;
     } else {
-        double new_count = static_cast<double>(::GetTickCount());
-        if (::fabs(new_count - last_tick_count_) > check_time) {
-            reparse_needed = win32_CheckIfModified();
-            last_tick_count_ = new_count;
-        }
-        else {
-            reparse_needed = false;
-        }
+      reparse_needed = false;
     }
+  }
 #else
-    timespec ts;
-    MyClockGetTime(ts);
-    if (last_tick_count_ == -1) {
-        reparse_needed = true;
-        last_tick_count_ = ts.tv_sec * 1000.0;
+  timespec ts;
+  UnixGetClockTime(ts);
+  if (last_tick_count_ == -1) {
+    reparse_needed = true;
+    last_tick_count_ = ts.tv_sec * 1000.0;
+  } else {
+    double new_count = ts.tv_sec * 1000.0;
+    if (::fabs(new_count - last_tick_count_) > check_time) {
+      reparse_needed = unix_CheckIfModified();
+      last_tick_count_ = new_count;
     } else {
-        double new_count = ts.tv_sec * 1000.0;
-        if (::fabs(new_count - last_tick_count_) > check_time) {
-            reparse_needed = unix_CheckIfModified();
-            last_tick_count_ = new_count;
-        }
-        else {
-            reparse_needed = false;
-        }
+      reparse_needed = false;
     }
+  }
 #endif
 
-    if (reparse_needed)
-    {
-        reparse();
-    }
+  if (reparse_needed)
+    reparse();
 }
 
 
 bool Tags::calculateTagInfo(
     const std::string& line,
     std::string& tag_name,
-    TagInfo& tag_info)
-{
+    TagInfo& tag_info) {
     std::vector<std::string> tokens;
     boost::split(tokens, line, boost::is_any_of("\t"), boost::token_compress_off);
 
@@ -402,61 +345,59 @@ bool Tags::calculateTagInfo(
     return true;
 }
 
-bool Tags::win32_CheckIfModified()
-{
+bool Tags::win32_CheckIfModified() {
 #ifdef _WIN32
-    bool reparse_needed = false;
+  bool reparse_needed = false;
 
-    HANDLE hFile = ::CreateFile(
-        pathname_.c_str(),
-        GENERIC_READ,
-        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-        NULL,
-        OPEN_EXISTING,
-        FILE_ATTRIBUTE_NORMAL,
-        NULL);
-    if (hFile == INVALID_HANDLE_VALUE) {
-        return false;
-    }
-
-    FILETIME ft_last_write_time;
-    ::GetFileTime(
-        hFile,
-        NULL,
-        NULL,
-        &ft_last_write_time);
-
-    __int64 last_write_time = to_int64(ft_last_write_time);
-    if (last_write_time > last_write_time_) {
-        reparse_needed = true;
-        last_write_time_ = last_write_time;
-    }
-
-    CloseHandle(hFile); hFile = INVALID_HANDLE_VALUE;
-
-    return reparse_needed;
-#else
+  HANDLE hFile = ::CreateFile(
+      pathname_.c_str(),
+      GENERIC_READ,
+      FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+      NULL,
+      OPEN_EXISTING,
+      FILE_ATTRIBUTE_NORMAL,
+      NULL);
+  if (hFile == INVALID_HANDLE_VALUE) {
     return false;
+  }
+
+  FILETIME ft_last_write_time;
+  ::GetFileTime(
+      hFile,
+      NULL,
+      NULL,
+      &ft_last_write_time);
+
+  __int64 last_write_time = to_int64(ft_last_write_time);
+  if (last_write_time > last_write_time_) {
+    reparse_needed = true;
+    last_write_time_ = last_write_time;
+  }
+
+  CloseHandle(hFile); hFile = INVALID_HANDLE_VALUE;
+
+  return reparse_needed;
+#else
+  return false;
 #endif
 }
 
-bool Tags::unix_CheckIfModified()
-{
+bool Tags::unix_CheckIfModified() {
 #ifdef _WIN32
-    return false;
+  return false;
 #else
-    bool reparse_needed = false;
-    struct stat statbuf;
-    if (::stat(pathname_.c_str(), &statbuf) == -1) {
-        return false;
-    }
+  bool reparse_needed = false;
+  struct stat statbuf;
+  if (::stat(pathname_.c_str(), &statbuf) == -1) {
+    return false;
+  }
 
-    int64_t last_write_time = statbuf.st_mtime;
-    if (last_write_time > last_write_time_) {
-        reparse_needed = true;
-        last_write_time_ = last_write_time;
-    }
+  int64_t last_write_time = statbuf.st_mtime;
+  if (last_write_time > last_write_time_) {
+    reparse_needed = true;
+    last_write_time_ = last_write_time;
+  }
 
-    return reparse_needed;
+  return reparse_needed;
 #endif
 }

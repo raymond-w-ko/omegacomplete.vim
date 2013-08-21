@@ -332,7 +332,8 @@ function <SID>OnInsertEnter()
 endfunction
 
 function <SID>OnIdle()
-    exe 'py oc_eval("prune 1")'
+    call <SID>PruneBuffers()
+    py oc_eval('prune 1')
 endfunction
 
 function <SID>OnBufReadPost()

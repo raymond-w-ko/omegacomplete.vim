@@ -3,13 +3,11 @@
 struct WordInfo {
     WordInfo()
         : ReferenceCount(0),
-          WordListIndex(-1),
-          GeneratedAbbreviations(false) {
+          WordListIndex(-1) {
     }
 
     ~WordInfo() { }
 
     int ReferenceCount;
     int WordListIndex;
-    bool GeneratedAbbreviations;
 };

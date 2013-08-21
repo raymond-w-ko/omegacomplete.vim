@@ -16,7 +16,6 @@ void Omegacomplete::InitStatic() {
   // dependencies in other classes that have to initialized first
   LookupTable::InitStatic();
   TagsSet::InitStatic();
-  Algorithm::InitStatic();
 
   instance_ = new Omegacomplete;
 }
