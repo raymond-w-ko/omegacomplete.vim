@@ -22,6 +22,8 @@ void Algorithm::ProcessWords(
       continue;
     if (word == input)
       continue;
+    if (input.size() > word.size())
+      continue;
 
     item.Score = Algorithm::GetWordScore(word, input, terminus_mode);
     if (terminus_mode)
@@ -55,9 +57,6 @@ void Algorithm::ProcessWords(
 
 float Algorithm::GetWordScore(const std::string& word, const std::string& input,
                               bool terminus_mode) {
-  if (word == input)
-    return 0;
-
   if (terminus_mode && word[word.size() - 1] != '_')
     return 0;
 

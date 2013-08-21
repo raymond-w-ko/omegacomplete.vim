@@ -20,8 +20,7 @@ void Omegacomplete::InitStatic() {
   instance_ = new Omegacomplete;
 }
 
-int Omegacomplete::NumThreads()
-{
+int Omegacomplete::NumThreads() {
   unsigned num_hardware_threads = boost::thread::hardware_concurrency();
   unsigned num_threads = max(num_hardware_threads, (unsigned)2);
   return static_cast<int>(num_threads);
@@ -486,71 +485,41 @@ void Omegacomplete::genericKeywordCompletion(
   }
   Words.Unlock();
 
-  /*
-  std::set<std::string> added_words;
+  std::sort(completions.Items->begin(), completions.Items->end());
+
+  // filter out duplicates
+  boost::unordered_set<std::string> added_words;
   added_words.insert(input);
-  // this is to prevent completions from being considered
-  // that are basically the word from before you press Backspace.
+  // prevent completions from being considered that are basically the word from
+  // before you press Backspace, as often it doesn't get removed fast enough
+  // from the global word collection
   if (prev_input_[1].size() == (input.size() + 1) &&
       boost::starts_with(prev_input_[1], input)) {
     added_words.insert(prev_input_[1]);
   }
 
-
-  // terminus_prefix is only filled in if terminus_mode would be set to true
-  bool terminus_mode;
-  std::string terminus_prefix;
-  terminus_mode = shouldEnableTerminusMode(input, terminus_prefix);
-  if (terminus_mode) {
-    // don't want to get the word that is currently displayed on screen
-    added_words.insert(input);
-    input = terminus_prefix;
+  CompleteItemVectorPtr all_items = completions.Items;
+  CompleteItemVectorPtr filtered_items = boost::make_shared<CompleteItemVector>();
+  for (int i = 0; i < all_items->size(); ++i) {
+    const std::string& word = (*all_items)[i].Word;
+    if (!Contains(added_words, word)) {
+      added_words.insert(word);
+      filtered_items->push_back((*all_items)[i]);
+    }
   }
-
-retry_completion:
-  Words.GetAbbrCompletions(
-      input,
-      completions, added_words,
-      terminus_mode);
-
-  TagsSet::Instance()->GetAbbrCompletions(
-      input,
-      current_tags_, current_directory_,
-      completions, added_words,
-      terminus_mode);
-
-  Words.GetPrefixCompletions(
-      input,
-      completions, added_words,
-      terminus_mode);
-
-  TagsSet::Instance()->GetPrefixCompletions(
-      input,
-      current_tags_, current_directory_,
-      completions, added_words,
-      terminus_mode);
-
-  if (terminus_mode && completions->size() == 0) {
-    terminus_mode = false;
-    input = input + "_";
-    goto retry_completion;
-  }
-
-  // assign quick match number of entries
-  for (size_t i = 0; i < LookupTable::kMaxNumQuickMatch; ++i) {
-    if (i >= completions->size())
-      break;
-
-    CompleteItem& item = (*completions)[i];
-    item.Menu = lexical_cast<string>(LookupTable::QuickMatchKey[i]) +
-        " " + item.Menu;
-  }
-
-  */
+  completions.Items = filtered_items;
 
   addLevenshteinCorrections(input, completions.Items);
 
-  std::sort(completions.Items->begin(), completions.Items->end());
+  // assign quick match number of entries
+  for (size_t i = 0; i < LookupTable::kMaxNumQuickMatch; ++i) {
+    if (i >= completions.Items->size())
+      break;
+
+    CompleteItem& item = (*completions.Items)[i];
+    item.Menu = lexical_cast<string>(LookupTable::QuickMatchKey[i]) +
+        " " + item.Menu;
+  }
 
   result += "[";
   foreach (const CompleteItem& completion, *completions.Items) {
