@@ -10,7 +10,8 @@ void Algorithm::ProcessWords(
     const boost::unordered_map<int, String>& word_list,
     int begin,
     int end,
-    const std::string& input) {
+    const std::string& input,
+    bool terminus_mode) {
   CompleteItem item;
   for (int i = begin; i < end; ++i) {
     AUTO(const & iter, word_list.find(i));
@@ -22,7 +23,9 @@ void Algorithm::ProcessWords(
     if (word == input)
       continue;
 
-    item.Score = Algorithm::GetWordScore(word, input);
+    item.Score = Algorithm::GetWordScore(word, input, terminus_mode);
+    if (terminus_mode)
+      item.Score *= 100.0f;
 
     if (item.Score > 0) {
       item.Word = word;
@@ -31,26 +34,46 @@ void Algorithm::ProcessWords(
       completions.Mutex.unlock();
     }
   }
-  mutex->unlock();
+
+  if (input[input.size() - 1] == '_') {
+    int trimmed_end = static_cast<int>(input.size()) - 1;
+    while (input[trimmed_end] == '_')
+      trimmed_end--;
+    trimmed_end++;
+    std::string trimmed_input(input.begin(), input.begin() + trimmed_end);
+    Algorithm::ProcessWords(
+        completions,
+        mutex,
+        word_list,
+        begin, end,
+        trimmed_input,
+        true);
+  } else {
+    mutex->unlock();
+  }
 }
 
-int Algorithm::GetWordScore(const std::string& word, const std::string& input) {
+float Algorithm::GetWordScore(const std::string& word, const std::string& input,
+                              bool terminus_mode) {
   if (word == input)
+    return 0;
+
+  if (terminus_mode && word[word.size() - 1] != '_')
     return 0;
 
   float score = 0;
 
   score = 100 * TitleCaseMatchScore(word, input);
   if (score > 0.0f)
-    return static_cast<int>(score);
+    return score;
 
   score = 90 * UnderScoreMatchScore(word, input);
   if (score > 0.0f)
-    return static_cast<int>(score);
+    return score;
 
   score = 80 * HyphenMatchScore(word, input);
   if (score > 0.0f)
-    return static_cast<int>(score);
+    return score;
 
   if (boost::starts_with(word, input))
     return 40;

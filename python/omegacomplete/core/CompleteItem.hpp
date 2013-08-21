@@ -2,7 +2,7 @@
 
 struct CompleteItem {
  public:
-  int Score;
+  float Score;
 
   // VIM specific portion
 
@@ -60,7 +60,7 @@ struct CompleteItem {
   {
   }
 
-  CompleteItem(const std::string& word, unsigned score)
+  CompleteItem(const std::string& word, float score)
       : Score(score),
         Word(word),
         //Icase(false),

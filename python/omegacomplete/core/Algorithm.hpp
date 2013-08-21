@@ -11,8 +11,11 @@ class Algorithm {
       const boost::unordered_map<int, String>& word_list,
       int begin,
       int end,
-      const std::string& input);
-  static int GetWordScore(const std::string& word, const std::string& input);
+      const std::string& input,
+      bool terminus_mode);
+  static float GetWordScore(
+      const std::string& word, const std::string& input,
+      bool terminus_mode);
 
   static float TitleCaseMatchScore(const std::string& word, const std::string& input);
   static float SeparatorMatchScore(

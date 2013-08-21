@@ -199,7 +199,7 @@ void Tags::GetAbbrCompletions(
         if (Contains(added_words, candidate.Word))
             continue;
 
-        CompleteItem completion(candidate.Word, candidate.Weight);
+        CompleteItem completion(candidate.Word, (float)candidate.Weight);
         completion.Menu = "        [Tags]";
         completions->push_back(completion);
 

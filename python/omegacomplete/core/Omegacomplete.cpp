@@ -477,7 +477,7 @@ void Omegacomplete::genericKeywordCompletion(
             Algorithm::ProcessWords,
             boost::ref(completions),
             mutexes_[i],
-            boost::cref(word_list), begin, end, input));
+            boost::cref(word_list), begin, end, input, false));
   }
 
   for (int i = 0; i < num_threads; ++i) {
