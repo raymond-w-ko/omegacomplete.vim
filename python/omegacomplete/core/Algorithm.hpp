@@ -48,6 +48,7 @@ class Algorithm {
       const std::string& word, const std::string& input, const uchar separator);
   static bool IsUnderScoreMatch(const std::string& word, const std::string& input);
   static bool IsHyphenMatch(const std::string& word, const std::string& input);
+  static bool IsSubsequence(const std::string& word, const std::string& input);
 
  private:
   template <char Separator, bool AllowedOnHeadOrTail>
