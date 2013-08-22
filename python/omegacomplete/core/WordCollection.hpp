@@ -23,7 +23,7 @@ class WordCollection : public boost::noncopyable {
       LevenshteinSearchResults& results,
       size_t max_cost);
 
-  WordCollection() {}
+  WordCollection(bool enable_trie) : trie_enabled_(enable_trie) {}
   ~WordCollection() {}
 
   void UpdateWord(const std::string& word, int reference_count_delta);
@@ -47,6 +47,7 @@ class WordCollection : public boost::noncopyable {
   boost::unordered_map<int, String> word_list_;
   boost::unordered_set<int> empty_indices_;
 
+  bool trie_enabled_;
   boost::mutex trie_mutex_;
   TrieNode trie_;
 };

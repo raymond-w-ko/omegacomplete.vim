@@ -31,7 +31,8 @@ Omegacomplete::Omegacomplete()
       is_corrections_only_(false),
       should_autocomplete_(false),
       suffix0_(false),
-      suffix1_(false) {
+      suffix1_(false),
+      Words(true) {
   initCommandDispatcher();
 
   // hardware_concurrency() can return 0
@@ -242,7 +243,7 @@ std::string Omegacomplete::cmdCurrentTags(StringPtr argument) {
     if (tags.size() == 0)
       continue;
 
-    TagsCollection::Instance()->CreateOrUpdate(tags, current_directory_);
+    Tags.CreateOrUpdate(tags, current_directory_);
     current_tags_.push_back(tags);
   }
 
@@ -260,7 +261,7 @@ std::string Omegacomplete::cmdTaglistTags(StringPtr argument) {
     if (tags.size() == 0)
       continue;
 
-    TagsCollection::Instance()->CreateOrUpdate(tags, current_directory_);
+    Tags.CreateOrUpdate(tags, current_directory_);
     taglist_tags_.push_back(tags);
   }
 
@@ -268,7 +269,7 @@ std::string Omegacomplete::cmdTaglistTags(StringPtr argument) {
 }
 
 std::string Omegacomplete::cmdVimTaglistFunction(StringPtr argument) {
-  const std::string& response = TagsCollection::Instance()->VimTaglistFunction(
+  const std::string& response = Tags.VimTaglistFunction(
       *argument, taglist_tags_, current_directory_);
 
   return response;
@@ -281,7 +282,7 @@ std::string Omegacomplete::cmdPrune(StringPtr argument) {
 }
 
 std::string Omegacomplete::cmdFlushCaches(StringPtr argument) {
-  TagsCollection::Instance()->Clear();
+  Tags.Clear();
 
   return kDefaultResponse;
 }

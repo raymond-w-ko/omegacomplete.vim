@@ -4,6 +4,7 @@
 #include "WordCollection.hpp"
 #include "CompleteItem.hpp"
 #include "Stopwatch.hpp"
+#include "TagsCollection.hpp"
 
 class Omegacomplete : public boost::noncopyable {
  public:
@@ -20,6 +21,7 @@ class Omegacomplete : public boost::noncopyable {
   const std::string Eval(const char* request, const int request_len);
 
   WordCollection Words;
+  TagsCollection Tags;
 
  private:
   struct ParseJob {

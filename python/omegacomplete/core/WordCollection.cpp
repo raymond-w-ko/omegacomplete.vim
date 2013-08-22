@@ -123,7 +123,7 @@ void WordCollection::UpdateWord(const std::string& word, int reference_count_del
     return;
   }
 
-  {
+  if (trie_enabled_) {
     boost::mutex::scoped_lock trie_lock(trie_mutex_);
     trie_.Insert(word);
   }
@@ -147,7 +147,7 @@ size_t WordCollection::Prune() {
   foreach (const std::string& word, to_be_pruned) {
     words_.erase(word);
 
-    {
+    if (trie_enabled_) {
       boost::mutex::scoped_lock trie_lock(trie_mutex_);
       trie_.Erase(word);
     }
@@ -178,6 +178,9 @@ void WordCollection::GetLevenshteinCompletions(
   if (prefix.length() < kMinLengthForLevenshteinCompletion)
     return;
 
-  boost::mutex::scoped_lock lock(trie_mutex_);
-  WordCollection::LevenshteinSearch(prefix, kLevenshteinMaxCost, trie_, results);
+  if (trie_enabled_) {
+    boost::mutex::scoped_lock lock(trie_mutex_);
+    WordCollection::LevenshteinSearch(
+        prefix, kLevenshteinMaxCost, trie_, results);
+  }
 }

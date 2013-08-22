@@ -2,21 +2,23 @@
 
 #include "CompleteItem.hpp"
 #include "Tags.hpp"
+#include "WordCollection.hpp"
 
 class TagsCollection : public boost::noncopyable {
  public:
   static bool InitStatic();
-  static TagsCollection* Instance() { return instance_; }
   static void GlobalShutdown();
-  std::string ResolveFullPathname(
+  static std::string ResolveFullPathname(
       const std::string& tags_pathname,
       const std::string& current_directory);
 
+  TagsCollection() : Words(false) {}
   ~TagsCollection() {}
 
   bool CreateOrUpdate(
       std::string tags_pathname,
       const std::string& current_directory);
+  void Clear();
 
   void GetPrefixCompletions(
       const std::string& prefix,
@@ -37,11 +39,8 @@ class TagsCollection : public boost::noncopyable {
       const std::vector<std::string>& tags_list,
       const std::string& current_directory);
 
-  void Clear();
+  WordCollection Words;
 
  private:
-  TagsCollection() {}
-  static TagsCollection* instance_;
-
   std::map<String, Tags> tags_list_;
 };

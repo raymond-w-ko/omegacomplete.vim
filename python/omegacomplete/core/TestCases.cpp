@@ -119,7 +119,7 @@ void TestCases::TagsTest()
 
     tags = "C:\\SVN\\Syandus_ALIVE4\\Platform\\ThirdParty\\OGRE\\Include\\tags";
     std::cout << tags << std::endl;
-    TagsCollection::Instance()->CreateOrUpdate(tags, current_directory);
+    //TagsCollection::Instance()->CreateOrUpdate(tags, current_directory);
 
     //TagsCollection::Instance()->Clear();
 }
