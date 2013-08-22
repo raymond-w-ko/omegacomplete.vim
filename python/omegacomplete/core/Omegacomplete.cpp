@@ -8,7 +8,6 @@
 using namespace std;
 using namespace boost;
 
-Omegacomplete* Omegacomplete::instance_ = NULL;
 static const std::string kDefaultResponse = "ACK";
 static const std::string kUnknownCommandResponse = "UNKNOWN_COMMAND";
 
@@ -16,8 +15,6 @@ void Omegacomplete::InitStatic() {
   // dependencies in other classes that have to initialized first
   LookupTable::InitStatic();
   TagsCollection::InitStatic();
-
-  instance_ = new Omegacomplete;
 }
 
 int Omegacomplete::NumThreads() {

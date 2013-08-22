@@ -13,9 +13,9 @@ class Omegacomplete : public boost::noncopyable {
   };
 
   static void InitStatic();
-  static Omegacomplete* GetInstance() { return instance_; }
   static int NumThreads();
 
+  Omegacomplete();
   ~Omegacomplete();
   const std::string Eval(const char* request, const int request_len);
 
@@ -39,7 +39,6 @@ class Omegacomplete : public boost::noncopyable {
     StringPtr Contents;
   };
 
-  Omegacomplete();
   void initCommandDispatcher();
 
   ////////////////////////////////////////////////////////////////////////////
@@ -90,8 +89,6 @@ class Omegacomplete : public boost::noncopyable {
   ////////////////////////////////////////////////////////////////////////////
   // Omegacomplete Core
   ////////////////////////////////////////////////////////////////////////////
-  static Omegacomplete* instance_;
-
   // primary thread pool
   boost::asio::io_service io_service_;
   boost::asio::io_service::work io_service_work_;

@@ -1,13 +1,15 @@
 #include "stdafx.hpp"
 #include "Omegacomplete.hpp"
 
+static Omegacomplete* omegacomplete = NULL;
+
 static PyObject* eval(PyObject* self, PyObject* args) {
     const char* input;
     int len;
     if (!PyArg_ParseTuple(args, "s#", &input, &len))
         return NULL;
 
-    const std::string& result = Omegacomplete::GetInstance()->Eval(input, len);
+    const std::string& result = omegacomplete->Eval(input, len);
     return Py_BuildValue("s", result.c_str());
 }
 
@@ -26,4 +28,5 @@ initcore(void)
 {
     (void) Py_InitModule("core", CoreMethods);
     Omegacomplete::InitStatic();
+    omegacomplete = new Omegacomplete;
 }
