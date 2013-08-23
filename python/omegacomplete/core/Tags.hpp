@@ -3,6 +3,8 @@
 #include "CompleteItem.hpp"
 #include "AbbreviationInfo.hpp"
 
+class TagsCollection;
+
 struct TagInfo {
   std::string Location;
   std::string Ex;
@@ -12,23 +14,10 @@ struct TagInfo {
 
 class Tags {
  public:
-  Tags();
-  // this shouldn't need to be called, only here because of a GCC bug
-  Tags(const Tags& other);
+  Tags(TagsCollection* parent, const std::string& pathname);
   ~Tags() {}
-  bool Init(const std::string& pathname);
 
   void Update();
-
-  void GetPrefixCompletions(
-      const std::string& input,
-      CompleteItemVectorPtr& completions, std::set<std::string>& added_words,
-      bool terminus_mode);
-
-  void GetAbbrCompletions(
-      const std::string& input,
-      CompleteItemVectorPtr& completions, std::set<std::string>& added_words,
-      bool terminus_mode);
 
   void VimTaglistFunction(
       const std::string& word,
@@ -45,14 +34,12 @@ class Tags {
   bool win32_CheckIfModified();
   bool unix_CheckIfModified();
 
+  TagsCollection* parent_;
   std::string pathname_;
   int64_t last_write_time_;
   double last_tick_count_;
   std::string parent_directory_;
 
-  typedef
-      std::multimap<String, String>::iterator
-      tags_iterator;
   std::multimap<String, String> tags_;
-  boost::unordered_map<String, std::set<AbbreviationInfo> > abbreviations_;
 };
+typedef boost::shared_ptr<Tags> TagsPtr;

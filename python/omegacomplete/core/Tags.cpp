@@ -21,24 +21,19 @@ static inline void UnixGetClockTime(struct timespec& ts) {
 }
 #endif
 
-Tags::Tags()
+Tags::Tags(TagsCollection* parent, const std::string& pathname)
     : last_write_time_(0),
       last_tick_count_(-1.0) {
-}
-
-bool Tags::Init(const std::string& pathname) {
+  parent_ = parent;
   pathname_ = pathname;
 
   if (!calculateParentDirectory()) {
     //std::cout << "couldn't calculate parent directory for tags file, not parsing"
         //<< std::endl;
     //std::cout << pathname_ << std::endl;
-    return false;
+    return;
   }
-
   this->Update();
-
-  return true;
 }
 
 bool Tags::calculateParentDirectory() {
@@ -69,49 +64,54 @@ bool Tags::calculateParentDirectory() {
   return true;
 }
 
-Tags::Tags(const Tags& other) {
-  pathname_ = other.pathname_;
-  last_write_time_ = other.last_write_time_;
-  parent_directory_ = other.parent_directory_;
-
-  tags_ = other.tags_;
-  abbreviations_ = other.abbreviations_;
-}
-
 void Tags::reparse() {
+  if (parent_directory_.empty())
+    return;
+
+  std::string prev_word;
+
+  // clear previous words in this tags file
+  prev_word = "";
+  AUTO(tag, tags_.begin());
+  for (; tag != tags_.end(); ++tag) {
+    const String& word = tag->first;
+    if (word == prev_word)
+      continue;
+
+    parent_->Words.UpdateWord(word, -1);
+
+    prev_word = word;
+  }
   tags_.clear();
-  abbreviations_.clear();
 
   std::ifstream file(pathname_.c_str());
   unsigned line_num = 0;
 
   for (std::string line; std::getline(file, line).good(); ++line_num) {
-    // the first 6 lines contain a description of the tags file, which we don't need
-    if (line_num < 6) continue;
+    // the first 6 lines contain a description of the tags file, which we don't
+    // need
+    if (line_num < 6)
+      continue;
 
     std::vector<std::string> tokens;
     boost::split(tokens, line, boost::is_any_of("\t"), boost::token_compress_off);
-
     if (tokens.size() < 3) {
-      std::cout << "invalid tag line detected!" << std::endl;
+      //std::cout << "invalid tag line detected!" << std::endl;
       return;
     }
 
     const std::string tag_name = tokens[0];
-
-    tags_.insert( make_pair(tag_name, line) );
+    tags_.insert(make_pair(tag_name, line));
   }
 
-  std::string prev_word;
-  for (tags_iterator tag = tags_.begin();
-       tag != tags_.end();
-       ++tag)
-  {
+  // re-add all unique tags in this tags file
+  prev_word = "";
+  for (tag = tags_.begin(); tag != tags_.end(); ++tag) {
     const String& word = tag->first;
     if (word == prev_word)
       continue;
 
-    // TODO: insert word to global word collection
+    parent_->Words.UpdateWord(word, +1);
 
     prev_word = word;
   }
@@ -127,7 +127,7 @@ void Tags::VimTaglistFunction(
     const std::string& line = iter->second;
     std::string dummy;
     TagInfo tag_info;
-    if (calculateTagInfo(line, dummy, tag_info) == false)
+    if (!calculateTagInfo(line, dummy, tag_info))
       continue;
 
     ss << "{";
@@ -147,64 +147,6 @@ void Tags::VimTaglistFunction(
 
     ss << "},";
   }
-}
-
-void Tags::GetPrefixCompletions(
-    const std::string& input,
-    CompleteItemVectorPtr& completions, std::set<std::string>& added_words,
-    bool terminus_mode)
-{
-    AUTO(iter, tags_.lower_bound(input));
-    for (; iter != tags_.end(); ++iter) {
-        const std::string& candidate = iter->first;
-
-        if (completions->size() == LookupTable::kMaxNumCompletions)
-            break;
-        if (boost::starts_with(candidate, input) == false)
-            break;
-
-        if (terminus_mode && !boost::ends_with(candidate, "_"))
-            continue;
-        if (boost::ends_with(candidate, "-"))
-            continue;
-        if (Contains(added_words, candidate))
-            continue;
-
-        CompleteItem completion(candidate);
-        completion.Menu = "        [Tags]";
-        completions->push_back(completion);
-
-        added_words.insert(candidate);
-    }
-}
-
-void Tags::GetAbbrCompletions(
-    const std::string& input,
-    CompleteItemVectorPtr& completions, std::set<std::string>& added_words,
-    bool terminus_mode)
-{
-    if (input.length() < 2)
-        return;
-
-    AUTO(const &set, abbreviations_[input]);
-    AUTO(iter, set.begin());
-    for (; iter != set.end(); ++iter) {
-        const AbbreviationInfo& candidate = *iter;
-
-        if (completions->size() == LookupTable::kMaxNumCompletions)
-            break;
-
-        if (terminus_mode && !boost::ends_with(candidate.Word, "_"))
-            continue;
-        if (Contains(added_words, candidate.Word))
-            continue;
-
-        CompleteItem completion(candidate.Word, (float)candidate.Weight);
-        completion.Menu = "        [Tags]";
-        completions->push_back(completion);
-
-        added_words.insert(candidate.Word);
-    }
 }
 
 void Tags::Update() {
@@ -250,99 +192,91 @@ bool Tags::calculateTagInfo(
     const std::string& line,
     std::string& tag_name,
     TagInfo& tag_info) {
-    std::vector<std::string> tokens;
-    boost::split(tokens, line, boost::is_any_of("\t"), boost::token_compress_off);
+  std::vector<std::string> tokens;
+  boost::split(tokens, line, boost::is_any_of("\t"), boost::token_compress_off);
 
-    if (tokens.size() < 3)
-    {
-        std::cout << "invalid tag line detected!" << std::endl;
-        return false;
-    }
+  if (tokens.size() < 3) {
+    //std::cout << "invalid tag line detected!" << std::endl;
+    return false;
+  }
 
-    tag_name = tokens[0];
-    tag_info.Location = tokens[1];
-    // normalize Windows pathnames to UNIX format
-    boost::replace_all(tag_info.Location, "\\", "/");
-    // if there is a dot slash in front, replace with location of tags
-    if (tag_info.Location.length() > 1 && tag_info.Location[0] == '.')
-    {
-        boost::replace_first(tag_info.Location, ".", parent_directory_);
-    }
-    // if there is no slash at all then it is in the current directory of the tags
-    if (tag_info.Location.find("/") == std::string::npos)
-    {
-        tag_info.Location = parent_directory_ + "/" + tag_info.Location;
-    }
+  tag_name = tokens[0];
+  tag_info.Location = tokens[1];
+  // normalize Windows pathnames to UNIX format
+  boost::replace_all(tag_info.Location, "\\", "/");
+  // if there is a dot slash in front, replace with location of tags
+  if (tag_info.Location.length() > 1 && tag_info.Location[0] == '.')
+    boost::replace_first(tag_info.Location, ".", parent_directory_);
+  // if there is no slash at all then it is in the current directory of the tags
+  if (tag_info.Location.find("/") == std::string::npos)
+    tag_info.Location = parent_directory_ + "/" + tag_info.Location;
 #ifdef _WIN32
-    NormalizeToWindowsPathSeparators(tag_info.Location);
+  NormalizeToWindowsPathSeparators(tag_info.Location);
 #else
-    NormalizeToUnixPathSeparators(tag_info.Location);
+  NormalizeToUnixPathSeparators(tag_info.Location);
 #endif
 
-    size_t index = 2;
-    std::string ex;
-    for (; index < tokens.size(); ++index)
-    {
-        std::string token = tokens[index];
+  size_t index = 2;
+  std::string ex;
+  for (; index < tokens.size(); ++index) {
+    std::string token = tokens[index];
+    if (token.empty())
+      token = "\t";
 
-        if (token.empty()) token = "\t";
+    ex += token;
 
-        ex += token;
+    if (boost::ends_with(token, ";\""))
+      break;
+  }
+  if (!boost::ends_with(ex, "\"")) {
+    //std::cout << "Ex didn't end with ;\"" << std::endl;
+    return false;
+  }
 
-        if (boost::ends_with(token, ";\"")) break;
-    }
-    if (boost::ends_with(ex, "\"") == false)
-    {
-        std::cout << "Ex didn't end with ;\"" << std::endl;
-        return false;
-    }
+  tag_info.Ex = ex;
 
-    tag_info.Ex = ex;
+  // increment to next token, which should be the more info fields
+  index++;
 
-    // increment to next token, which should be the more info fields
-    index++;
-
-    for (; index < tokens.size(); ++index)
-    {
-        std::string token = tokens[index];
-        size_t colon = token.find(":");
-        if (colon == std::string::npos)
-        {
-            std::cout << "expected key value pair, but could not find ':'"
-                        << std::endl;
-            std::cout << line << std::endl;
-            continue;
-        }
-
-        std::string key = std::string(token.begin(), token.begin() + colon);
-        std::string value = std::string(token.begin() + colon + 1, token.end());
-        tag_info.Info[key] = value;
+  for (; index < tokens.size(); ++index) {
+    std::string token = tokens[index];
+    size_t colon = token.find(":");
+    if (colon == std::string::npos) {
+      //std::cout << "expected key value pair, but could not find ':'"
+      //<< std::endl;
+      //std::cout << line << std::endl;
+      continue;
     }
 
-    // calculate prefix from Ex command
-    // this can usually be used as the return type of the tag
-    size_t header_index = tag_info.Ex.find("/^");
-    size_t footer_index = tag_info.Ex.find(tag_name);
-    if ((header_index != std::string::npos) &&
-        (footer_index != std::string::npos)) {
-        header_index += 2;
-        std::string tag_prefix = tag_info.Ex.substr(
-            header_index,
-            footer_index - header_index);
-        // search back until we find a space to handle complex
-        // return types like
-        // std::map<int, int> FunctionName
-        // and
-        // void Class::FunctionName
-        footer_index = tag_prefix.rfind(" ");
-        if (footer_index != std::string::npos) {
-            tag_prefix = tag_prefix.substr(0, footer_index);
-        }
-        boost::trim(tag_prefix);
-        tag_info.Info["prefix"] = tag_prefix;
-    }
+    std::string key = std::string(token.begin(), token.begin() + colon);
+    std::string value = std::string(token.begin() + colon + 1, token.end());
+    tag_info.Info[key] = value;
+  }
 
-    return true;
+  // calculate prefix from Ex command
+  // this can usually be used as the return type of the tag
+  size_t header_index = tag_info.Ex.find("/^");
+  size_t footer_index = tag_info.Ex.find(tag_name);
+  if ((header_index != std::string::npos) &&
+      (footer_index != std::string::npos)) {
+    header_index += 2;
+    std::string tag_prefix = tag_info.Ex.substr(
+        header_index,
+        footer_index - header_index);
+    // search back until we find a space to handle complex
+    // return types like
+    // std::map<int, int> FunctionName
+    // and
+    // void Class::FunctionName
+    footer_index = tag_prefix.rfind(" ");
+    if (footer_index != std::string::npos) {
+      tag_prefix = tag_prefix.substr(0, footer_index);
+    }
+    boost::trim(tag_prefix);
+    tag_info.Info["prefix"] = tag_prefix;
+  }
+
+  return true;
 }
 
 bool Tags::win32_CheckIfModified() {
@@ -357,9 +291,8 @@ bool Tags::win32_CheckIfModified() {
       OPEN_EXISTING,
       FILE_ATTRIBUTE_NORMAL,
       NULL);
-  if (hFile == INVALID_HANDLE_VALUE) {
+  if (hFile == INVALID_HANDLE_VALUE)
     return false;
-  }
 
   FILETIME ft_last_write_time;
   ::GetFileTime(
@@ -374,7 +307,8 @@ bool Tags::win32_CheckIfModified() {
     last_write_time_ = last_write_time;
   }
 
-  CloseHandle(hFile); hFile = INVALID_HANDLE_VALUE;
+  CloseHandle(hFile);
+  hFile = INVALID_HANDLE_VALUE;
 
   return reparse_needed;
 #else

@@ -19,6 +19,7 @@ void Omegacomplete::InitStatic() {
 
 int Omegacomplete::NumThreads() {
   unsigned num_hardware_threads = boost::thread::hardware_concurrency();
+  // hardware_concurrency() can return 0, so make at least 2 threads
   unsigned num_threads = max(num_hardware_threads, (unsigned)2);
   return static_cast<int>(num_threads);
 }
@@ -35,11 +36,11 @@ Omegacomplete::Omegacomplete()
       Words(true) {
   initCommandDispatcher();
 
-  // hardware_concurrency() can return 0
   for (int i = 0; i < Omegacomplete::NumThreads(); ++i) {
     threads_.create_thread(
         boost::bind(&boost::asio::io_service::run, &io_service_));
-    mutexes_.push_back(boost::make_shared<boost::mutex>());
+    main_mutexes_.push_back(boost::make_shared<boost::mutex>());
+    tags_mutexes_.push_back(boost::make_shared<boost::mutex>());
   }
 
   worker_thread_ = boost::thread(&Omegacomplete::workerThreadLoop, this);
@@ -446,6 +447,7 @@ void Omegacomplete::genericKeywordCompletion(
   prev_input_[1] = prev_input_[0];
   prev_input_[0] = input;
 
+  // server side disambiguation
   unsigned disambiguate_index = UINT_MAX;
   bool disambiguate_mode =
       config_["server_side_disambiguate"] != "0" &&
@@ -460,32 +462,54 @@ void Omegacomplete::genericKeywordCompletion(
     return;
   }
 
-  int num_threads = Omegacomplete::NumThreads();
+  const int num_threads = Omegacomplete::NumThreads();
   Completions completions;
-
   completions.Items = boost::make_shared<CompleteItemVector>();
+  Completions tags_completions;
+  tags_completions.Items = boost::make_shared<CompleteItemVector>();
+
   Words.Lock();
-
   AUTO(const & word_list, Words.GetWordList());
+  Tags.Words.Lock();
+  AUTO(const & tags_word_list, Tags.Words.GetWordList());
 
+  // queue jobs for main (buffer) words
   for (int i = 0; i < num_threads; ++i) {
-    mutexes_[i]->lock();
+    main_mutexes_[i]->lock();
     const int begin = ((i + 0) * (unsigned)word_list.size()) / num_threads;
     const int end = ((i + 1) * (unsigned)word_list.size()) / num_threads;
     io_service_.post(boost::bind(
             Algorithm::ProcessWords,
             boost::ref(completions),
-            mutexes_[i],
+            main_mutexes_[i],
             boost::cref(word_list), begin, end, input, false));
   }
-
+  // queue jobs for tags words
   for (int i = 0; i < num_threads; ++i) {
-    mutexes_[i]->lock();
-    mutexes_[i]->unlock();
+    tags_mutexes_[i]->lock();
+    const int begin = ((i + 0) * (unsigned)tags_word_list.size()) / num_threads;
+    const int end = ((i + 1) * (unsigned)tags_word_list.size()) / num_threads;
+    io_service_.post(boost::bind(
+            Algorithm::ProcessWords,
+            boost::ref(tags_completions),
+            tags_mutexes_[i],
+            boost::cref(tags_word_list), begin, end, input, false));
   }
+
+  // unlock all the things
+  for (int i = 0; i < num_threads; ++i) {
+    tags_mutexes_[i]->lock();
+    tags_mutexes_[i]->unlock();
+  }
+  for (int i = 0; i < num_threads; ++i) {
+    main_mutexes_[i]->lock();
+    main_mutexes_[i]->unlock();
+  }
+  Tags.Words.Unlock();
   Words.Unlock();
 
   std::sort(completions.Items->begin(), completions.Items->end());
+  std::sort(tags_completions.Items->begin(), tags_completions.Items->end());
 
   // filter out duplicates
   boost::unordered_set<std::string> added_words;
@@ -498,38 +522,47 @@ void Omegacomplete::genericKeywordCompletion(
     added_words.insert(prev_input_[1]);
   }
 
-  CompleteItemVectorPtr all_items = completions.Items;
-  CompleteItemVectorPtr filtered_items = boost::make_shared<CompleteItemVector>();
-  for (int i = 0; i < all_items->size(); ++i) {
-    const std::string& word = (*all_items)[i].Word;
+  // build final list
+  CompleteItemVectorPtr final_items = boost::make_shared<CompleteItemVector>();
+  CompleteItemVectorPtr main_items = completions.Items;
+  CompleteItemVectorPtr tags_items = tags_completions.Items;
+  for (int i = 0; i < main_items->size(); ++i) {
+    const std::string& word = (*main_items)[i].Word;
     if (!Contains(added_words, word)) {
       added_words.insert(word);
-      filtered_items->push_back((*all_items)[i]);
+      final_items->push_back((*main_items)[i]);
     }
   }
-  completions.Items = filtered_items;
+  for (int i = 0; i < tags_items->size(); ++i) {
+    const std::string& word = (*tags_items)[i].Word;
+    if (!Contains(added_words, word)) {
+      added_words.insert(word);
+      final_items->push_back((*tags_items)[i]);
+    }
+  }
 
-  addLevenshteinCorrections(input, completions.Items);
+  // try to spell check if we have no candidates
+  addLevenshteinCorrections(input, final_items);
 
   // assign quick match number of entries
   for (size_t i = 0; i < LookupTable::kMaxNumQuickMatch; ++i) {
-    if (i >= completions.Items->size())
+    if (i >= final_items->size())
       break;
 
-    CompleteItem& item = (*completions.Items)[i];
+    CompleteItem& item = (*final_items)[i];
     item.Menu = lexical_cast<string>(LookupTable::QuickMatchKey[i]) +
         " " + item.Menu;
   }
 
   result += "[";
-  foreach (const CompleteItem& completion, *completions.Items) {
+  foreach (const CompleteItem& completion, *final_items) {
     result += completion.SerializeToVimDict();
   }
   result += "]";
 
-  prev_completions_ = completions.Items;
+  prev_completions_ = final_items;
 
-  if (completions.Items->size() > 0)
+  if (final_items->size() > 0)
     suffix0_ = false;
 }
 

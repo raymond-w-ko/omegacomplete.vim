@@ -6,105 +6,6 @@
 static std::string kWin32SystemDrive;
 #endif
 
-bool TagsCollection::InitStatic() {
-#ifdef _WIN32
-  char* sys_drive = NULL;
-  size_t sys_drive_len = 0;
-  errno_t err = ::_dupenv_s(&sys_drive, &sys_drive_len, "SystemDrive");
-  if (err)
-    return false;
-  // apparently this means "C:\0", so 3 bytes
-  if (sys_drive_len != 3)
-    return false;
-
-  kWin32SystemDrive.resize(2);
-  kWin32SystemDrive[0] = sys_drive[0];
-  kWin32SystemDrive[1] = ':';
-
-  free(sys_drive);
-  sys_drive = NULL;
-#endif
-
-  return true;
-}
-
-bool TagsCollection::CreateOrUpdate(std::string tags_pathname,
-                                    const std::string& current_directory) {
-  // in case the user has set 'tags' to something like:
-  // './tags,./TAGS,tags,TAGS'
-  // we have to resolve ambiguity
-  tags_pathname = ResolveFullPathname(tags_pathname, current_directory);
-
-  if (!Contains(tags_list_, tags_pathname))
-    tags_list_[tags_pathname].Init(tags_pathname);
-  else
-    tags_list_[tags_pathname].Update();
-
-  return true;
-}
-
-void TagsCollection::Clear() {
-  tags_list_.clear();
-}
-
-std::string TagsCollection::VimTaglistFunction(
-    const std::string& word,
-    const std::vector<std::string>& tags_list,
-    const std::string& current_directory)
-{
-  std::stringstream ss;
-
-  ss << "[";
-  foreach (std::string tags, tags_list) {
-    tags = ResolveFullPathname(tags, current_directory);
-    if (Contains(tags_list_, tags) == false)
-      continue;
-
-    tags_list_[tags].VimTaglistFunction(word, ss);
-  }
-  ss << "]";
-
-  return ss.str();
-}
-
-void TagsCollection::GetPrefixCompletions(
-    const std::string& prefix,
-    const std::vector<std::string>& tags_list,
-    const std::string& current_directory,
-    CompleteItemVectorPtr& completions, std::set<std::string> added_words,
-    bool terminus_mode)
-{
-  foreach (std::string tags, tags_list) {
-    tags = ResolveFullPathname(tags, current_directory);
-    if (Contains(tags_list_, tags) == false)
-      continue;
-
-    tags_list_[tags].GetPrefixCompletions(
-        prefix,
-        completions, added_words,
-        terminus_mode);
-  }
-}
-
-void TagsCollection::GetAbbrCompletions(
-    const std::string& prefix,
-    const std::vector<std::string>& tags_list,
-    const std::string& current_directory,
-    CompleteItemVectorPtr& completions, std::set<std::string> added_words,
-    bool terminus_mode)
-{
-  foreach (std::string tags, tags_list) {
-    tags = ResolveFullPathname(tags, current_directory);
-    if (Contains(tags_list_, tags) == false)
-      continue;
-
-    tags_list_[tags].GetAbbrCompletions(
-        prefix,
-        completions, added_words,
-        terminus_mode);
-  }
-}
-
 std::string TagsCollection::ResolveFullPathname(
     const std::string& tags_pathname,
     const std::string& current_directory) {
@@ -144,4 +45,64 @@ std::string TagsCollection::ResolveFullPathname(
 #endif
 
   return full_tags_pathname;
+}
+
+bool TagsCollection::InitStatic() {
+#ifdef _WIN32
+  char* sys_drive = NULL;
+  size_t sys_drive_len = 0;
+  errno_t err = ::_dupenv_s(&sys_drive, &sys_drive_len, "SystemDrive");
+  if (err)
+    return false;
+  // apparently this means "C:\0", so 3 bytes
+  if (sys_drive_len != 3)
+    return false;
+
+  kWin32SystemDrive.resize(2);
+  kWin32SystemDrive[0] = sys_drive[0];
+  kWin32SystemDrive[1] = ':';
+
+  free(sys_drive);
+  sys_drive = NULL;
+#endif
+
+  return true;
+}
+
+bool TagsCollection::CreateOrUpdate(std::string tags_pathname,
+                                    const std::string& current_directory) {
+  // in case the user has set 'tags' to something like:
+  // './tags,./TAGS,tags,TAGS'
+  // we have to resolve ambiguity
+  tags_pathname = ResolveFullPathname(tags_pathname, current_directory);
+
+  if (!Contains(tags_list_, tags_pathname))
+    tags_list_[tags_pathname] = boost::make_shared<Tags>(this, tags_pathname);
+  else
+    tags_list_[tags_pathname]->Update();
+
+  return true;
+}
+
+void TagsCollection::Clear() {
+  tags_list_.clear();
+}
+
+std::string TagsCollection::VimTaglistFunction(
+    const std::string& word,
+    const std::vector<std::string>& tags_list,
+    const std::string& current_directory) {
+  std::stringstream ss;
+
+  ss << "[";
+  foreach (std::string tags, tags_list) {
+    tags = ResolveFullPathname(tags, current_directory);
+    if (Contains(tags_list_, tags) == false)
+      continue;
+
+    tags_list_[tags]->VimTaglistFunction(word, ss);
+  }
+  ss << "]";
+
+  return ss.str();
 }

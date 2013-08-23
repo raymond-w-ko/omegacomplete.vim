@@ -95,7 +95,8 @@ class Omegacomplete : public boost::noncopyable {
   boost::asio::io_service io_service_;
   boost::asio::io_service::work io_service_work_;
   boost::thread_group threads_;
-  std::vector<boost::shared_ptr<boost::mutex> > mutexes_;
+  std::vector<boost::shared_ptr<boost::mutex> > main_mutexes_;
+  std::vector<boost::shared_ptr<boost::mutex> > tags_mutexes_;
 
   // single thread for sequential jobs
   boost::thread worker_thread_;

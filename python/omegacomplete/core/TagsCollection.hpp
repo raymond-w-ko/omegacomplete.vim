@@ -20,20 +20,6 @@ class TagsCollection : public boost::noncopyable {
       const std::string& current_directory);
   void Clear();
 
-  void GetPrefixCompletions(
-      const std::string& prefix,
-      const std::vector<std::string>& tags_list,
-      const std::string& current_directory,
-      CompleteItemVectorPtr& completions, std::set<std::string> added_words,
-      bool terminus_mode);
-
-  void GetAbbrCompletions(
-      const std::string& prefix,
-      const std::vector<std::string>& tags_list,
-      const std::string& current_directory,
-      CompleteItemVectorPtr& completions, std::set<std::string> added_words,
-      bool terminus_mode);
-
   std::string VimTaglistFunction(
       const std::string& word,
       const std::vector<std::string>& tags_list,
@@ -42,5 +28,5 @@ class TagsCollection : public boost::noncopyable {
   WordCollection Words;
 
  private:
-  std::map<String, Tags> tags_list_;
+  std::map<String, TagsPtr> tags_list_;
 };
