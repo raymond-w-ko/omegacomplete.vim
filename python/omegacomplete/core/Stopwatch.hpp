@@ -8,11 +8,11 @@ public:
     }
 
 	void Start() {
-		start_ = boost::chrono::steady_clock::now();
+		start_ = boost::chrono::high_resolution_clock::now();
     }
 
     void Stop() {
-		end_ = boost::chrono::steady_clock::now();
+		end_ = boost::chrono::high_resolution_clock::now();
     }
 
 	//! Stops the timer and returns the result
@@ -33,6 +33,6 @@ public:
     }
 
 private:
-    boost::chrono::steady_clock::time_point start_;
-    boost::chrono::steady_clock::time_point end_;
+    boost::chrono::high_resolution_clock::time_point start_;
+    boost::chrono::high_resolution_clock::time_point end_;
 };

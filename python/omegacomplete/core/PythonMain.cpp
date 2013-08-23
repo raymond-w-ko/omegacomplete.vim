@@ -9,8 +9,12 @@ static PyObject* eval(PyObject* self, PyObject* args) {
     if (!PyArg_ParseTuple(args, "s#", &input, &len))
         return NULL;
 
-    const std::string& result = omegacomplete->Eval(input, len);
-    return Py_BuildValue("s", result.c_str());
+    if (omegacomplete) {
+			const std::string& result = omegacomplete->Eval(input, len);
+      return Py_BuildValue("s", result.c_str());
+		} else {
+			return NULL;
+		}
 }
 
 static PyMethodDef CoreMethods[] = {

@@ -25,15 +25,15 @@ int Omegacomplete::NumThreads() {
 }
 
 Omegacomplete::Omegacomplete()
-    : io_service_work_(io_service_),
+    : Words(true),
+		  io_service_work_(io_service_),
       is_quitting_(0),
       buffer_contents_follow_(false),
       prev_input_(3),
       is_corrections_only_(false),
       should_autocomplete_(false),
       suffix0_(false),
-      suffix1_(false),
-      Words(true) {
+      suffix1_(false) {
   initCommandDispatcher();
 
   for (int i = 0; i < Omegacomplete::NumThreads(); ++i) {
@@ -365,7 +365,7 @@ std::string Omegacomplete::cmdGetAutocomplete(StringPtr argument) {
 
 std::string Omegacomplete::cmdSetLogFile(StringPtr argument) {
   log_file_.close();
-  log_file_.open(*argument, std::ios::app) ;
+  log_file_.open(argument->c_str(), std::ios::app) ;
   return kDefaultResponse;
 }
 
@@ -526,14 +526,14 @@ void Omegacomplete::genericKeywordCompletion(
   CompleteItemVectorPtr final_items = boost::make_shared<CompleteItemVector>();
   CompleteItemVectorPtr main_items = completions.Items;
   CompleteItemVectorPtr tags_items = tags_completions.Items;
-  for (int i = 0; i < main_items->size(); ++i) {
+  for (size_t i = 0; i < main_items->size(); ++i) {
     const std::string& word = (*main_items)[i].Word;
     if (!Contains(added_words, word)) {
       added_words.insert(word);
       final_items->push_back((*main_items)[i]);
     }
   }
-  for (int i = 0; i < tags_items->size(); ++i) {
+  for (size_t i = 0; i < tags_items->size(); ++i) {
     const std::string& word = (*tags_items)[i].Word;
     if (!Contains(added_words, word)) {
       added_words.insert(word);
