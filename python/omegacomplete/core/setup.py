@@ -31,6 +31,7 @@ else:
                       '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7/'],
       library_dirs = ['/Users/rko/boost/stage/lib'],
       libraries = ['boost_thread', 'boost_system', 'boost_chrono'],
+      extra_compile_args = ['-Wno-char-subscripts'],
       sources = files)
 
 setup(name = 'core',
