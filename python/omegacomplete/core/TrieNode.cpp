@@ -15,40 +15,42 @@ TrieNode::~TrieNode() {
 
 void TrieNode::Insert(const String& word) {
   TrieNode* node = this;
-  foreach (uchar letter, word) {
+  size_t word_size = word.size();
+  for (size_t i = 0; i < word_size; ++i) {
+    uchar letter = static_cast<uchar>(word[i]);
     AUTO(&children, node->Children);
     if (!Contains(children, letter)) {
       TrieNode* new_node = new TrieNode;
-      children.insert(std::make_pair(letter, new_node));
+      children[letter] = new_node;
+      node = new_node;
+    } else {
+      node = children[letter];
     }
-
-    node = children[letter];
   }
-
   node->Word = word;
 }
 
 void TrieNode::Erase(const String& word) {
-  std::vector<TrieNode*> node_list;
-  node_list.reserve(word.size() + 1);
-
+  std::vector<TrieNode*> node_list(word.size() + 1);
   TrieNode* node = this;
-  node_list.push_back(node);
-  foreach (uchar letter, word) {
+  node_list[0] = node;
+  size_t word_size = word.size();
+  for (size_t i = 0; i < word_size; ++i) {
+    uchar letter = static_cast<uchar>(word[i]);
     AUTO(&children, node->Children);
     if (!Contains(children, letter)) {
       return;
     }
 
     node = children[letter];
-    node_list.push_back(node);
+    node_list[i + 1] = node;
   }
 
   node->Word.clear();
 
   assert(node_list.size() == (word.size() + 1));
 
-  for (int ii = static_cast<int>(word.size()) - 1; ii >= 0; --ii) {
+  for (int ii = static_cast<int>(word_size) - 1; ii >= 0; --ii) {
     if (node_list[ii + 1]->Children.size() == 0 &&
         node_list[ii + 1]->Word.empty()) {
       AUTO(&children, node_list[ii]->Children);

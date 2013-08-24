@@ -74,6 +74,7 @@ function s:Init()
 
     command OmegacompleteFlushServerCaches :call <SID>FlushServerCaches()
     command OmegacompleteUpdateConfig :call <SID>UpdateConfig()
+    command OmegacompleteDoTests :call <SID>DoTests()
 
     " find and load the omegacomplete Python code
     " --------------------------------------------------------------------------
@@ -473,6 +474,10 @@ function <SID>UpdateConfig()
     if len(g:omegacomplete_log_file) > 0
       exe 'py oc_eval("set_log_file ' . g:omegacomplete_log_file . '")'
     endif
+endfunction
+
+function <SID>DoTests()
+  python oc_eval("do_tests now")
 endfunction
 
 function <SID>ConfigureDisambiguateMode()

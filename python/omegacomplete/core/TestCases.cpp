@@ -24,88 +24,55 @@ static void always_assert(bool condition) {
     return;
 }
 
-TestCases::TestCases()
-{
-    std::cout << "running test cases" << std::endl;
-    std::cout << std::endl;
-
-    TrieNodeTest();
-    std::cout << std::endl;
-
-    TagsTest();
-    std::cout << std::endl;
-
-    ClangTest();
-    std::cout << std::endl;
-}
-
-TestCases::~TestCases()
-{
-    ;
-}
-
-void TestCases::TrieNodeTest()
-{
+void TestCases::TrieNodeTest(std::stringstream& results) {
 #ifdef _WIN32
-    TrieNode root_node;
+  TrieNode root_node;
 
-    std::ifstream input_file("wordlists/brit-a-z.txt");
-    std::string line;
+  std::ifstream input_file("wordlist.txt");
+  std::string line;
 
-    // creation time
-    DWORD start_time = ::GetTickCount();
-    while ( std::getline(input_file, line) )
-    {
-        root_node.Insert(line);
-    }
-    DWORD end_time = ::GetTickCount();
+  std::vector<std::string> lines;
 
-    unsigned delta = (end_time - start_time);
-    std::cout << "wordlist insertion time: " << delta  << " ms" << std::endl;
+  // creation time
+  while (std::getline(input_file, line))
+    lines.push_back(line);
 
-    input_file.clear();
-    input_file.seekg(0, std::ios::beg);
+  DWORD start_time = ::GetTickCount();
+  for (size_t i = 0; i < lines.size(); ++i)
+    root_node.Insert(lines[i]);
+  DWORD end_time = ::GetTickCount();
 
-    // search time
-    unsigned int num_searches = 32;
-    start_time = ::GetTickCount();
-    LevenshteinSearchResults results;
-    std::vector<std::string> words;
-    while ( std::getline(input_file, line) )
-    {
-        words.push_back(line);
-    }
-    std::cout << "randomly selecting " << num_searches
-              << " words from from a pool of "
-              << words.size() << std::endl;
+  unsigned delta = (end_time - start_time);
+  results << "wordlist insertion time: " << delta << " ms" << "\n";
 
-    boost::random::mt19937 gen;
-    gen.seed( static_cast<unsigned int>(0) );
-    boost::random::uniform_int_distribution<> dist(0, static_cast<int>(words.size() - 1));
-    for (size_t ii = 0; ii < num_searches; ++ii)
-    {
-        const std::string& word = words.at(dist(gen));
-        WordCollection::LevenshteinSearch(word, 2, root_node, results);
-    }
-    end_time = ::GetTickCount();
-    delta = (end_time - start_time);
-    std::cout << "trie search time: " << delta  << " ms" << std::endl;
+  // search time
+  unsigned int num_searches = 256;
+  LevenshteinSearchResults search_results;
+  results << "randomly selecting " << num_searches << " words from from a pool of "
+          << lines.size() << "\n";
 
-    input_file.clear();
-    input_file.seekg(0, std::ios::beg);
+  boost::random::mt19937 gen;
+  gen.seed(static_cast<unsigned int>(0));
+  boost::random::uniform_int_distribution<> dist(0, static_cast<int>(lines.size() - 1));
+  start_time = ::GetTickCount();
+  for (size_t i = 0; i < num_searches; ++i) {
+    const std::string& word = lines.at(dist(gen));
+    Algorithm::LevenshteinSearch(word, 2, root_node, search_results);
+  }
+  end_time = ::GetTickCount();
+  delta = end_time - start_time;
+  results << "trie search time: " << delta  << " ms" << "\n";
 
-    // deletion time
-    start_time = ::GetTickCount();
-    while ( std::getline(input_file, line) )
-    {
-        root_node.Erase(line);
-    }
-    end_time = ::GetTickCount();
-    delta = (end_time - start_time);
-    std::cout << "wordlist removal time: " << delta << " ms" << std::endl;
+  // deletion time
+  start_time = ::GetTickCount();
+  for (size_t i = 0; i < lines.size(); ++i)
+    root_node.Erase(lines[i]);
+  end_time = ::GetTickCount();
+  delta = end_time - start_time;
+  results << "wordlist removal time: " << delta << " ms" << "\n";
 
-    always_assert(root_node.Children.size() == 0);
-    always_assert(root_node.Word.empty());
+  always_assert(root_node.Children.size() == 0);
+  always_assert(root_node.Word.empty());
 #endif
 }
 

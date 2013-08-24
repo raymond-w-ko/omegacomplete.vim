@@ -114,6 +114,9 @@ void Omegacomplete::initCommandDispatcher() {
 
   m["stop_stopwatch"] = boost::bind(
       &Omegacomplete::cmdStopStopwatch, ref(*this), _1);
+
+  m["do_tests"] = boost::bind(
+      &Omegacomplete::cmdDoTests, ref(*this), _1);
 }
 
 Omegacomplete::~Omegacomplete() {
@@ -378,6 +381,13 @@ std::string Omegacomplete::cmdStopStopwatch(StringPtr argument) {
   stopwatch_.Stop();
   const std::string& ns = stopwatch_.ResultNanosecondsToString();
   log_file_ << ns << std::endl;
+  return kDefaultResponse;
+}
+
+std::string Omegacomplete::cmdDoTests(StringPtr argument) {
+  std::stringstream results;
+  test_cases_.TrieNodeTest(results);
+  log_file_ << results.str();
   return kDefaultResponse;
 }
 

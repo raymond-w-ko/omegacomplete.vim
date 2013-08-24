@@ -9,20 +9,6 @@ typedef std::map< size_t, std::set<std::string> > LevenshteinSearchResults;
 
 class WordCollection : public boost::noncopyable {
  public:
-  static void LevenshteinSearch(
-      const std::string& word,
-      size_t max_cost,
-      const TrieNode& trie,
-      LevenshteinSearchResults& results);
-
-  static void LevenshteinSearchRecursive(
-      const TrieNode& node,
-      char letter,
-      const std::string& word,
-      const std::vector<size_t>& previous_row,
-      LevenshteinSearchResults& results,
-      size_t max_cost);
-
   WordCollection(bool enable_trie) : trie_enabled_(enable_trie) {}
   ~WordCollection() {}
 

@@ -1,13 +1,11 @@
 #pragma once
 
-class TestCases : public boost::noncopyable
-{
+class TestCases : public boost::noncopyable {
 public:
-    TestCases();
-    ~TestCases();
+ TestCases() {}
+ ~TestCases() {}
 
-private:
-    void TrieNodeTest();
-    void TagsTest();
-    void ClangTest();
+ void TrieNodeTest(std::stringstream& results);
+ void TagsTest();
+ void ClangTest();
 };

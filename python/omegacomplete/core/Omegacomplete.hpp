@@ -5,6 +5,7 @@
 #include "CompleteItem.hpp"
 #include "Stopwatch.hpp"
 #include "TagsCollection.hpp"
+#include "TestCases.hpp"
 
 class Omegacomplete : public boost::noncopyable {
  public:
@@ -68,6 +69,7 @@ class Omegacomplete : public boost::noncopyable {
   std::string cmdSetLogFile(StringPtr argument);
   std::string cmdStartStopwatch(StringPtr argument);
   std::string cmdStopStopwatch(StringPtr argument);
+  std::string cmdDoTests(StringPtr argument);
 
   ////////////////////////////////////////////////////////////////////////////
   // Omegacomplete Core
@@ -139,4 +141,6 @@ class Omegacomplete : public boost::noncopyable {
 
   Stopwatch stopwatch_;
   std::ofstream log_file_;
+
+  TestCases test_cases_;
 };
