@@ -39,8 +39,6 @@ Omegacomplete::Omegacomplete()
   for (int i = 0; i < Omegacomplete::NumThreads(); ++i) {
     threads_.create_thread(
         boost::bind(&boost::asio::io_service::run, &io_service_));
-    main_mutexes_.push_back(boost::make_shared<boost::mutex>());
-    tags_mutexes_.push_back(boost::make_shared<boost::mutex>());
   }
 
   worker_thread_ = boost::thread(&Omegacomplete::workerThreadLoop, this);
@@ -483,37 +481,32 @@ void Omegacomplete::genericKeywordCompletion(
   Tags.Words.Lock();
   AUTO(const & tags_word_list, Tags.Words.GetWordList());
 
+  done_count_.store(0, boost::memory_order_acq_rel);
+
   // queue jobs for main (buffer) words
   for (int i = 0; i < num_threads; ++i) {
-    main_mutexes_[i]->lock();
     const int begin = ((i + 0) * (unsigned)word_list.size()) / num_threads;
     const int end = ((i + 1) * (unsigned)word_list.size()) / num_threads;
     io_service_.post(boost::bind(
             Algorithm::ProcessWords,
-            boost::ref(completions),
-            main_mutexes_[i],
-            boost::cref(word_list), begin, end, input, false));
+            &completions,
+            &done_count_,
+            &word_list, begin, end, input, false));
   }
   // queue jobs for tags words
   for (int i = 0; i < num_threads; ++i) {
-    tags_mutexes_[i]->lock();
     const int begin = ((i + 0) * (unsigned)tags_word_list.size()) / num_threads;
     const int end = ((i + 1) * (unsigned)tags_word_list.size()) / num_threads;
     io_service_.post(boost::bind(
             Algorithm::ProcessWords,
-            boost::ref(tags_completions),
-            tags_mutexes_[i],
-            boost::cref(tags_word_list), begin, end, input, false));
+            &tags_completions,
+            &done_count_,
+            &tags_word_list, begin, end, input, false));
   }
 
   // unlock all the things
-  for (int i = 0; i < num_threads; ++i) {
-    tags_mutexes_[i]->lock();
-    tags_mutexes_[i]->unlock();
-  }
-  for (int i = 0; i < num_threads; ++i) {
-    main_mutexes_[i]->lock();
-    main_mutexes_[i]->unlock();
+  while (done_count_.load(boost::memory_order_acq_rel) != (num_threads * 2)) {
+    // you spin me right round, baby, right round like a record, baby...
   }
   Tags.Words.Unlock();
   Words.Unlock();

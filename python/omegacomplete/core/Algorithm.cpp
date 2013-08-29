@@ -90,17 +90,18 @@ void Algorithm::LevenshteinSearchRecursive(
 }
 
 void Algorithm::ProcessWords(
-    Omegacomplete::Completions& completions,
-    boost::shared_ptr<boost::mutex> mutex,
-    const boost::unordered_map<int, String>& word_list,
+    Omegacomplete::Completions* completions,
+    boost::atomic<int>* done_count,
+    const boost::unordered_map<int, String>* word_list,
     int begin,
     int end,
     const std::string& input,
     bool terminus_mode) {
+
   CompleteItem item;
   for (int i = begin; i < end; ++i) {
-    AUTO(const & iter, word_list.find(i));
-    if (iter == word_list.end())
+    AUTO(const & iter, word_list->find(i));
+    if (iter == word_list->end())
       continue;
     const std::string& word = iter->second;
     if (word.empty())
@@ -116,9 +117,9 @@ void Algorithm::ProcessWords(
 
     if (item.Score > 0) {
       item.Word = word;
-      completions.Mutex.lock();
-      completions.Items->push_back(item);
-      completions.Mutex.unlock();
+      completions->Mutex.lock();
+      completions->Items->push_back(item);
+      completions->Mutex.unlock();
     }
   }
 
@@ -130,13 +131,13 @@ void Algorithm::ProcessWords(
     std::string trimmed_input(input.begin(), input.begin() + trimmed_end);
     Algorithm::ProcessWords(
         completions,
-        mutex,
+        done_count,
         word_list,
         begin, end,
         trimmed_input,
         true);
   } else {
-    mutex->unlock();
+    done_count->fetch_add(1, boost::memory_order_relaxed);
   }
 }
 

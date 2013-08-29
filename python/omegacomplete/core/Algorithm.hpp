@@ -20,9 +20,9 @@ class Algorithm {
       size_t max_cost);
 
   static void ProcessWords(
-      Omegacomplete::Completions& completions,
-      boost::shared_ptr<boost::mutex> mutex,
-      const boost::unordered_map<int, String>& word_list,
+      Omegacomplete::Completions* completions,
+      boost::atomic<int>* mutex,
+      const boost::unordered_map<int, String>* word_list,
       int begin,
       int end,
       const std::string& input,

@@ -10,6 +10,7 @@ files = [
   'PythonMain.cpp',
   'Tags.cpp',
   'TagsCollection.cpp',
+  'TestCases.cpp',
   'TrieNode.cpp',
   'WordCollection.cpp',
   'stdafx.cpp',
