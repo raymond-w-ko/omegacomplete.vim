@@ -21,7 +21,7 @@ class Algorithm {
 
   static void ProcessWords(
       Omegacomplete::Completions* completions,
-      boost::atomic<int>* mutex,
+      Omegacomplete::DoneStatus* done_status,
       const boost::unordered_map<int, String>* word_list,
       int begin,
       int end,

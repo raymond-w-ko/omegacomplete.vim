@@ -91,7 +91,7 @@ void Algorithm::LevenshteinSearchRecursive(
 
 void Algorithm::ProcessWords(
     Omegacomplete::Completions* completions,
-    boost::atomic<int>* done_count,
+    Omegacomplete::DoneStatus* done_status,
     const boost::unordered_map<int, String>* word_list,
     int begin,
     int end,
@@ -131,13 +131,15 @@ void Algorithm::ProcessWords(
     std::string trimmed_input(input.begin(), input.begin() + trimmed_end);
     Algorithm::ProcessWords(
         completions,
-        done_count,
+        done_status,
         word_list,
         begin, end,
         trimmed_input,
         true);
   } else {
-    done_count->fetch_add(1, boost::memory_order_relaxed);
+    boost::mutex::scoped_lock lock(done_status->Mutex);
+    done_status->Count += 1;
+    done_status->ConditionVariable.notify_one();
   }
 }
 

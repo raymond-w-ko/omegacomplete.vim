@@ -14,6 +14,13 @@ class Omegacomplete : public boost::noncopyable {
     CompleteItemVectorPtr Items;
   };
 
+  struct DoneStatus {
+    DoneStatus() : Count(0) {}
+    boost::mutex Mutex;
+    boost::condition_variable ConditionVariable;
+    int Count;
+  };
+
   static void InitStatic();
   static int NumThreads();
 
@@ -97,7 +104,6 @@ class Omegacomplete : public boost::noncopyable {
   boost::asio::io_service io_service_;
   boost::asio::io_service::work io_service_work_;
   boost::thread_group threads_;
-  boost::atomic<int> done_count_;
 
   // single thread for sequential jobs
   boost::thread worker_thread_;

@@ -481,7 +481,7 @@ void Omegacomplete::genericKeywordCompletion(
   Tags.Words.Lock();
   AUTO(const & tags_word_list, Tags.Words.GetWordList());
 
-  done_count_.store(0, boost::memory_order_acq_rel);
+  DoneStatus done_status;
 
   // queue jobs for main (buffer) words
   for (int i = 0; i < num_threads; ++i) {
@@ -490,7 +490,7 @@ void Omegacomplete::genericKeywordCompletion(
     io_service_.post(boost::bind(
             Algorithm::ProcessWords,
             &completions,
-            &done_count_,
+            &done_status,
             &word_list, begin, end, input, false));
   }
   // queue jobs for tags words
@@ -500,13 +500,16 @@ void Omegacomplete::genericKeywordCompletion(
     io_service_.post(boost::bind(
             Algorithm::ProcessWords,
             &tags_completions,
-            &done_count_,
+            &done_status,
             &tags_word_list, begin, end, input, false));
   }
 
   // unlock all the things
-  while (done_count_.load(boost::memory_order_acq_rel) != (num_threads * 2)) {
-    // you spin me right round, baby, right round like a record, baby...
+  {
+    boost::mutex::scoped_lock lock(done_status.Mutex);
+    while (done_status.Count < (num_threads * 2)) {
+      done_status.ConditionVariable.wait(lock);
+    }
   }
   Tags.Words.Unlock();
   Words.Unlock();
