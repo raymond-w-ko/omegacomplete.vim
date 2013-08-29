@@ -110,7 +110,7 @@ class Omegacomplete : public boost::noncopyable {
   boost::unordered_map<unsigned, Buffer> buffers_;
 
   boost::mutex job_queue_mutex_;
-  boost::condition_variable job_queue_conditional_variable_;
+  boost::condition_variable job_queue_condition_variable_;
   std::queue<ParseJob> job_queue_;
 
   unsigned current_buffer_id_;
