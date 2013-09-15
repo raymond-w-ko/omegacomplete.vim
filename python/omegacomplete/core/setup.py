@@ -1,4 +1,5 @@
 import sys
+import os
 from distutils.core import setup, Extension
 
 files = [
@@ -17,10 +18,14 @@ files = [
   ]
 
 if sys.platform != 'darwin':
+  libs = ['boost_thread', 'boost_system', 'boost_chrono']
+  if os.path.exists('/usr/lib/lib' + libs[0] + '-mt.a'):
+    for i in xrange(libs.size()):
+      libs[i] = libs[i] + '-mt'
   # example module setup file for Cygwin and Linux
   module1 = Extension(
       'core',
-      libraries = ['boost_thread-mt', 'boost_system-mt', 'boost_chrono-mt'],
+      libraries = libs,
       extra_compile_args = ['-Wno-char-subscripts'],
       sources = files)
 else:
