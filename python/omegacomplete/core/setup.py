@@ -19,8 +19,9 @@ files = [
 
 if sys.platform != 'darwin':
   libs = ['boost_thread', 'boost_system', 'boost_chrono']
-  if os.path.exists('/usr/lib/lib' + libs[0] + '-mt.a'):
-    for i in xrange(libs.size()):
+  path_prefix = '/usr/lib/lib' + libs[0] + '-mt'
+  if os.path.exists(path_prefix + '.a') or os.path.exists(path_prefix + '.dll.a'):
+    for i in xrange(len(libs)):
       libs[i] = libs[i] + '-mt'
   # example module setup file for Cygwin and Linux
   module1 = Extension(
