@@ -123,7 +123,7 @@ void Algorithm::ProcessWords(
     }
   }
 
-  if (input[input.size() - 1] == '_') {
+  if (input.size() > 1 && input[input.size() - 1] == '_') {
     int trimmed_end = static_cast<int>(input.size()) - 1;
     while (input[trimmed_end] == '_')
       trimmed_end--;
