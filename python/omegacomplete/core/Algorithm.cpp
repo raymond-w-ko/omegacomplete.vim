@@ -123,12 +123,8 @@ void Algorithm::ProcessWords(
     }
   }
 
-  if (input.size() > 1 && input[input.size() - 1] == '_') {
-    int trimmed_end = static_cast<int>(input.size()) - 1;
-    while (input[trimmed_end] == '_')
-      trimmed_end--;
-    trimmed_end++;
-    std::string trimmed_input(input.begin(), input.begin() + trimmed_end);
+  if (input.size() >= 2 && input[input.size() - 1] == '_') {
+    std::string trimmed_input(input.begin(), input.end() - 1);
     Algorithm::ProcessWords(
         completions,
         done_status,
