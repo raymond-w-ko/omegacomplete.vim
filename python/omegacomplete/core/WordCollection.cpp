@@ -26,7 +26,7 @@ void WordCollection::UpdateWord(const std::string& word, int reference_count_del
       word_list_[index] = word;
     }
   } else {
-    // >= 0 implies that it exist in the world list and we need to free it
+    // >= 0 implies that it exist in the word list and we need to free it
     if (wi.WordListIndex >= 0) {
       int index = wi.WordListIndex;
       wi.WordListIndex = -1;
