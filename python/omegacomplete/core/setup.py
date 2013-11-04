@@ -18,7 +18,7 @@ files = [
   ]
 
 if sys.platform != 'darwin':
-  libs = ['boost_thread', 'boost_system', 'boost_chrono']
+  libs = ['boost_thread', 'boost_system', 'boost_chrono', 'boost_filesystem']
   path_prefix = '/usr/lib/lib' + libs[0] + '-mt'
   if os.path.exists(path_prefix + '.a') or os.path.exists(path_prefix + '.dll.a'):
     for i in xrange(len(libs)):
@@ -27,7 +27,8 @@ if sys.platform != 'darwin':
   module1 = Extension(
       'core',
       libraries = libs,
-      extra_compile_args = ['-Wno-char-subscripts'],
+      extra_compile_args = ['-Wno-char-subscripts', '-flto'],
+      extra_link_args = ['-flto'],
       sources = files)
 else:
   # example module setup file for Mac OS X 10.7
