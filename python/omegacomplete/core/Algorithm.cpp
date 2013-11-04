@@ -97,7 +97,6 @@ void Algorithm::ProcessWords(
     int end,
     const std::string& input,
     bool terminus_mode) {
-
   CompleteItem item;
   for (int i = begin; i < end; ++i) {
     AUTO(const & iter, word_list->find(i));
@@ -113,7 +112,7 @@ void Algorithm::ProcessWords(
 
     item.Score = Algorithm::GetWordScore(word, input, terminus_mode);
     if (terminus_mode)
-      item.Score *= 100.0f;
+      item.Score *= 2.0f;
 
     if (item.Score > 0) {
       item.Word = word;
@@ -144,90 +143,23 @@ float Algorithm::GetWordScore(const std::string& word, const std::string& input,
   if (terminus_mode && word[word.size() - 1] != '_')
     return 0;
 
-  float score = 0;
+  const float word_size = static_cast<float>(word.size());
+  float score1 = 0;
+  float score2 = 0;
 
-  score = 100 * TitleCaseMatchScore(word, input);
-  if (score > 0.0f)
-    return score;
+  std::string boundaries = Algorithm::GetWordBoundaries(word);
 
-  score = 90 * UnderScoreMatchScore(word, input);
-  if (score > 0.0f)
-    return score;
-
-  score = 80 * HyphenMatchScore(word, input);
-  if (score > 0.0f)
-    return score;
-
-  if (boost::starts_with(word, input))
-    return 40;
-
-  return 0;
-}
-
-float Algorithm::TitleCaseMatchScore(const std::string& word,
-                                 const std::string& input) {
-  if (word.size() < 4 || input.size() < 2)
-    return 0.0f;
-
-  std::string abbrev;
-  abbrev += LookupTable::ToLower[word[0]];
-  size_t len = word.size();
-  uchar ch;
-  for (size_t i = 1; i < len; ++i) {
-    ch = word[i];
-    if (LookupTable::IsUpper[ch]) {
-      abbrev += LookupTable::ToLower[ch];
-    }
+  if (boundaries.size() > 0 &&
+      IsSubsequence(input, boundaries) &&
+      IsSubsequence(word, input)) {
+    score1 = input.size() / word_size;
   }
 
-  if (input == abbrev)
-    return 1.0f;
-  if (abbrev.size() <= 1)
-    return 0.0f;
-  if (abbrev.size() > input.size())
-    return 0.0f;
-
-  if (IsSubsequence(word, input) && IsSubsequence(input, abbrev))
-    return 0.5f;
-
-  return 0.0f;
-}
-
-float Algorithm::SeparatorMatchScore(const std::string& word,
-                                 const std::string& input,
-                                 const uchar separator) {
-  if (word.size() < 3 || input.size() < 2)
-    return 0.0f;;
-
-  std::string abbrev;
-  abbrev += LookupTable::ToLower[word[0]];
-
-  size_t len = word.size();
-  for (size_t i = 2; i < len; ++i) {
-    if (word[i - 1] == separator) {
-      abbrev += LookupTable::ToLower[word[i]];
-    }
+  if (input.size() > 4 && boost::starts_with(word, input)) {
+    score2 = input.size() / word_size;
   }
 
-  if (input == abbrev)
-    return 1.0f;
-  if (abbrev.size() <= 1)
-    return 0.0f;
-  if (abbrev.size() > input.size())
-    return 0.0f;
-
-  if (IsSubsequence(word, input) && IsSubsequence(input, abbrev))
-    return 0.5f;
-
-  return 0.0f;
-}
-
-float Algorithm::UnderScoreMatchScore(const std::string& word, const std::string& input) {
-  return SeparatorMatchScore(word, input, '_');
-}
-
-float Algorithm::HyphenMatchScore(const std::string& word, const std::string& input) {
-  return SeparatorMatchScore(word, input, '-');
+  return std::max(score1, score2);
 }
 
 bool Algorithm::IsSubsequence(const std::string& word, const std::string& input) {
@@ -251,4 +183,29 @@ bool Algorithm::IsSubsequence(const std::string& word, const std::string& input)
     return true;
   else
     return false;
+}
+
+std::string Algorithm::GetWordBoundaries(const std::string& word) {
+  std::string boundaries;
+
+  if (word.size() < 3)
+    return boundaries;
+
+  boundaries += word[0];
+  const size_t len = word.size() - 1;
+  for (size_t i = 1; i < len; ++i) {
+    char c = word[i];
+    char c2 = word[i + 1];
+    if (LookupTable::IsUpper[c] && !LookupTable::IsUpper[c2]) {
+      boundaries.push_back(c);
+    } else if (c == '_' || c == '-') {
+      boundaries.push_back(c2);
+    }
+  }
+
+  if (boundaries.size() > 1) {
+    return boundaries;
+  } else {
+    return std::string();
+  }
 }

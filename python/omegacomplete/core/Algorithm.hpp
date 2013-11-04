@@ -31,11 +31,6 @@ class Algorithm {
       const std::string& word, const std::string& input,
       bool terminus_mode);
 
-  static float TitleCaseMatchScore(const std::string& word, const std::string& input);
-  static float SeparatorMatchScore(
-      const std::string& word, const std::string& input, const uchar separator);
-  static float UnderScoreMatchScore(const std::string& word, const std::string& input);
-  static float HyphenMatchScore(const std::string& word, const std::string& input);
-
+  static std::string GetWordBoundaries(const std::string& word);
   static bool IsSubsequence(const std::string& word, const std::string& input);
 };
