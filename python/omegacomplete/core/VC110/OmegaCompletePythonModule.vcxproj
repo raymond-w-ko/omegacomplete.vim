@@ -110,6 +110,7 @@
       <AdditionalIncludeDirectories>C:\opt\Python27\include;C:\opt\boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>stdafx.hpp</PrecompiledHeaderFile>
       <OmitFramePointers>false</OmitFramePointers>
+      <AdditionalOptions>/Zm128 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
