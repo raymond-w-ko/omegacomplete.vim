@@ -42,9 +42,9 @@ endif
 if !exists("g:omegacomplete_corrections_hi_cmds")
     let g:omegacomplete_corrections_hi_cmds=[
     \ "hi Pmenu guifg=#ffff00 guibg=#333300 gui=none " .
-              \"ctermbg=058 ctermfg=011 cterm=none",
+              \"ctermbg=058 ctermfg=226 cterm=none",
     \ "hi PmenuSel guifg=#333300 guibg=#ffff00 gui=none " .
-                \ "ctermbg=011 ctermfg=058 cterm=none",
+                \ "ctermbg=226 ctermfg=058 cterm=none",
         \ ]
 endif
 
