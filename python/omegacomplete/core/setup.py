@@ -24,11 +24,15 @@ if sys.platform != 'darwin':
     for i in xrange(len(libs)):
       libs[i] = libs[i] + '-mt'
   # example module setup file for Cygwin and Linux
+  link_args = ['-flto']
+  if sys.platform == 'cygwin':
+    link_args = ['-Wl,--image-base', '-Wl,0x10000000']
+
   module1 = Extension(
       'core',
       libraries = libs,
       extra_compile_args = ['-Wno-char-subscripts', '-flto'],
-      extra_link_args = ['-flto'],
+      extra_link_args = link_args,
       sources = files)
 else:
   # example module setup file for Mac OS X 10.7
