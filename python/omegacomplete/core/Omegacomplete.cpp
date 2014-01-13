@@ -26,7 +26,7 @@ int Omegacomplete::NumThreads() {
 
 Omegacomplete::Omegacomplete()
     : Words(true),
-		  io_service_work_(io_service_),
+      io_service_work_(io_service_),
       is_quitting_(0),
       buffer_contents_follow_(false),
       prev_input_(3),
@@ -561,8 +561,11 @@ void Omegacomplete::genericKeywordCompletion(
   }
 
   result += "[";
-  foreach (const CompleteItem& completion, *final_items) {
-    result += completion.SerializeToVimDict();
+  for (size_t i = 0; i < final_items->size(); ++i) {
+    if (i > LookupTable::kMaxNumCompletions) {
+      break;
+    }
+    result += (*final_items)[i].SerializeToVimDict();
   }
   result += "]";
 
