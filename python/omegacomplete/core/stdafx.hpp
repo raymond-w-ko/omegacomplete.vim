@@ -14,8 +14,6 @@
 #include <boost/asio.hpp>
 
 #ifdef _WIN32
-    #include "targetver.h"
-
     #ifndef _DEBUG
         // disable checked iterators for performance
         #define _SECURE_SCL 0

@@ -17,11 +17,11 @@ void Omegacomplete::InitStatic() {
   TagsCollection::InitStatic();
 }
 
-int Omegacomplete::NumThreads() {
+unsigned Omegacomplete::NumThreads() {
   unsigned num_hardware_threads = boost::thread::hardware_concurrency();
   // hardware_concurrency() can return 0, so make at least 2 threads
   unsigned num_threads = max(num_hardware_threads, (unsigned)2);
-  return static_cast<int>(num_threads);
+  return num_threads;
 }
 
 Omegacomplete::Omegacomplete()
@@ -36,7 +36,7 @@ Omegacomplete::Omegacomplete()
       suffix1_(false) {
   initCommandDispatcher();
 
-  for (int i = 0; i < Omegacomplete::NumThreads(); ++i) {
+  for (unsigned i = 0; i < Omegacomplete::NumThreads(); ++i) {
     threads_.create_thread(
         boost::bind(&boost::asio::io_service::run, &io_service_));
   }
@@ -213,7 +213,7 @@ std::string Omegacomplete::cmdComplete(StringPtr argument) {
 
 std::string Omegacomplete::cmdFreeBuffer(StringPtr argument) {
   // make sure job queue is empty before we can delete buffer
-  while (true) {
+  for (;;) {
     job_queue_mutex_.lock();
     if (job_queue_.size() == 0)
       break;
