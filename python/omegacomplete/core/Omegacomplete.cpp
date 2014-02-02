@@ -17,7 +17,7 @@ void Omegacomplete::InitStatic() {
   TagsCollection::InitStatic();
 }
 
-unsigned Omegacomplete::NumThreads() {
+unsigned Omegacomplete::GetNumThreadsUsed() {
   unsigned num_hardware_threads = boost::thread::hardware_concurrency();
   // hardware_concurrency() can return 0, so make at least 2 threads
   unsigned num_threads = max(num_hardware_threads, (unsigned)2);
@@ -36,7 +36,7 @@ Omegacomplete::Omegacomplete()
       suffix1_(false) {
   initCommandDispatcher();
 
-  for (unsigned i = 0; i < Omegacomplete::NumThreads(); ++i) {
+  for (unsigned i = 0; i < Omegacomplete::GetNumThreadsUsed(); ++i) {
     threads_.create_thread(
         boost::bind(&boost::asio::io_service::run, &io_service_));
   }
@@ -124,7 +124,8 @@ Omegacomplete::~Omegacomplete() {
   threads_.join_all();
 }
 
-const std::string Omegacomplete::Eval(const char* request, const int request_len) {
+const std::string Omegacomplete::Eval(const char* request,
+                                      const int request_len) {
   if (buffer_contents_follow_) {
     StringPtr argument = boost::make_shared<std::string>(
         request, static_cast<size_t>(request_len));
@@ -470,7 +471,7 @@ void Omegacomplete::genericKeywordCompletion(
     return;
   }
 
-  const int num_threads = Omegacomplete::NumThreads();
+  const int num_threads = Omegacomplete::GetNumThreadsUsed();
   Completions completions;
   completions.Items = boost::make_shared<CompleteItemVector>();
   Completions tags_completions;
