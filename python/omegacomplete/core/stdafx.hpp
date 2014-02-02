@@ -2,7 +2,10 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#ifdef _WIN32
+#define HAVE_ROUND
 #include <Python.h>
+#endif
 
 // must be included before <windows.h> or an error occurs
 #ifdef _WIN32
