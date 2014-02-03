@@ -7,7 +7,8 @@
 static const int kLevenshteinMaxCost = 2;
 static const size_t kMinLengthForLevenshteinCompletion = 4;
 
-void WordCollection::UpdateWord(const std::string& word, int reference_count_delta) {
+void WordCollection::UpdateWord(const std::string& word,
+                                int reference_count_delta) {
   boost::mutex::scoped_lock lock(mutex_);
 
   WordInfo& wi = words_[word];
