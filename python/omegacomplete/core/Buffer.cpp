@@ -122,7 +122,7 @@ void Buffer::ReplaceContentsWith(StringPtr new_contents) {
         to_be_added[word] += ref_count;
     }
 
-    // update reference count for words that both exist in  new_words and
+    // update reference count for words that both exist in new_words and
     // words_
     AUTO(k, words_->begin());
     for (; k != words_->end(); ++k) {

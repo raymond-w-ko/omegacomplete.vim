@@ -36,4 +36,6 @@ class WordCollection : public boost::noncopyable {
   bool trie_enabled_;
   boost::mutex trie_mutex_;
   TrieNode trie_;
+
+  boost::random::mt19937 rng_;
 };

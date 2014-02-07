@@ -1,7 +1,5 @@
 #pragma once
 
-#include "TrieNode.hpp"
-
 class Omegacomplete;
 
 class Buffer {

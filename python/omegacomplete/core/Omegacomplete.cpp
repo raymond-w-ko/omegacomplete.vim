@@ -9,6 +9,7 @@ using namespace std;
 using namespace boost;
 
 static const std::string kDefaultResponse = "ACK";
+static const std::string kErrorResponse = "ERROR";
 static const std::string kUnknownCommandResponse = "UNKNOWN_COMMAND";
 
 unsigned Omegacomplete::kNumThreads = 2;
@@ -103,8 +104,9 @@ const std::string Omegacomplete::Eval(const char* request,
         break;
       }
     }
-    if (index == -1)
-      throw std::exception();
+    if (index == -1) {
+      return kErrorResponse;
+    }
 
     // break it up into a "request" string and an "argument" string
     std::string command(request, static_cast<size_t>(index));
@@ -380,8 +382,6 @@ void Omegacomplete::workerThreadLoop() {
     if (!Contains(buffers_, job.BufferNumber))
       continue;
     buffers_[job.BufferNumber].ReplaceContentsWith(job.Contents);
-
-    this->Words.Prune();
   }
 }
 

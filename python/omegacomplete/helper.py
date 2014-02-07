@@ -58,6 +58,13 @@ def oc_send_current_buffer():
 
     return ret
 
+def oc_prune():
+    global oc_is_disabled
+    if oc_is_disabled:
+        return
+
+    return oc_core_eval('prune 1')
+
 def oc_prune_buffers():
     global oc_is_disabled
     if oc_is_disabled:

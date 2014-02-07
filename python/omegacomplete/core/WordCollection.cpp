@@ -81,6 +81,26 @@ size_t WordCollection::Prune() {
     index++;
   }
 
+  // Fisher-Yates shuffle the word_list_ to evenly spread out words so
+  // computationally intensive ones don't clump together in one core.
+
+  int num_words = (int)words_.size();
+  for (int i = num_words - 1; i > 0; --i) {
+    boost::random::uniform_int_distribution<> dist(0, i);
+    int j = dist(rng_);
+
+    String word1 = word_list_[i];
+    WordInfo& word_info1 = words_[word1];
+
+    String word2 = word_list_[j];
+    WordInfo& word_info2 = words_[word2];
+
+    word_list_[i] = word2;
+    word_info2.WordListIndex = i;
+    word_list_[j] = word1;
+    word_info1.WordListIndex = j;
+  }
+
   return to_be_pruned.size();
 }
 

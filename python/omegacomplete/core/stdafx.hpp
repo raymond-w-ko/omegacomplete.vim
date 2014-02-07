@@ -64,6 +64,9 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/chrono.hpp>
 #include <boost/interprocess/sync/interprocess_semaphore.hpp>
+#include <boost/random/random_device.hpp>
+#include <boost/random/uniform_int_distribution.hpp>
+#include <boost/random/mersenne_twister.hpp>
 
 #define AUTO BOOST_AUTO
 #define foreach BOOST_FOREACH

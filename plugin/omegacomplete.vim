@@ -312,10 +312,16 @@ endfunction
 function <SID>OnBufDelete()
     let buffer_number = expand('<abuf>')
     exe 'py oc_eval("free_buffer ' . buffer_number . '")'
+
+    call <SID>Prune()
 endfunction
 
 function <SID>PruneBuffers()
     py oc_prune_buffers()
+endfunction
+
+function <SID>Prune()
+    py oc_prune()
 endfunction
 
 " When we are leaving buffer (either by opening another buffer, switching
@@ -324,6 +330,8 @@ endfunction
 " buffer while in normal though commands like 'dd'
 function <SID>OnBufLeave()
     call <SID>NormalModeSyncBuffer()
+
+    call <SID>Prune()
 endfunction
 
 function <SID>OnInsertEnter()
@@ -334,7 +342,6 @@ endfunction
 
 function <SID>OnIdle()
     call <SID>PruneBuffers()
-    py oc_eval('prune 1')
 endfunction
 
 function <SID>OnBufReadPost()
@@ -371,6 +378,10 @@ augroup Omegacomplete
     " have to mentally parse where you are and/or go to the correct location
     " before entering insert mode)
     autocmd BufReadPost * call <SID>OnBufReadPost()
+
+    " pruning just before file write should give us time to prune and hide
+    " latency during disk I/O
+    autocmd BufWritePre * call <SID>Prune()
 augroup END
 
 " this needs to have global scope and it is what <C-X><C-U> depends on.
