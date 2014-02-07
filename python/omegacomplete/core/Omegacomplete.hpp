@@ -24,6 +24,9 @@ class Omegacomplete : public boost::noncopyable {
   static void InitStatic();
   static unsigned GetNumThreadsUsed();
 
+  static unsigned kNumThreads;
+
+ public:
   Omegacomplete();
   ~Omegacomplete();
   const std::string Eval(const char* request, const int request_len);
