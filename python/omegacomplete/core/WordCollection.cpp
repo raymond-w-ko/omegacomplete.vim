@@ -26,6 +26,12 @@ void WordCollection::UpdateWord(const std::string& word,
       wi.WordListIndex = index;
       word_list_[index] = word;
     }
+
+    if (trie_enabled_) {
+      boost::mutex::scoped_lock trie_lock(trie_mutex_);
+      trie_.Insert(word);
+    }
+
   } else {
     // >= 0 implies that it exist in the word list and we need to free it
     if (wi.WordListIndex >= 0) {
@@ -34,15 +40,12 @@ void WordCollection::UpdateWord(const std::string& word,
       word_list_[index].clear();
       empty_indices_.insert(index);
     }
-    return;
-  }
 
-  if (trie_enabled_) {
-    boost::mutex::scoped_lock trie_lock(trie_mutex_);
-    trie_.Insert(word);
+    if (trie_enabled_) {
+      boost::mutex::scoped_lock trie_lock(trie_mutex_);
+      trie_.Erase(word);
+    }
   }
-
-  return;
 }
 
 size_t WordCollection::Prune() {
