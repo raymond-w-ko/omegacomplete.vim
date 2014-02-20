@@ -17,11 +17,11 @@ void Algorithm::LevenshteinSearch(
   for (size_t i = 0; i < row_size; ++i)
     current_row[i] = i;
 
-  for (TrieNode::ChildrenConstIterator iter = trie.Children.begin();
-       iter != trie.Children.end();
-       ++iter) {
-    char letter = iter->first;
-    TrieNode* next_node = iter->second;
+  for (int i = 0; i < TrieNode::kNumChars; ++i) {
+    TrieNode* next_node = trie.Children[i];
+    if (!next_node)
+      continue;
+    char letter = trie.Letter;
 
     Algorithm::LevenshteinSearchRecursive(
         *next_node,
@@ -65,18 +65,18 @@ void Algorithm::LevenshteinSearchRecursive(
   // if the last entry in the row indicates the optimal cost is less than the
   // maximum cost, and there is a word in this trie node, then add it.
   size_t last_index = current_row.size() - 1;
-  if (current_row[last_index] <= max_cost && !node.Word.empty()) {
-    results[current_row[last_index]].insert(node.Word);
+  if (current_row[last_index] <= max_cost && node.IsWord) {
+    results[current_row[last_index]].insert(node.GetWord());
   }
 
   // if any entries in the row are less than the maximum cost, then
   // recursively search each branch of the trie
   if (*std::min_element(current_row.begin(), current_row.end()) <= max_cost) {
-    for (TrieNode::ChildrenConstIterator iter = node.Children.cbegin();
-         iter != node.Children.cend();
-         ++iter) {
-      char next_letter = iter->first;
-      TrieNode* next_node = iter->second;
+    for (int i = 0; i < TrieNode::kNumChars; ++i) {
+      TrieNode* next_node = node.Children[i];
+      if (!next_node)
+        continue;
+      char next_letter = node.Letter;
 
       LevenshteinSearchRecursive(
           *next_node,

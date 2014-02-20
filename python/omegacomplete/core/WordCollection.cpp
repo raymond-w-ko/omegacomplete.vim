@@ -7,6 +7,11 @@
 static const int kLevenshteinMaxCost = 2;
 static const size_t kMinLengthForLevenshteinCompletion = 4;
 
+WordCollection::WordCollection(bool enable_trie) 
+    : trie_enabled_(enable_trie) {
+  trie_ = new TrieNode(NULL, ' ');
+}
+
 void WordCollection::UpdateWord(const std::string& word,
                                 int reference_count_delta) {
   boost::mutex::scoped_lock lock(mutex_);
@@ -29,7 +34,7 @@ void WordCollection::UpdateWord(const std::string& word,
 
     if (trie_enabled_) {
       boost::mutex::scoped_lock trie_lock(trie_mutex_);
-      trie_.Insert(word);
+      trie_->Insert(word);
     }
 
   } else {
@@ -43,7 +48,7 @@ void WordCollection::UpdateWord(const std::string& word,
 
     if (trie_enabled_) {
       boost::mutex::scoped_lock trie_lock(trie_mutex_);
-      trie_.Erase(word);
+      trie_->Erase(word);
     }
   }
 }
@@ -66,7 +71,7 @@ size_t WordCollection::Prune() {
 
     if (trie_enabled_) {
       boost::mutex::scoped_lock trie_lock(trie_mutex_);
-      trie_.Erase(word);
+      trie_->Erase(word);
     }
   }
 
@@ -118,6 +123,6 @@ void WordCollection::GetLevenshteinCompletions(
   if (trie_enabled_) {
     boost::mutex::scoped_lock lock(trie_mutex_);
     Algorithm::LevenshteinSearch(
-        prefix, kLevenshteinMaxCost, trie_, results);
+        prefix, kLevenshteinMaxCost, *trie_, results);
   }
 }

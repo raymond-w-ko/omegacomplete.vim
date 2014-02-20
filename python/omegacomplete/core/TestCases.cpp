@@ -26,7 +26,7 @@ static void always_assert(bool condition) {
 
 void TestCases::TrieNodeTest(std::stringstream& results) {
 #ifdef _WIN32
-  TrieNode root_node;
+  TrieNode* root_node = new TrieNode(NULL, ' ');
 
   std::ifstream input_file("wordlist.txt");
   std::string line;
@@ -39,7 +39,7 @@ void TestCases::TrieNodeTest(std::stringstream& results) {
 
   DWORD start_time = ::GetTickCount();
   for (size_t i = 0; i < lines.size(); ++i)
-    root_node.Insert(lines[i]);
+    root_node->Insert(lines[i]);
   DWORD end_time = ::GetTickCount();
 
   unsigned delta = (end_time - start_time);
@@ -57,7 +57,7 @@ void TestCases::TrieNodeTest(std::stringstream& results) {
   start_time = ::GetTickCount();
   for (size_t i = 0; i < num_searches; ++i) {
     const std::string& word = lines.at(dist(gen));
-    Algorithm::LevenshteinSearch(word, 2, root_node, search_results);
+    Algorithm::LevenshteinSearch(word, 2, *root_node, search_results);
   }
   end_time = ::GetTickCount();
   delta = end_time - start_time;
@@ -66,13 +66,13 @@ void TestCases::TrieNodeTest(std::stringstream& results) {
   // deletion time
   start_time = ::GetTickCount();
   for (size_t i = 0; i < lines.size(); ++i)
-    root_node.Erase(lines[i]);
+    root_node->Erase(lines[i]);
   end_time = ::GetTickCount();
   delta = end_time - start_time;
   results << "wordlist removal time: " << delta << " ms" << "\n";
 
-  always_assert(root_node.Children.size() == 0);
-  always_assert(root_node.Word.empty());
+  always_assert(root_node->NumChildren == 0);
+  always_assert(!root_node->IsWord);
 #endif
 }
 

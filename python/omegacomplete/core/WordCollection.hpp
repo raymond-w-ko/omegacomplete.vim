@@ -9,7 +9,7 @@ typedef std::map< size_t, std::set<std::string> > LevenshteinSearchResults;
 
 class WordCollection : public boost::noncopyable {
  public:
-  WordCollection(bool enable_trie) : trie_enabled_(enable_trie) {}
+  WordCollection(bool enable_trie);
   ~WordCollection() {}
 
   void UpdateWord(const std::string& word, int reference_count_delta);
@@ -35,7 +35,7 @@ class WordCollection : public boost::noncopyable {
 
   bool trie_enabled_;
   boost::mutex trie_mutex_;
-  TrieNode trie_;
+  TrieNode* trie_;
 
   boost::random::mt19937 rng_;
 };

@@ -4,6 +4,7 @@
 #include "TagsCollection.hpp"
 #include "LookupTable.hpp"
 #include "Algorithm.hpp"
+#include "TrieNode.hpp"
 
 using namespace std;
 using namespace boost;
@@ -17,6 +18,7 @@ unsigned Omegacomplete::kNumThreads = 2;
 void Omegacomplete::InitStatic() {
   // dependencies in other classes that have to initialized first
   LookupTable::InitStatic();
+  TrieNode::InitStatic();
   TagsCollection::InitStatic();
 
   unsigned num_hardware_threads = boost::thread::hardware_concurrency();

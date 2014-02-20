@@ -2,71 +2,125 @@
 
 #include "TrieNode.hpp"
 
-TrieNode::TrieNode() {
+char TrieNode::msCharIndex[256];
+bool TrieNode::msValidChar[256];
+
+void TrieNode::InitStatic() {
+  assert(sizeof(char) == 1);
+  assert(sizeof(bool) == 1);
+
+  for (int i = 0; i < 256; ++i) {
+    msCharIndex[(char)i] = 255;
+    msValidChar[(char)i] = false;
+  }
+
+  char n = 0;
+  for (char c = 'A'; c <= 'Z'; ++c) {
+    msCharIndex[c] = n++;
+    msValidChar[c] = true;
+  }
+  for (char c = 'a'; c <= 'z'; ++c) {
+    msCharIndex[c] = n++;
+    msValidChar[c] = true;
+  }
+  for (char c = '0'; c <= '9'; ++c) {
+    msCharIndex[c] = n++;
+    msValidChar[c] = true;
+  }
+
+  msCharIndex['_'] = n++;
+  msValidChar['_'] = true;
+
+  msCharIndex['-'] = n++;
+  msValidChar['-'] = true;
+}
+
+TrieNode::TrieNode(TrieNode* parent, char letter)
+    : Parent(parent),
+      Letter(letter),
+      IsWord(false),
+      NumChildren(0) {
+  for (int i = 0; i < kNumChars; ++i) {
+    Children[i] = NULL;
+  }
+
+  if (parent) {
+    parent->Children[Letter] = this;
+    parent->NumChildren++;
+  }
 }
 
 TrieNode::~TrieNode() {
-  for (ChildrenIterator iter = Children.begin();
-       iter != Children.end();
-       ++iter) {
-    delete iter->second;
+  if (Parent) {
+    Parent->Children[Letter] = NULL;
+    Parent->NumChildren--;
+  }
+
+  for (int i = 0; i < kNumChars; ++i) {
+    delete Children[i];
   }
 }
 
 void TrieNode::Insert(const String& word) {
-  TrieNode* node = this;
-  size_t word_size = word.size();
+  const size_t word_size = word.size();
+
   for (size_t i = 0; i < word_size; ++i) {
-    uchar letter = static_cast<uchar>(word[i]);
-    AUTO(&children, node->Children);
-    if (!Contains(children, letter)) {
-      TrieNode* new_node = new TrieNode;
-      children[letter] = new_node;
-      node = new_node;
-    } else {
-      node = children[letter];
+    if (!msValidChar[word[i]]) {
+      return;
     }
   }
-  node->Word = word;
+
+  TrieNode* node = this;
+  for (size_t i = 0; i < word_size; ++i) {
+    char ch = word[i];
+    char index = msCharIndex[ch];
+    if (!Children[index]) {
+      Children[index] = new TrieNode(node, ch);
+    }
+    node = Children[index];
+  }
+  node->IsWord = true;
 }
 
 void TrieNode::Erase(const String& word) {
-  std::vector<TrieNode*> node_list(word.size() + 1);
-  TrieNode* node = this;
-  node_list[0] = node;
-  size_t word_size = word.size();
+  const size_t word_size = word.size();
+
   for (size_t i = 0; i < word_size; ++i) {
-    uchar letter = static_cast<uchar>(word[i]);
-    AUTO(&children, node->Children);
-    if (!Contains(children, letter)) {
+    if (!msValidChar[word[i]]) {
       return;
     }
-
-    node = children[letter];
-    node_list[i + 1] = node;
   }
 
-  node->Word.clear();
-
-  assert(node_list.size() == (word.size() + 1));
-
-  for (int ii = static_cast<int>(word_size) - 1; ii >= 0; --ii) {
-    if (node_list[ii + 1]->Children.size() == 0 &&
-        node_list[ii + 1]->Word.empty()) {
-      AUTO(&children, node_list[ii]->Children);
-      uchar letter_key = word[ii];
-
-      node = children[letter_key];
-      delete node;
-
-      children.erase(letter_key);
-    } else {
-      break;
+  TrieNode* node = this;
+  for (size_t i = 0; i < word_size; ++i) {
+    if (!node) {
+      return;
     }
+    char ch = word[i];
+    char index = msCharIndex[ch];
+    node = Children[index];
+  }
+  if (!node) {
+    return;
+  }
+
+  node->IsWord = false;
+
+  while (node) {
+    TrieNode* prev_node = node->Parent;
+    if (node->NumChildren == 0) {
+      delete node;
+    }
+    node = prev_node;
   }
 }
 
-void TrieNode::Clear() {
-  Word.clear();
-  Children.clear();
+std::string TrieNode::GetWord() const {
+  std::string word;
+  const TrieNode* node = this;
+  while (node) {
+    word = std::string(1, node->Letter) + word;
+    node = node->Parent;
+  }
+  return word;
 }
