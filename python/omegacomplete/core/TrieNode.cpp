@@ -123,7 +123,9 @@ std::string TrieNode::GetWord() const {
   std::string word;
   const TrieNode* node = this;
   while (node) {
-    word = std::string(1, node->Letter) + word;
+    if (node->Parent) {
+      word = std::string(1, node->Letter) + word;
+    }
     node = node->Parent;
   }
   return word;

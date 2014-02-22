@@ -58,8 +58,8 @@ void Algorithm::LevenshteinSearchRecursive(
     else
       replace_cost = previous_row[column - 1];
 
-    current_row[column] = (std::min)(insert_cost,
-                                     (std::min)(delete_cost, replace_cost));
+    current_row[column] =
+        (std::min)(insert_cost, (std::min)(delete_cost, replace_cost));
   }
 
   // if the last entry in the row indicates the optimal cost is less than the
@@ -76,7 +76,7 @@ void Algorithm::LevenshteinSearchRecursive(
       TrieNode* next_node = node.Children[i];
       if (!next_node)
         continue;
-      char next_letter = node.Letter;
+      char next_letter = next_node->Letter;
 
       LevenshteinSearchRecursive(
           *next_node,

@@ -9,7 +9,7 @@ static const size_t kMinLengthForLevenshteinCompletion = 4;
 
 WordCollection::WordCollection(bool enable_trie) 
     : trie_enabled_(enable_trie) {
-  trie_ = new TrieNode(NULL, ' ');
+  trie_ = new TrieNode(NULL, 'Q');
 }
 
 void WordCollection::UpdateWord(const std::string& word,
