@@ -38,6 +38,7 @@ int main() {
   }
   clock::time_point end_time = clock::now();
 
+  std::cout << "inserted " << lines.size() << " words" << "\n";
   ns = end_time - start_time;
   ms = ns.count() / 1e6;
   std::cout << "wordlist insertion time: " << ms << " ms" << "\n";
