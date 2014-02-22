@@ -2,28 +2,28 @@
 
 #include "TrieNode.hpp"
 
-char TrieNode::msCharIndex[256];
+uchar TrieNode::msCharIndex[256];
 bool TrieNode::msValidChar[256];
 
 void TrieNode::InitStatic() {
-  assert(sizeof(char) == 1);
+  assert(sizeof(uchar) == 1);
   assert(sizeof(bool) == 1);
 
   for (int i = 0; i < 256; ++i) {
-    msCharIndex[(char)i] = 255;
-    msValidChar[(char)i] = false;
+    msCharIndex[(uchar)i] = 255;
+    msValidChar[(uchar)i] = false;
   }
 
-  char n = 0;
-  for (char c = 'A'; c <= 'Z'; ++c) {
+  uchar n = 0;
+  for (uchar c = 'A'; c <= 'Z'; ++c) {
     msCharIndex[c] = n++;
     msValidChar[c] = true;
   }
-  for (char c = 'a'; c <= 'z'; ++c) {
+  for (uchar c = 'a'; c <= 'z'; ++c) {
     msCharIndex[c] = n++;
     msValidChar[c] = true;
   }
-  for (char c = '0'; c <= '9'; ++c) {
+  for (uchar c = '0'; c <= '9'; ++c) {
     msCharIndex[c] = n++;
     msValidChar[c] = true;
   }
@@ -35,7 +35,7 @@ void TrieNode::InitStatic() {
   msValidChar['-'] = true;
 }
 
-TrieNode::TrieNode(TrieNode* parent, char letter)
+TrieNode::TrieNode(TrieNode* parent, uchar letter)
     : Parent(parent),
       Letter(letter),
       IsWord(false),
@@ -44,15 +44,15 @@ TrieNode::TrieNode(TrieNode* parent, char letter)
     Children[i] = NULL;
   }
 
-  if (parent) {
-    parent->Children[Letter] = this;
-    parent->NumChildren++;
+  if (Parent) {
+    Parent->Children[msCharIndex[Letter]] = this;
+    Parent->NumChildren++;
   }
 }
 
 TrieNode::~TrieNode() {
   if (Parent) {
-    Parent->Children[Letter] = NULL;
+    Parent->Children[msCharIndex[Letter]] = NULL;
     Parent->NumChildren--;
   }
 
@@ -61,44 +61,48 @@ TrieNode::~TrieNode() {
   }
 }
 
-void TrieNode::Insert(const String& word) {
-  const size_t word_size = word.size();
-
+inline bool TrieNode::IsValidWord(const String& word) const {
+  size_t word_size = word.size();
   for (size_t i = 0; i < word_size; ++i) {
-    if (!msValidChar[word[i]]) {
-      return;
+    uchar ch = (uchar)word[i];
+    if (!msValidChar[ch]) {
+      return false;
     }
   }
+  return true;
+}
+
+void TrieNode::Insert(const String& word) {
+  if (!IsValidWord(word))
+    return;
 
   TrieNode* node = this;
+  const size_t word_size = word.size();
   for (size_t i = 0; i < word_size; ++i) {
-    char ch = word[i];
-    char index = msCharIndex[ch];
-    if (!Children[index]) {
-      Children[index] = new TrieNode(node, ch);
+    uchar ch = word[i];
+    uchar index = msCharIndex[ch];
+    if (!node->Children[index]) {
+      node = new TrieNode(node, ch);
+    } else {
+      node = node->Children[index];
     }
-    node = Children[index];
   }
   node->IsWord = true;
 }
 
 void TrieNode::Erase(const String& word) {
-  const size_t word_size = word.size();
-
-  for (size_t i = 0; i < word_size; ++i) {
-    if (!msValidChar[word[i]]) {
-      return;
-    }
-  }
+  if (!IsValidWord(word))
+    return;
 
   TrieNode* node = this;
+  const size_t word_size = word.size();
   for (size_t i = 0; i < word_size; ++i) {
     if (!node) {
       return;
     }
-    char ch = word[i];
-    char index = msCharIndex[ch];
-    node = Children[index];
+    uchar ch = (uchar)word[i];
+    uchar index = msCharIndex[ch];
+    node = node->Children[index];
   }
   if (!node) {
     return;
@@ -108,7 +112,7 @@ void TrieNode::Erase(const String& word) {
 
   while (node) {
     TrieNode* prev_node = node->Parent;
-    if (node->NumChildren == 0) {
+    if (node->NumChildren == 0 && node->Parent) {
       delete node;
     }
     node = prev_node;

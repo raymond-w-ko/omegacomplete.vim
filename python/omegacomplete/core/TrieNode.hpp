@@ -8,26 +8,20 @@ struct TrieNode : public boost::noncopyable {
 
   static void InitStatic();
 
-  static char msCharIndex[256];
+  static uchar msCharIndex[256];
   static bool msValidChar[256];
 
-  TrieNode(TrieNode* parent, char letter);
+  TrieNode(TrieNode* parent, uchar letter);
   ~TrieNode();
 
+  bool IsValidWord(const String& word) const;
   void Insert(const String& word);
   void Erase(const String& word);
 
   std::string GetWord() const;
 
-  typedef
-      boost::unordered_map<uchar, TrieNode*>::iterator
-      ChildrenIterator;
-  typedef
-      boost::unordered_map<uchar, TrieNode*>::const_iterator
-      ChildrenConstIterator;
-
   TrieNode* const Parent;
-  const char Letter;
+  const uchar Letter;
   bool IsWord;
   TrieNode* Children[kNumChars];
   unsigned NumChildren;

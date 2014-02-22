@@ -352,7 +352,6 @@ std::string Omegacomplete::cmdStopStopwatch(StringPtr argument) {
 
 std::string Omegacomplete::cmdDoTests(StringPtr argument) {
   std::stringstream results;
-  test_cases_.TrieNodeTest(results);
   log_file_ << results.str();
   return kDefaultResponse;
 }

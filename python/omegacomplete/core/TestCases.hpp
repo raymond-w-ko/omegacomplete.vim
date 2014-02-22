@@ -5,7 +5,6 @@ public:
  TestCases() {}
  ~TestCases() {}
 
- void TrieNodeTest(std::stringstream& results);
  void TagsTest();
  void ClangTest();
 };
