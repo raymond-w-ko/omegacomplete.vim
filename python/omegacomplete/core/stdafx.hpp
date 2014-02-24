@@ -2,6 +2,15 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#ifdef __CYGWIN__
+#  ifndef IPV6_JOIN_GROUP
+#    define IPV6_JOIN_GROUP IPV6_ADD_MEMBERSHIP
+#  endif
+#  ifndef IPV6_LEAVE_GROUP
+#    define IPV6_LEAVE_GROUP IPV6_DROP_MEMBERSHIP
+#  endif
+#endif
+
 // must be included before <windows.h> or an error occurs
 #ifdef _WIN32
     #define _WIN32_WINNT 0x0501

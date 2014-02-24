@@ -31,7 +31,7 @@ if sys.platform != 'darwin':
   module1 = Extension(
       'core',
       libraries = libs,
-      extra_compile_args = ['-Wno-char-subscripts', '-flto'],
+      extra_compile_args = ['-Wall', '-Wno-char-subscripts', '-flto'],
       extra_link_args = link_args,
       sources = files)
 else:
@@ -43,7 +43,7 @@ else:
                       '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7/'],
       library_dirs = ['/Users/rko/boost/stage/lib'],
       libraries = ['boost_thread', 'boost_system', 'boost_chrono'],
-      extra_compile_args = ['-Wno-char-subscripts'],
+      extra_compile_args = ['-Wall', '-Wno-char-subscripts'],
       sources = files)
 
 setup(name = 'core',
