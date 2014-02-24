@@ -1,6 +1,11 @@
 #include "stdafx.hpp"
 #include "Omegacomplete.hpp"
 
+#ifdef _WIN32
+#define HAVE_ROUND
+#endif
+#include <Python.h>
+
 static Omegacomplete* omegacomplete = NULL;
 
 static PyObject* eval(PyObject* self, PyObject* args) {

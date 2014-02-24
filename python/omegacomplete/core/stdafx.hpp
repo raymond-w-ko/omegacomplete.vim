@@ -2,11 +2,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#ifdef _WIN32
-#define HAVE_ROUND
-#endif
-#include <Python.h>
-
 // must be included before <windows.h> or an error occurs
 #ifdef _WIN32
     #define _WIN32_WINNT 0x0501
