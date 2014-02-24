@@ -24,5 +24,5 @@ struct TrieNode : public boost::noncopyable {
   const uchar Letter;
   bool IsWord;
   TrieNode* Children[kNumChars];
-  unsigned NumChildren;
+  uchar NumChildren;
 };
