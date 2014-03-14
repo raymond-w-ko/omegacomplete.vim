@@ -24,14 +24,14 @@ if sys.platform != 'darwin':
     for i in xrange(len(libs)):
       libs[i] = libs[i] + '-mt'
   # example module setup file for Cygwin and Linux
-  link_args = ['-flto']
+  link_args = ['-O3', '-flto']
   if sys.platform == 'cygwin':
     link_args = ['-Wl,--image-base', '-Wl,0x10000000']
 
   module1 = Extension(
       'core',
       libraries = libs,
-      extra_compile_args = ['-Wall', '-Wno-char-subscripts', '-flto'],
+      extra_compile_args = ['-Wall', '-Wno-char-subscripts', '-O3', '-flto'],
       extra_link_args = link_args,
       sources = files)
 else:
@@ -43,7 +43,7 @@ else:
                       '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7/'],
       library_dirs = ['/Users/rko/boost/stage/lib'],
       libraries = ['boost_thread', 'boost_system', 'boost_chrono'],
-      extra_compile_args = ['-Wall', '-Wno-char-subscripts'],
+      extra_compile_args = ['-Wall', '-Wno-char-subscripts', '-O3'],
       sources = files)
 
 setup(name = 'core',
