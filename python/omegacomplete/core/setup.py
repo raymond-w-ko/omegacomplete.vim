@@ -38,10 +38,10 @@ else:
   # example module setup file for Mac OS X 10.7
   module1 = Extension(
       'core',
-      include_dirs = ['/Users/rko/boost',
+      include_dirs = ['/Users/rko/src/boost',
                       '/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7',
                       '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7/'],
-      library_dirs = ['/Users/rko/boost/stage/lib'],
+      library_dirs = ['/Users/rko/src/boost/stage/lib'],
       libraries = ['boost_thread', 'boost_system', 'boost_chrono'],
       extra_compile_args = ['-Wall', '-Wno-char-subscripts', '-O3'],
       sources = files)
