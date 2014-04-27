@@ -19,11 +19,11 @@ class Tags {
 
   void Update();
 
-  void VimTaglistFunction(
-      const std::string& word,
-      std::stringstream& ss);
+  void VimTaglistFunction(const std::string& word, std::stringstream& ss);
 
  private:
+  void updateWordRefCount(const std::multimap<String, String>& tags, int sign);
+
   bool calculateParentDirectory();
   void reparse();
   bool calculateTagInfo(

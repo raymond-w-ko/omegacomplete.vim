@@ -7,14 +7,24 @@
 static const int kLevenshteinMaxCost = 2;
 static const size_t kMinLengthForLevenshteinCompletion = 4;
 
-WordCollection::WordCollection(bool enable_trie) 
-    : trie_enabled_(enable_trie) {
-  trie_ = new TrieNode(NULL, 'Q');
+WordCollection::WordCollection(bool enable_trie) : trie_enabled_(enable_trie) {
+  if (trie_enabled_) {
+    trie_ = new TrieNode(NULL, 'Q');
+  } else {
+    trie_ = NULL;
+  }
 }
 
-void WordCollection::UpdateWord(const std::string& word, int reference_count_delta) {
+void WordCollection::UpdateWords(const UnorderedStringIntMap* word_ref_count_deltas) {
   boost::mutex::scoped_lock lock(mutex_);
 
+  AUTO(end, word_ref_count_deltas->end());
+  for (AUTO(iter, word_ref_count_deltas->begin()); iter != end; ++iter) {
+    updateWord(iter->first, iter->second);
+  }
+}
+
+void WordCollection::updateWord(const std::string& word, int reference_count_delta) {
   WordInfo& wi = words_[word];
   wi.ReferenceCount += reference_count_delta;
   if (wi.ReferenceCount > 0) {
@@ -33,7 +43,6 @@ void WordCollection::UpdateWord(const std::string& word, int reference_count_del
     }
 
     if (trie_enabled_) {
-      boost::mutex::scoped_lock trie_lock(trie_mutex_);
       trie_->Insert(word);
     }
 
@@ -47,7 +56,6 @@ void WordCollection::UpdateWord(const std::string& word, int reference_count_del
     }
 
     if (trie_enabled_) {
-      boost::mutex::scoped_lock trie_lock(trie_mutex_);
       trie_->Erase(word);
     }
   }
@@ -70,7 +78,6 @@ size_t WordCollection::Prune() {
     words_.erase(word);
 
     if (trie_enabled_) {
-      boost::mutex::scoped_lock trie_lock(trie_mutex_);
       trie_->Erase(word);
     }
   }
@@ -115,14 +122,14 @@ size_t WordCollection::Prune() {
 void WordCollection::GetLevenshteinCompletions(
     const std::string& prefix,
     LevenshteinSearchResults& results) {
+  boost::mutex::scoped_lock lock(mutex_);
+
   // only try correction if we have a sufficiently long enough
   // word to make it worthwhile
   if (prefix.length() < kMinLengthForLevenshteinCompletion)
     return;
 
   if (trie_enabled_) {
-    boost::mutex::scoped_lock lock(trie_mutex_);
-    Algorithm::LevenshteinSearch(
-        prefix, kLevenshteinMaxCost, *trie_, results);
+    Algorithm::LevenshteinSearch(prefix, kLevenshteinMaxCost, *trie_, results);
   }
 }

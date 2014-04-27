@@ -60,8 +60,9 @@ Buffer::~Buffer() {
 
     AUTO(i, words_->begin());
     for (; i != words_->end(); ++i) {
-        parent_->Words.UpdateWord(i->first, -i->second);
+        i->second = -i->second;;
     }
+    parent_->Words.UpdateWords(words_.get());
 }
 
 void Buffer::Init(Omegacomplete* parent, unsigned buffer_id) {
@@ -79,10 +80,9 @@ void Buffer::ReplaceContentsWith(StringPtr new_contents) {
 
   UnorderedStringIntMapPtr new_words;
   if (words_) {
-    // prevent unnecessary rehashing by allocating at least the number of
-    // buckets of the previous hash table.
-    new_words = boost::make_shared<UnorderedStringIntMap>(
-        words_->bucket_count());
+    // prevent unnecessary rehashing on resize by allocating at least the
+    // number of buckets of the previous hash table.
+    new_words = boost::make_shared<UnorderedStringIntMap>(words_->bucket_count());
   } else {
     new_words = boost::make_shared<UnorderedStringIntMap>();
   }
@@ -90,17 +90,14 @@ void Buffer::ReplaceContentsWith(StringPtr new_contents) {
 
   if (!contents_) {
     // easy first case, just increment reference count for each word
-    AUTO(i, new_words->begin());
-    for (; i != new_words->end(); ++i) {
-      parent_->Words.UpdateWord(i->first, +i->second);
-    }
+    parent_->Words.UpdateWords(new_words.get());
   } else {
     // otherwise we have to a slow calculation of words to add and words to
     // remove. since this happens in a background thread, it is okay to be
     // slow.
-    StringIntMap to_be_removed;
-    StringIntMap to_be_added;
-    StringIntMap to_be_changed;
+    UnorderedStringIntMap to_be_removed;
+    UnorderedStringIntMap to_be_added;
+    UnorderedStringIntMap to_be_changed;
 
     // calculated words to be removed, by checking lack of existence in
     // new_words set
@@ -109,7 +106,7 @@ void Buffer::ReplaceContentsWith(StringPtr new_contents) {
       const std::string& word = i->first;
       const int ref_count = i->second;
       if (!Contains(*new_words, word))
-        to_be_removed[word] += ref_count;
+        to_be_removed[word] -= ref_count;
     }
 
     // calculate words to be added, by checking checking lack of existence
@@ -132,21 +129,9 @@ void Buffer::ReplaceContentsWith(StringPtr new_contents) {
         to_be_changed[word] += (*new_words)[word] - ref_count;
     }
 
-    for (StringIntMapConstIter iter = to_be_added.begin();
-         iter != to_be_added.end();
-         ++iter) {
-      parent_->Words.UpdateWord(iter->first, +iter->second);
-    }
-    for (StringIntMapConstIter iter = to_be_removed.begin();
-         iter != to_be_removed.end();
-         ++iter) {
-      parent_->Words.UpdateWord(iter->first, -iter->second);
-    }
-    for (StringIntMapConstIter iter = to_be_changed.begin();
-         iter != to_be_changed.end();
-         ++iter) {
-      parent_->Words.UpdateWord(iter->first, iter->second);
-    }
+    parent_->Words.UpdateWords(&to_be_added);
+    parent_->Words.UpdateWords(&to_be_removed);
+    parent_->Words.UpdateWords(&to_be_changed);
   }
 
   // replace old contents and words with thew new ones

@@ -64,24 +64,29 @@ bool Tags::calculateParentDirectory() {
   return true;
 }
 
+void Tags::updateWordRefCount(const std::multimap<String, String>& tags, int sign) {
+  UnorderedStringIntMap deltas;
+
+  std::string prev_word;
+  AUTO(iter, tags.begin());
+  for (; iter != tags.end(); ++iter) {
+    const String& word = iter->first;
+    if (word == prev_word)
+      continue;
+
+    deltas[word] += sign * 1;
+
+    prev_word = word;
+  }
+
+  parent_->Words.UpdateWords(&deltas);
+}
+
 void Tags::reparse() {
   if (parent_directory_.empty())
     return;
 
-  std::string prev_word;
-
-  // clear previous words in this tags file
-  prev_word = "";
-  AUTO(tag, tags_.begin());
-  for (; tag != tags_.end(); ++tag) {
-    const String& word = tag->first;
-    if (word == prev_word)
-      continue;
-
-    parent_->Words.UpdateWord(word, -1);
-
-    prev_word = word;
-  }
+  updateWordRefCount(tags_, -1);
   tags_.clear();
 
   std::ifstream file(pathname_.c_str());
@@ -105,21 +110,10 @@ void Tags::reparse() {
   }
 
   // re-add all unique tags in this tags file
-  prev_word = "";
-  for (tag = tags_.begin(); tag != tags_.end(); ++tag) {
-    const String& word = tag->first;
-    if (word == prev_word)
-      continue;
-
-    parent_->Words.UpdateWord(word, +1);
-
-    prev_word = word;
-  }
+  updateWordRefCount(tags_, 1);
 }
 
-void Tags::VimTaglistFunction(
-    const std::string& word,
-    std::stringstream& ss) {
+void Tags::VimTaglistFunction(const std::string& word, std::stringstream& ss) {
   AUTO(bounds, tags_.equal_range(word));
   AUTO(&iter, bounds.first);
   for (; iter != bounds.second; ++iter) {
