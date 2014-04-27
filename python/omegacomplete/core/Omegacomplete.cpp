@@ -13,7 +13,7 @@ static const std::string kDefaultResponse = "ACK";
 static const std::string kErrorResponse = "ERROR";
 static const std::string kUnknownCommandResponse = "UNKNOWN_COMMAND";
 
-unsigned Omegacomplete::kNumThreads = 2;
+unsigned Omegacomplete::kNumThreads = 1;
 
 void Omegacomplete::InitStatic() {
   // dependencies in other classes that have to initialized first
@@ -23,7 +23,7 @@ void Omegacomplete::InitStatic() {
 
   unsigned num_hardware_threads = boost::thread::hardware_concurrency();
   // hardware_concurrency() can return 0, so make at least 2 threads
-  kNumThreads = max(num_hardware_threads, (unsigned)2);
+  kNumThreads = max(num_hardware_threads, (unsigned)1);
 }
 
 unsigned Omegacomplete::GetNumThreadsUsed() {
@@ -93,8 +93,7 @@ Omegacomplete::~Omegacomplete() {
 const std::string Omegacomplete::Eval(const char* request,
                                       const int request_len) {
   if (buffer_contents_follow_) {
-    StringPtr argument = boost::make_shared<std::string>(
-        request, static_cast<size_t>(request_len));
+    StringPtr argument = boost::make_shared<std::string>(request, static_cast<size_t>(request_len));
 
     return queueBufferContents(argument);
   } else {

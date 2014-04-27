@@ -15,9 +15,7 @@ class WordCollection : public boost::noncopyable {
   void UpdateWord(const std::string& word, int reference_count_delta);
   size_t Prune();
 
-  void GetLevenshteinCompletions(
-      const std::string& prefix,
-      LevenshteinSearchResults& results);
+  void GetLevenshteinCompletions(const std::string& prefix, LevenshteinSearchResults& results);
 
   void Lock() { mutex_.lock(); }
   void Unlock() { mutex_.unlock(); }
