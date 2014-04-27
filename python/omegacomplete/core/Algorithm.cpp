@@ -92,17 +92,14 @@ void Algorithm::LevenshteinSearchRecursive(
 void Algorithm::ProcessWords(
     Omegacomplete::Completions* completions,
     Omegacomplete::DoneStatus* done_status,
-    const boost::unordered_map<int, String>* word_list,
+    const std::vector<String>* word_list,
     int begin,
     int end,
     const std::string& input,
     bool terminus_mode) {
   CompleteItem item;
   for (int i = begin; i < end; ++i) {
-    AUTO(const & iter, word_list->find(i));
-    if (iter == word_list->end())
-      continue;
-    const std::string& word = iter->second;
+    const String& word = (*word_list)[i];
     if (word.empty())
       continue;
     if (word == input)

@@ -22,7 +22,7 @@ class Algorithm {
   static void ProcessWords(
       Omegacomplete::Completions* completions,
       Omegacomplete::DoneStatus* done_status,
-      const boost::unordered_map<int, String>* word_list,
+      const std::vector<String>* word_list,
       int begin,
       int end,
       const std::string& input,

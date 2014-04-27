@@ -24,11 +24,12 @@ void WordCollection::UpdateWord(const std::string& word, int reference_count_del
       if (empty_indices_.size() > 0) {
         index = *empty_indices_.begin();
         empty_indices_.erase(index);
+        word_list_[index] = word;
       } else {
         index = static_cast<int>(word_list_.size());
+        word_list_.push_back(word);
       }
       wi.WordListIndex = index;
-      word_list_[index] = word;
     }
 
     if (trie_enabled_) {
@@ -83,7 +84,7 @@ size_t WordCollection::Prune() {
     const std::string& word = iter->first;
     WordInfo& wi = iter->second;
 
-    word_list_[index] = word;
+    word_list_.push_back(word);
     wi.WordListIndex = index;
     index++;
   }
