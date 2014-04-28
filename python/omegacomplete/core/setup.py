@@ -31,8 +31,8 @@ if sys.platform != 'darwin':
   compile_args.extend(global_args)
 
   link_args = global_args
-  #if sys.platform == 'cygwin':
-    #link_args = ['-Wl,--image-base', '-Wl,0x10000000']
+  if sys.platform == 'cygwin':
+    link_args = ['-Wl,--image-base', '-Wl,0x10000000']
 
   module1 = Extension(
       'core',
