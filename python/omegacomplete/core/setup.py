@@ -18,20 +18,26 @@ files = [
   ]
 
 if sys.platform != 'darwin':
+
   libs = ['boost_thread', 'boost_system', 'boost_chrono', 'boost_filesystem']
   path_prefix = '/usr/lib/lib' + libs[0] + '-mt'
   if os.path.exists(path_prefix + '.a') or os.path.exists(path_prefix + '.dll.a'):
     for i in xrange(len(libs)):
       libs[i] = libs[i] + '-mt'
-  # example module setup file for Cygwin and Linux
-  link_args = ['-O3', '-flto']
-  if sys.platform == 'cygwin':
-    link_args = ['-Wl,--image-base', '-Wl,0x10000000']
+
+  global_args = ['-mtune=native', '-march=native', '-fno-stack-protector', '-flto']
+
+  compile_args = ['-Wall', '-Wno-char-subscripts']
+  compile_args.extend(global_args)
+
+  link_args = global_args
+  #if sys.platform == 'cygwin':
+    #link_args = ['-Wl,--image-base', '-Wl,0x10000000']
 
   module1 = Extension(
       'core',
       libraries = libs,
-      extra_compile_args = ['-Wall', '-Wno-char-subscripts', '-O3', '-flto'],
+      extra_compile_args = compile_args,
       extra_link_args = link_args,
       sources = files)
 else:
