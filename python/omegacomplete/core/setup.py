@@ -41,7 +41,13 @@ if sys.platform != 'darwin':
       extra_link_args = link_args,
       sources = files)
 else:
-  # example module setup file for Mac OS X 10.7
+  global_args = ['-mtune=native', '-march=native', '-fno-stack-protector', '-flto']
+
+  compile_args = ['-Wall', '-Wno-char-subscripts', '-Wno-error=unused-command-line-argument-hard-error-in-future']
+  compile_args.extend(global_args)
+
+  link_args = global_args
+
   module1 = Extension(
       'core',
       include_dirs = ['/Users/rko/src/boost',
@@ -49,7 +55,8 @@ else:
                       '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7/'],
       library_dirs = ['/Users/rko/src/boost/stage/lib'],
       libraries = ['boost_thread', 'boost_system', 'boost_chrono'],
-      extra_compile_args = ['-Wall', '-Wno-char-subscripts', '-O3'],
+      extra_compile_args = compile_args,
+      extra_link_args = link_args,
       sources = files)
 
 setup(name = 'core',
