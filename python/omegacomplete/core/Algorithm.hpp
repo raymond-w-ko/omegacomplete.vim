@@ -31,6 +31,7 @@ class Algorithm {
       const std::string& word, const std::string& input,
       bool terminus_mode);
 
-  static std::string GetWordBoundaries(const std::string& word);
-  static bool IsSubsequence(const std::string& word, const std::string& input);
+  // assumes boundaries is already an empty string
+  static void GetWordBoundaries(const std::string& word, std::string& boundaries);
+  static bool IsSubsequence(const std::string& haystack, const std::string& needle);
 };

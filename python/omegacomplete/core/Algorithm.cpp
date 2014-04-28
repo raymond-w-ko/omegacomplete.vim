@@ -108,8 +108,6 @@ void Algorithm::ProcessWords(
       continue;
 
     item.Score = Algorithm::GetWordScore(word, input, terminus_mode);
-    if (terminus_mode)
-      item.Score *= 2.0f;
 
     if (item.Score > 0) {
       item.Word = word;
@@ -144,7 +142,8 @@ float Algorithm::GetWordScore(const std::string& word, const std::string& input,
   float score1 = 0;
   float score2 = 0;
 
-  std::string boundaries = Algorithm::GetWordBoundaries(word);
+  std::string boundaries;
+  Algorithm::GetWordBoundaries(word, boundaries);
 
   if (boundaries.size() > 0 &&
       IsSubsequence(input, boundaries) &&
@@ -152,57 +151,62 @@ float Algorithm::GetWordScore(const std::string& word, const std::string& input,
     score1 = input.size() / word_size;
   }
 
-  if (input.size() > 4 && boost::starts_with(word, input)) {
+  if (input.size() > 3 && boost::starts_with(word, input)) {
     score2 = input.size() / word_size;
   }
 
-  return std::max(score1, score2);
+  score1 = std::max(score1, score2);
+  if (terminus_mode) {
+    score1 *= 2.0;
+  }
+  return score1;
 }
 
-bool Algorithm::IsSubsequence(const std::string& word, const std::string& input) {
-  size_t word_size = word.size();
-  size_t input_size = input.size();
+bool Algorithm::IsSubsequence(const std::string& haystack, const std::string& needle) {
+  const size_t haystack_size = haystack.size();
+  const size_t needle_size = needle.size();
 
-  if (input_size > word_size)
+  if (needle_size > haystack_size)
     return false;
 
   size_t j = 0;
-  for (size_t i = 0; i < word_size; ++i) {
-    char word_ch = word[i];
-    if (j >= input_size)
+  for (size_t i = 0; i < haystack_size; ++i) {
+    char haystack_ch = haystack[i];
+    if (j >= needle_size)
       break;
-    char input_ch = input[j];
-    if (LookupTable::ToLower[input_ch] == LookupTable::ToLower[word_ch])
+    char needle_ch = needle[j];
+    if (LookupTable::ToLower[needle_ch] == LookupTable::ToLower[haystack_ch])
       j++;
   }
 
-  if (j == input_size)
+  if (j == needle_size)
     return true;
   else
     return false;
 }
 
-std::string Algorithm::GetWordBoundaries(const std::string& word) {
-  std::string boundaries;
-
-  if (word.size() < 3)
-    return boundaries;
+void Algorithm::GetWordBoundaries(const std::string& word, std::string& boundaries) {
+  if (word.size() < 3) {
+    return;
+  }
 
   boundaries += word[0];
   const size_t len = word.size() - 1;
   for (size_t i = 1; i < len; ++i) {
     char c = word[i];
     char c2 = word[i + 1];
-    if (LookupTable::IsUpper[c] && !LookupTable::IsUpper[c2]) {
-      boundaries.push_back(c);
-    } else if (c == '_' || c == '-') {
+
+    if (c == '_' || c == '-') {
       boundaries.push_back(c2);
+      // skip pushed char
+      ++i;
+    } else if (!LookupTable::IsUpper[c] && LookupTable::IsUpper[c2]) {
+      boundaries.push_back(c2);
+      ++i;
     }
   }
 
-  if (boundaries.size() > 1) {
-    return boundaries;
-  } else {
-    return std::string();
+  if (boundaries.size() == 1) {
+    boundaries.clear();
   }
 }
