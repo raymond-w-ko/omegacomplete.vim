@@ -19,12 +19,16 @@ int main() {
 
   uint64_t ns = 0;
 
+#ifdef _WIN32
   AUTO(iter, directory_iterator(path("C:/SVN/Syandus_ALIVE4/Platform/Source/Code/SyCore")));
+#else
+  AUTO(iter, directory_iterator(path("/home/rko/SVN/Syandus_ALIVE4/Platform/Source/Code/SyCore")));
+#endif
   for (; iter != directory_iterator(); ++iter) {
     path item = iter->path();
     std::string filename = item.generic_string();
     if (ends_with(filename, ".h") || ends_with(filename, ".cpp")) {
-      std::ifstream t(filename);
+      std::ifstream t(filename.c_str());
       t.seekg(0, std::ios::end);   
       contents.reserve(t.tellg());
       t.seekg(0, std::ios::beg);

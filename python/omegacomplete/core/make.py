@@ -25,7 +25,7 @@ if sys.platform != 'darwin':
     for i in xrange(len(libs)):
       libs[i] = libs[i] + '-mt'
 
-  global_args = ['-mtune=native', '-march=native', '-fno-stack-protector', '-Ofast', '-flto']
+  global_args = ['-std=c++11', '-mtune=native', '-march=native', '-fno-stack-protector', '-fstrict-aliasing', '-Ofast', '-flto']
 
   compile_args = ['-Wall', '-Wno-char-subscripts']
   compile_args.extend(global_args)
@@ -41,7 +41,7 @@ if sys.platform != 'darwin':
       extra_link_args = link_args,
       sources = files)
 else:
-  global_args = ['-mtune=native', '-march=native', '-fno-stack-protector', '-flto']
+  global_args = ['-std=c++11', '-mtune=native', '-march=native', '-fno-stack-protector', '-flto']
 
   compile_args = ['-Wall', '-Wno-char-subscripts', '-Wno-error=unused-command-line-argument-hard-error-in-future']
   compile_args.extend(global_args)
