@@ -30,6 +30,7 @@ class Omegacomplete : public boost::noncopyable {
   Omegacomplete();
   ~Omegacomplete();
   const std::string Eval(const char* request, const int request_len);
+  const std::string Eval(const std::string& request);
 
   WordCollection Words;
   TagsCollection Tags;

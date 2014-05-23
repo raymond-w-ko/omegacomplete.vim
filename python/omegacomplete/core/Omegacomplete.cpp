@@ -22,7 +22,7 @@ void Omegacomplete::InitStatic() {
   TagsCollection::InitStatic();
 
   unsigned num_hardware_threads = boost::thread::hardware_concurrency();
-  // hardware_concurrency() can return 0, so make at least 2 threads
+  // hardware_concurrency() can return 0, so make at least 1 threads
   kNumThreads = max(num_hardware_threads, (unsigned)1);
 }
 
@@ -88,6 +88,10 @@ Omegacomplete::~Omegacomplete() {
   worker_thread_.join();
   io_service_.stop();
   threads_.join_all();
+}
+
+const std::string Omegacomplete::Eval(const std::string& request) {
+  return this->Eval(request.c_str(), (int)request.size());
 }
 
 const std::string Omegacomplete::Eval(const char* request,
@@ -185,6 +189,8 @@ std::string Omegacomplete::cmdFreeBuffer(StringPtr argument) {
     if (job_queue_.size() == 0)
       break;
     job_queue_mutex_.unlock();
+
+    boost::this_thread::sleep(boost::posix_time::milliseconds(1));
   }
 
   buffers_mutex_.lock();
@@ -368,10 +374,16 @@ void Omegacomplete::workerThreadLoop() {
     {
       boost::mutex::scoped_lock lock(job_queue_mutex_);
       while (job_queue_.empty()) {
+        if (is_quitting_)
+          return;
+
         const boost::system_time timeout =
             boost::get_system_time() +
-            boost::posix_time::milliseconds(5 * 1000);
+            boost::posix_time::milliseconds(1 * 1000);
         job_queue_condition_variable_.timed_wait(lock, timeout);
+
+        if (is_quitting_)
+          return;
       }
       job = job_queue_.front();
       job_queue_.pop();
