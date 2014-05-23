@@ -27,6 +27,7 @@ python/omegacomplete/core/VC120/Release
 python/omegacomplete/core/VC120/x64
 python/omegacomplete/core/VC120/OmegaCompletePythonModule
 python/omegacomplete/core/VC120/TrieNodeTest
+python/omegacomplete/core/VC120/SpeedTest
 python/omegacomplete/core/VC120/*.psess
 
 core.pyd
