@@ -30,6 +30,8 @@ python/omegacomplete/core/VC120/TrieNodeTest
 python/omegacomplete/core/VC120/SpeedTest
 python/omegacomplete/core/VC120/*.psess
 
+python/omegacomplete/core/SpeedTest
+
 core.pyd
 core.so
 core.dll
