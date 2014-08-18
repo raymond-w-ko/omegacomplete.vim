@@ -268,6 +268,9 @@ std::string Omegacomplete::cmdIsCorrectionsOnly(StringPtr argument) {
 }
 
 std::string Omegacomplete::cmdPruneBuffers(StringPtr argument) {
+  if (argument->size() == 0)
+    return kDefaultResponse;
+
   std::vector<std::string> numbers;
   boost::split(
       numbers,
