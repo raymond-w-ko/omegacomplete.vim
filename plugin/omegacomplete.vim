@@ -60,6 +60,11 @@ endif
 " init
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 function s:Init()
+    if !s:loadCorePlugin()
+        echom "failed to load omegacomplete core plugin"
+        return
+    endif
+
     set completefunc=OmegacompleteFunc
 
     set completeopt+=menu
@@ -76,8 +81,45 @@ function s:Init()
     command OmegacompleteUpdateConfig :call <SID>UpdateConfig()
     command OmegacompleteDoTests :call <SID>DoTests()
 
-    " find and load the omegacomplete Python code
-    " --------------------------------------------------------------------------
+    call <SID>UpdateConfig()
+
+    augroup Omegacomplete
+        autocmd!
+    
+        " whenever you delete a buffer, delete it from the server so that it
+        " doesn't cause any outdated completions to be offered
+        autocmd BufDelete * call <SID>OnBufDelete()
+    
+        " whenever we leave a current buffer, send it to the server to it can
+        " decide if we have to update it. this keeps the state of the buffer
+        " in sync so we can offer accurate completions when we switch to
+        " another buffer
+        autocmd BufLeave * call <SID>OnBufLeave()
+
+        " just before you enter insert mode, send the contents of the buffer
+        " so that the server has a chance to synchronize before we start
+        " offering completions
+        autocmd InsertEnter * call <SID>OnInsertEnter()
+
+        " if we are idle, then we take this change to prune unused global
+        " words set and trie. there are a variety of things which we consider
+        " 'idle'
+        autocmd InsertLeave * call <SID>OnIdle()
+        autocmd CursorHold * call <SID>OnIdle()
+        autocmd CursorHoldI * call <SID>OnIdle()
+        autocmd FocusLost * call <SID>OnIdle()
+        autocmd BufWritePre * call <SID>OnIdle()
+
+        " when we open a file, send it contents to the server since we usually
+        " have some time before we need to start editing the file (usually you
+        " have to mentally parse where you are and/or go to the correct
+        " location before entering insert mode)
+        autocmd BufReadPost * call <SID>OnBufReadPost()
+
+    augroup END
+endfunction
+
+function s:loadCorePlugin()
     python << EOF
 import vim
 import os
@@ -95,10 +137,9 @@ sys.path.append(omegacomplete_path)
 # load omegacomplete python functions
 client_path = omegacomplete_path + '/helper.py'
 exec(compile(open(client_path).read(), client_path, 'exec'))
+vim.command('let result = ' + oc_is_disabled())
 EOF
-    " --------------------------------------------------------------------------
-
-    call <SID>UpdateConfig()
+    return result
 endfunction
 
 " utility functions that any script can use really
@@ -176,14 +217,6 @@ function omegacomplete#ShowPopup()
 
     " disable when paste mode is active
     if &paste
-        return ''
-    endif
-
-    " check if plugin has disabled itself because of connection problems
-    " we can only do this only after 1 oc_eval() has occurred
-    let is_oc_disabled = 0
-    python vim.command('let is_oc_disabled = ' + oc_disable_check())
-    if is_oc_disabled == "1"
         return ''
     endif
 
@@ -347,42 +380,6 @@ endfunction
 function <SID>OnBufReadPost()
     call <SID>NormalModeSyncBuffer()
 endfunction
-
-augroup Omegacomplete
-    autocmd!
-    
-    " whenever you delete a buffer, delete it from the server so that it
-    " doesn't cause any outdated completions to be offered
-    autocmd BufDelete * call <SID>OnBufDelete()
-    
-    " whenever we leave a current buffer, send it to the server to it can
-    " decide if we have to update it. this keeps the state of the buffer
-    " in sync so we can offer accurate completions when we switch to another
-    " buffer
-    autocmd BufLeave * call <SID>OnBufLeave()
-
-    " just before you enter insert mode, send the contents of the buffer so
-    " that the server has a chance to synchronize before we start offering
-    " completions
-    autocmd InsertEnter * call <SID>OnInsertEnter()
-
-    " if we are idle, then we take this change to prune unused global words
-    " set and trie. there are a variety of things which we consider 'idle'
-    autocmd InsertLeave * call <SID>OnIdle()
-    autocmd CursorHold * call <SID>OnIdle()
-    autocmd CursorHoldI * call <SID>OnIdle()
-    autocmd FocusLost * call <SID>OnIdle()
-
-    " when we open a file, send it contents to the server since we usually
-    " have some time before we need to start editing the file (usually you
-    " have to mentally parse where you are and/or go to the correct location
-    " before entering insert mode)
-    autocmd BufReadPost * call <SID>OnBufReadPost()
-
-    " pruning just before file write should give us time to prune and hide
-    " latency during disk I/O
-    autocmd BufWritePre * call <SID>Prune()
-augroup END
 
 " this needs to have global scope and it is what <C-X><C-U> depends on.
 " don't think  it can use script / scope specific functions
