@@ -221,13 +221,7 @@ function omegacomplete#ShowPopup()
     endif
 
     python << EOF
-# let server know what is the current buffer
-b = vim.current.buffer
-oc_eval('current_buffer_id ' + str(b.number))
-# send server the contents of the current line the cursor is at
-oc_eval('current_line ' + oc_get_current_line())
-# tell server what the current cursor position is
-oc_eval('cursor_position ' + oc_get_cursor_pos())
+oc_update_current_buffer_info()
 EOF
 
     " send server contents of the entire buffer to update buffer state

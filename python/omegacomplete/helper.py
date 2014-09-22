@@ -17,9 +17,6 @@ def oc_is_disabled():
 def oc_eval(cmd):
     return oc_core_eval(cmd)
 
-def oc_get_current_line():
-    return vim.current.line
-
 def oc_get_cursor_pos():
     w = vim.current.window
     return str(w.cursor[0]) + ' ' + str(w.cursor[1])
@@ -44,3 +41,12 @@ def oc_prune_buffers():
     active_buffer_list = ','.join(valid_buffers)
 
     return oc_core_eval('prune_buffers ' + active_buffer_list)
+
+def oc_update_current_buffer_info():
+    # let server know what is the current buffer
+    b = vim.current.buffer
+    oc_core_eval('current_buffer_id ' + str(b.number))
+    # send server the contents of the current line the cursor is at
+    oc_eval('current_line ' + vim.current.line)
+    # tell server what the current cursor position is
+    oc_eval('cursor_position ' + oc_get_cursor_pos())
