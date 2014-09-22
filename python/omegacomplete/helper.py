@@ -53,3 +53,17 @@ def oc_update_current_buffer_info():
     oc_core_eval("current_directory " + vim.eval('getcwd()'))
     # send tags we are using to the server
     oc_core_eval("current_tags " + vim.eval("&tags"))
+
+def oc_compute_popup_list():
+    # send current line up to the cursor, triggering a complete event
+    oc_server_result = oc_eval('complete ' + vim.eval('partial_line'))
+    if len(oc_server_result) == 0:
+        vim.command('let g:omegacomplete_server_results=[]')
+    else:
+        vim.command('let g:omegacomplete_server_results=' + oc_server_result)
+
+    is_corrections_only = oc_eval("is_corrections_only ?")
+    if is_corrections_only == '0':
+        vim.command('let is_corrections_only = 0')
+    else:
+        vim.command('let is_corrections_only = 1')

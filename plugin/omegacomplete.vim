@@ -220,9 +220,7 @@ function omegacomplete#ShowPopup()
         return ''
     endif
 
-    python << EOF
-oc_update_current_buffer_info()
-EOF
+    python oc_update_current_buffer_info()
 
     " send server contents of the entire buffer to update buffer state
     if s:just_did_insertenter != 1
@@ -231,27 +229,7 @@ EOF
     let s:just_did_insertenter = 0
 
     let partial_line = strpart(getline('.'), 0, col('.') - 1)
-    let autocomplete_chars = ''
-    python << EOF
-# send current line up to the cursor, triggering a complete event
-oc_server_result = oc_eval('complete ' + vim.eval('partial_line'))
-should_autocomplete = oc_eval('should_autocomplete ?')
-if should_autocomplete != '0':
-    temp = oc_eval('get_autocomplete please')
-    vim.command('let autocomplete_chars = "' + temp + '"')
-EOF
-
-    if len(autocomplete_chars) > 0
-        return autocomplete_chars
-    endif
-
-    python << EOF
-# check to make sure we got some completions
-if len(oc_server_result) == 0:
-    vim.command('let g:omegacomplete_server_results=[]')
-else:
-    vim.command('let g:omegacomplete_server_results=' + oc_server_result)
-EOF
+    python oc_compute_popup_list()
 
     let s:last_disambiguate_index = -1
 
@@ -259,14 +237,6 @@ EOF
         " try to show popup menu, but fail and reset completion status
         return "\<C-x>\<C-u>"
     else
-        let is_corrections_only=0
-        python << EOF
-is_corrections_only = oc_eval("is_corrections_only ?")
-if is_corrections_only == '0':
-    vim.command('let is_corrections_only = 0')
-else:
-    vim.command('let is_corrections_only = 1')
-EOF
         if is_corrections_only && s:current_hi_mode != 'corrections'
             for cmd in g:omegacomplete_corrections_hi_cmds
                 exe cmd
