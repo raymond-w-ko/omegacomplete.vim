@@ -17,10 +17,6 @@ def oc_is_disabled():
 def oc_eval(cmd):
     return oc_core_eval(cmd)
 
-def oc_get_cursor_pos():
-    w = vim.current.window
-    return str(w.cursor[0]) + ' ' + str(w.cursor[1])
-
 def oc_send_current_buffer():
     # this approach takes around 0.8 to 1.8 ms for 3700 - 6751 line file that
     # is 180 to 208 KB, which is acceptable for now
@@ -47,6 +43,13 @@ def oc_update_current_buffer_info():
     b = vim.current.buffer
     oc_core_eval('current_buffer_id ' + str(b.number))
     # send server the contents of the current line the cursor is at
-    oc_eval('current_line ' + vim.current.line)
+    oc_core_eval('current_line ' + vim.current.line)
     # tell server what the current cursor position is
-    oc_eval('cursor_position ' + oc_get_cursor_pos())
+    w = vim.current.window
+    cursor_pos = str(w.cursor[0]) + ' ' + str(w.cursor[1])
+    oc_core_eval('cursor_position ' + cursor_pos)
+
+    # send current directory to server in preparation for sending tags
+    oc_core_eval("current_directory " + vim.eval('getcwd()'))
+    # send tags we are using to the server
+    oc_core_eval("current_tags " + vim.eval("&tags"))

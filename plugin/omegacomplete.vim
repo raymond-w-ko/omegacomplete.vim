@@ -233,10 +233,6 @@ EOF
     let partial_line = strpart(getline('.'), 0, col('.') - 1)
     let autocomplete_chars = ''
     python << EOF
-# send current directory to server in preparation for sending tags
-oc_eval("current_directory " + vim.eval('getcwd()'))
-# send tags we are using to the server
-oc_eval("current_tags " + vim.eval("&tags"))
 # send current line up to the cursor, triggering a complete event
 oc_server_result = oc_eval('complete ' + vim.eval('partial_line'))
 should_autocomplete = oc_eval('should_autocomplete ?')
