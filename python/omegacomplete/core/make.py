@@ -41,20 +41,21 @@ if sys.platform != 'darwin':
       extra_link_args = link_args,
       sources = files)
 else:
-  global_args = ['-std=c++11', '-mtune=native', '-march=native', '-fno-stack-protector', '-flto']
+  global_args = ['-std=c++11', '-march=native', '-fno-stack-protector', '-Ofast', '-flto']
 
-  compile_args = ['-Wall', '-Wno-char-subscripts', '-Wno-error=unused-command-line-argument-hard-error-in-future']
+  compile_args = ['-Wall', '-Wno-char-subscripts', '-Wno-error=unused-command-line-argument']
   compile_args.extend(global_args)
 
   link_args = global_args
 
   module1 = Extension(
       'core',
-      include_dirs = ['/Users/rko/src/boost',
-                      '/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7',
-                      '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7/'],
-      library_dirs = ['/Users/rko/src/boost/stage/lib'],
-      libraries = ['boost_thread', 'boost_system', 'boost_chrono'],
+      include_dirs = ['/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7',
+                      '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7/',
+                      '/usr/local/include',
+                      ],
+      library_dirs = ['/usr/local/lib'],
+      libraries = ['boost_thread-mt', 'boost_system-mt', 'boost_chrono-mt'],
       extra_compile_args = compile_args,
       extra_link_args = link_args,
       sources = files)
