@@ -25,7 +25,7 @@ if sys.platform != 'darwin':
     for i in xrange(len(libs)):
       libs[i] = libs[i] + '-mt'
 
-  global_args = ['-std=c++11', '-mtune=native', '-march=native', '-fno-stack-protector', '-fstrict-aliasing', '-Ofast', '-flto']
+  global_args = ['-std=c++11', '-march=native', '-fno-stack-protector', '-fstrict-aliasing', '-Ofast', '-flto']
 
   compile_args = ['-Wall', '-Wno-char-subscripts']
   compile_args.extend(global_args)
