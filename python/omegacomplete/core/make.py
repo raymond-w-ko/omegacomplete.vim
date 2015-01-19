@@ -26,13 +26,13 @@ if sys.platform != 'darwin':
       libs[i] = libs[i] + '-mt'
 
   global_args = ['-std=c++11', '-march=native', '-fno-stack-protector', '-fstrict-aliasing', '-Ofast', '-flto']
+  if sys.platform == 'cygwin':
+    global_args.pop()
 
   compile_args = ['-Wall', '-Wno-char-subscripts']
   compile_args.extend(global_args)
 
   link_args = global_args
-  if sys.platform == 'cygwin':
-    link_args = ['-Wl,--image-base', '-Wl,0x10000000']
 
   module1 = Extension(
       'core',

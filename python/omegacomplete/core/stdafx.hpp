@@ -46,6 +46,7 @@
 #include <queue>
 #include <fstream>
 
+#include <boost/exception/all.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
