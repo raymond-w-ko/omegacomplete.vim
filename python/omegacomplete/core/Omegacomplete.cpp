@@ -371,6 +371,16 @@ void Omegacomplete::queueParseJob(ParseJob job) {
 }
 
 void Omegacomplete::workerThreadLoop() {
+#ifdef _WIN32
+  {
+    BOOL success = SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_IDLE);
+    if (!success)
+      throw std::exception();
+  }
+#else
+#  error "TODO: implement setting of this thread priority to be the lowest possible"
+#endif
+
   ParseJob job;
   while (!is_quitting_) {
     {
