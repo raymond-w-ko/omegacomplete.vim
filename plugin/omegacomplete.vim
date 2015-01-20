@@ -116,6 +116,10 @@ function s:Init()
         " location before entering insert mode)
         autocmd BufReadPost * call <SID>OnBufReadPost()
 
+        " when the cursor has moved without the popup menu, we take this time
+        " to send the buffer to the the completion engine. hopefully this
+        " avoid the fragmented word problem.
+        autocmd CursorMovedI * call <SID>OnCursorMovedI()
     augroup END
 endfunction
 
@@ -223,9 +227,9 @@ function omegacomplete#ShowPopup()
     python oc_update_current_buffer_info()
 
     " send server contents of the entire buffer to update buffer state
-    if s:just_did_insertenter != 1
-        call s:SendCurrentBuffer()
-    endif
+    "if s:just_did_insertenter != 1
+        "call s:SendCurrentBuffer()
+    "endif
     let s:just_did_insertenter = 0
 
     let partial_line = strpart(getline('.'), 0, col('.') - 1)
@@ -251,6 +255,14 @@ function omegacomplete#ShowPopup()
         " finally show completions!
         "py oc_eval('stop_stopwatch now')
         return "\<C-x>\<C-u>\<C-p>"
+    endif
+endfunction
+
+function <SID>OnCursorMovedI()
+    let line = getline('.')
+    let index = len(line) - 1
+    if line[index] =~# '\v\m\W'
+        call s:SendCurrentBuffer()
     endif
 endfunction
 
@@ -309,10 +321,13 @@ function <SID>OnBufDelete()
     call <SID>Prune()
 endfunction
 
+" Not that expensive, just checks for dead buffers and kills them if they are
+" not in the set of alive buffers
 function <SID>PruneBuffers()
     py oc_prune_buffers()
 endfunction
 
+" Fairly expensive as it has to rebuild it's list of words and shuffle them.
 function <SID>Prune()
     py oc_prune()
 endfunction
