@@ -378,7 +378,23 @@ void Omegacomplete::workerThreadLoop() {
       throw std::exception();
   }
 #else
-#  error "TODO: implement setting of this thread priority to be the lowest possible"
+  {
+    int failed;
+
+    pthread_t this_thread = pthread_self();
+    struct sched_param params;
+    params.sched_priority = 0;
+    failed = pthread_setschedparam(this_thread, SCHED_IDLE, &params);
+    if (failed)
+      throw std::exception();
+
+    int policy = 0;
+    failed = pthread_getschedparam(this_thread, &policy, &params);
+    if (failed)
+      throw std::exception();
+    if (policy != SCHED_IDLE)
+      throw std::exception();
+  }
 #endif
 
   ParseJob job;
