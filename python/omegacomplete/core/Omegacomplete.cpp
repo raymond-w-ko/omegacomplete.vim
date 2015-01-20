@@ -375,7 +375,7 @@ void Omegacomplete::workerThreadLoop() {
   {
     BOOL success = SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_IDLE);
     if (!success)
-      throw std::exception();
+      ExitProcess(42);
   }
 #else
   {
@@ -386,14 +386,14 @@ void Omegacomplete::workerThreadLoop() {
     params.sched_priority = 0;
     failed = pthread_setschedparam(this_thread, SCHED_IDLE, &params);
     if (failed)
-      throw std::exception();
+      exit(42);
 
     int policy = 0;
     failed = pthread_getschedparam(this_thread, &policy, &params);
     if (failed)
-      throw std::exception();
+      exit(42);
     if (policy != SCHED_IDLE)
-      throw std::exception();
+      exit(42);
   }
 #endif
 

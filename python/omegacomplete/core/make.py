@@ -26,6 +26,7 @@ if sys.platform != 'darwin':
       libs[i] = libs[i] + '-mt'
 
   global_args = ['-std=c++11', '-mtune=native', '-march=native', '-fno-stack-protector', '-fstrict-aliasing', '-Ofast', '-flto']
+  #global_args = ['-std=c++11', '-fstrict-aliasing', '-O0', '-ggdb']
   if sys.platform == 'cygwin':
     global_args.pop()
 
