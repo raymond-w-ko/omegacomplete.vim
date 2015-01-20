@@ -176,7 +176,6 @@ std::string Omegacomplete::queueBufferContents(StringPtr argument) {
 
 std::string Omegacomplete::cmdComplete(StringPtr argument) {
   std::string response;
-  response.reserve(8192);
   calculateCompletionCandidates(*argument, response);
 
   return response;
