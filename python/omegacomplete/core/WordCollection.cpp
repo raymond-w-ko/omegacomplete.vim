@@ -7,6 +7,8 @@
 static const int kLevenshteinMaxCost = 2;
 static const size_t kMinLengthForLevenshteinCompletion = 4;
 
+int WordCollection::rand_seed_ = 42;
+
 WordCollection::WordCollection(bool enable_trie) : trie_enabled_(enable_trie) {
   if (trie_enabled_) {
     trie_ = new TrieNode(NULL, 'Q');
@@ -82,7 +84,7 @@ size_t WordCollection::Prune() {
     }
   }
 
-  // rebuild word_list_ to eliminate any holes
+  // rebuild word_list_ to eliminate any holes, basically a compaction step
   empty_indices_.clear();
   word_list_.clear();
   AUTO(iter, words_.begin());
@@ -98,11 +100,9 @@ size_t WordCollection::Prune() {
 
   // Fisher-Yates shuffle the word_list_ to evenly spread out words so
   // computationally intensive ones don't clump together in one core.
-
   int num_words = (int)words_.size();
   for (int i = num_words - 1; i > 0; --i) {
-    boost::random::uniform_int_distribution<> dist(0, i);
-    int j = dist(rng_);
+    int j = fastrand() % (i + 1);
 
     String word1 = word_list_[i];
     WordInfo& word_info1 = words_[word1];

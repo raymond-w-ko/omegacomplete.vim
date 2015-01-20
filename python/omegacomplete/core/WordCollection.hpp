@@ -34,5 +34,9 @@ class WordCollection : public boost::noncopyable {
   bool trie_enabled_;
   TrieNode* trie_;
 
-  boost::random::mt19937 rng_;
+  static int rand_seed_;
+  static inline int fastrand() {
+    rand_seed_ = 214013 * rand_seed_ + 2531011;
+    return (rand_seed_ >> 16) & 0x7FFF;
+  }
 };
