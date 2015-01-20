@@ -22,7 +22,7 @@ class Omegacomplete : public boost::noncopyable {
   };
 
   static void InitStatic();
-  static unsigned GetNumThreadsUsed();
+  static unsigned GetNumThreadsToUse();
 
   static unsigned kNumThreads;
 
