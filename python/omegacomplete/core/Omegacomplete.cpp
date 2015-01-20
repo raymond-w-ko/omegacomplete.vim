@@ -97,7 +97,7 @@ const std::string Omegacomplete::Eval(const std::string& request) {
 const std::string Omegacomplete::Eval(const char* request,
                                       const int request_len) {
   if (buffer_contents_follow_) {
-    StringPtr argument = boost::make_shared<std::string>(request, static_cast<size_t>(request_len));
+    StringPtr argument = boost::make_shared<string>(request, static_cast<size_t>(request_len));
 
     return queueBufferContents(argument);
   } else {
