@@ -67,15 +67,9 @@ function s:Init()
 
     set completefunc=OmegacompleteFunc
 
+    " we pretty much have to force this otherwise this plugin is not helpful.
     set completeopt+=menu
     set completeopt+=menuone
-
-    call s:ApplyMappings()
-    nnoremap <silent> i i<C-r>=omegacomplete#ShowPopup()<CR>
-    nnoremap <silent> I I<C-r>=omegacomplete#ShowPopup()<CR>
-    nnoremap <silent> a a<C-r>=omegacomplete#ShowPopup()<CR>
-    nnoremap <silent> A A<C-r>=omegacomplete#ShowPopup()<CR>
-    nnoremap <silent> R R<C-r>=omegacomplete#ShowPopup()<CR>
 
     command OmegacompleteFlushServerCaches :call <SID>FlushServerCaches()
     command OmegacompleteUpdateConfig :call <SID>UpdateConfig()
@@ -104,7 +98,6 @@ function s:Init()
         " if we are idle, then we take this change to prune unused global
         " words set and trie. there are a variety of things which we consider
         " 'idle'
-        autocmd InsertLeave * call <SID>OnIdle()
         autocmd CursorHold * call <SID>OnIdle()
         autocmd CursorHoldI * call <SID>OnIdle()
         autocmd FocusLost * call <SID>OnIdle()
@@ -146,123 +139,50 @@ EOF
     return result
 endfunction
 
-" utility functions that any script can use really
-function <SID>EscapePathname(pathname)
-    return substitute(a:pathname, '\\', '\\\\', 'g')
-endfunction
-
-function <SID>GetCurrentBufferNumber()
-    return bufnr('%')
-endfunction
-
-function <SID>GetCurrentBufferPathname()
-    return <SID>EscapePathname(expand('%:p'))
-endfunction
-
-function <SID>CurrentCursorWord()
-    let end_index = col('.') - 2
-    let start_index = end_index
-    let line = getline('.')
-    while (1)
-        if (start_index == -1)
-            break
-        endif
-        if (match(line[start_index], '[a-zA-Z0-9_\-]') == -1)
-            break
-        endif
-
-        let start_index = start_index - 1
-    endwhile
-    let start_index = start_index + 1
-
-    return line[start_index : end_index]
-endfunction
-
-" if you want imap's to trigger the popup menu
-function s:ApplyMappings()
-    call s:UnapplyMappings()
-    let s:keys_mapping_driven =
-        \ [
-        \ 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-        \ 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-        \ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-        \ 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-        \ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-        \ '-', '_', '<Space>', '<C-h>', '<BS>', 
-        \ ]
-
-        "'~', '^', '.', ',', ':', '!', '#', '=', '%', '$', '@', '<', '>', '/',
-        "'\'
- 
-    for key in s:keys_mapping_driven
-        exe printf('inoremap <silent> %s %s<C-r>=omegacomplete#ShowPopup()<CR>',
-                 \ key, key)
-    endfor
-endfunction
-
-" undo the effects of the previous function
-function s:UnapplyMappings()
-    if !exists('s:keys_mapping_driven')
-        return
+function s:UpdatePopupMenuColorscheme()
+    if g:omegacomplete_is_corrections_only && s:current_hi_mode != 'corrections'
+        for cmd in g:omegacomplete_corrections_hi_cmds
+            exe cmd
+        endfor
+        let s:current_hi_mode = 'corrections'
+    elseif !g:omegacomplete_is_corrections_only && s:current_hi_mode != 'normal'
+        for cmd in g:omegacomplete_normal_hi_cmds
+            exe cmd
+        endfor
+        let s:current_hi_mode = 'normal'
     endif
-
-    for key in s:keys_mapping_driven
-        exe 'iunmap ' . key
-    endfor
-    let s:keys_mapping_driven = []
 endfunction
 
 function s:SendCurrentBuffer()
     python oc_send_current_buffer()
 endfunction
 
-function omegacomplete#ShowPopup()
-    "py oc_eval('start_stopwatch now')
-
-    " disable when paste mode is active
+function <SID>OnCursorMovedI()
+    " disable when paste mode is active, to avoid massive processing lag
     if &paste
         return ''
     endif
 
-    python oc_update_current_buffer_info()
-
-    " send server contents of the entire buffer to update buffer state
-    "if s:just_did_insertenter != 1
-        "call s:SendCurrentBuffer()
-    "endif
-    let s:just_did_insertenter = 0
-
-    let partial_line = strpart(getline('.'), 0, col('.') - 1)
-    python oc_compute_popup_list()
-
-    let s:last_disambiguate_index = -1
-
-    if len(g:omegacomplete_server_results) == 0
-        " try to show popup menu, but fail and reset completion status
-        return "\<C-x>\<C-u>"
-    else
-        if is_corrections_only && s:current_hi_mode != 'corrections'
-            for cmd in g:omegacomplete_corrections_hi_cmds
-                exe cmd
-            endfor
-            let s:current_hi_mode = 'corrections'
-        elseif !is_corrections_only && s:current_hi_mode != 'normal'
-            for cmd in g:omegacomplete_normal_hi_cmds
-                exe cmd
-            endfor
-            let s:current_hi_mode = 'normal'
-        endif
-        " finally show completions!
-        "py oc_eval('stop_stopwatch now')
-        return "\<C-x>\<C-u>\<C-p>"
-    endif
-endfunction
-
-function <SID>OnCursorMovedI()
     let line = getline('.')
-    let index = len(line) - 1
-    if line[index] =~# '\v\m\W'
+    let line_len = len(line)
+    " user just pressed Enter, so now is a good time to send it
+    if line_len == 0 
         call s:SendCurrentBuffer()
+        return
+    endif
+
+    " user entered a non-word character, send buffer
+    let cursor_ch = line[col('.') - 2]
+    if cursor_ch != '-' && cursor_ch =~# '\W'
+        call s:SendCurrentBuffer()
+        return
+    endif
+
+    " check for completion, and if there is, show popup menu
+    python oc_update_current_buffer_info()
+    python oc_compute_popup_list(False)
+    if len(g:omegacomplete_server_results) > 0
+        call feedkeys("\<C-x>\<C-u>\<C-p>", 'n')
     endif
 endfunction
 
@@ -296,7 +216,7 @@ endfunction
 " switching windows and need it to be synced with the server in case you
 " added or deleted lines
 function <SID>NormalModeSyncBuffer()
-    let buffer_number = <SID>GetCurrentBufferNumber()
+    let buffer_number = bufnr('%')
     let buffer_name = bufname('%') 
     let absolute_path = escape(expand('%:p'), '\')
 
@@ -338,8 +258,6 @@ endfunction
 " buffer while in normal though commands like 'dd'
 function <SID>OnBufLeave()
     call <SID>NormalModeSyncBuffer()
-
-    call <SID>Prune()
 endfunction
 
 function <SID>OnInsertEnter()
@@ -350,6 +268,7 @@ endfunction
 
 function <SID>OnIdle()
     call <SID>PruneBuffers()
+    call <SID>Prune()
 endfunction
 
 function <SID>OnBufReadPost()
@@ -359,7 +278,9 @@ endfunction
 " this needs to have global scope and it is what <C-X><C-U> depends on.
 " don't think  it can use script / scope specific functions
 function OmegacompleteFunc(findstart, base)
+    " on first invocation a:findstart is 1 and base is empty
     if a:findstart
+        " this should only be triggered if there is a valid initial match
         if len(g:omegacomplete_server_results) == 0
             if (v:version > 702)
                 return -3
@@ -368,23 +289,25 @@ function OmegacompleteFunc(findstart, base)
             endif
         endif
 
-        let index = col('.') - 2
+        let i = col('.') - 2
         let line = getline('.')
         while 1
-            if (index == -1)
+            if (i == -1)
                 break
             endif
-            if (match(line[index], '[a-zA-Z0-9_\-]') == -1)
+            if (match(line[i], '[a-zA-Z0-9_\-]') == -1)
                 break
             endif
 
-            let index = index - 1
+            let i = i - 1
         endwhile
-        let result = index + 1
+        let result = i + 1
         return result
     else
+        python oc_compute_popup_list(True)
+        call s:UpdatePopupMenuColorscheme()
         if (v:version > 702)
-            return {'words' : g:omegacomplete_server_results}
+            return {'words' : g:omegacomplete_server_results, 'refresh' : 'always'}
         else
             return g:omegacomplete_server_results
         endif
@@ -427,19 +350,7 @@ function omegacomplete#UseFirstEntryOfPopup()
     if pumvisible()
         return "\<C-n>\<C-y>"
     else
-        let line = getline('.')
-        let index = col('.') - 2
-        if (index <= 0)
-            return "\<Tab>"
-        elseif (line[index] == '.')
-            return <SID>omegacomplete#ShowPopup()
-        elseif (index >= 2 && line[index - 1] == '-' && line[index] == '>')
-            return <SID>omegacomplete#ShowPopup()
-        elseif (index >= 2 && line[index - 1] == ':' && line[index] == ':')
-            return <SID>omegacomplete#ShowPopup()
-        else
-            return "\<Tab>"
-        endif
+        return "\<Tab>"
     endif
 endfunction
 
@@ -449,8 +360,8 @@ endfunction
 
 " send config options to the C++ portion
 function <SID>UpdateConfig()
-    exe 'py oc_eval("config autcomplete_suffix ' .
-       \ g:omegacomplete_autocomplete_suffix . '")'
+    exe 'py oc_eval("config autocomplete_suffix ' .
+        \ g:omegacomplete_autocomplete_suffix . '")'
 
     call <SID>ConfigureDisambiguateMode()
 

@@ -325,7 +325,7 @@ std::string Omegacomplete::cmdGetAutocomplete(StringPtr argument) {
     return "";
   }
 
-  // create autcompletion string
+  // create autocompletion string
   std::string result;
   for (size_t i = 0; i < autocomplete_input_trigger_.size(); ++i) {
     result += "\x08";
@@ -441,13 +441,13 @@ void Omegacomplete::genericKeywordCompletion(
   // check to see if autocomplete is tripped
   if (suffix0_ &&
       input.size() >= 3 &&
-      input.substr(input.size() - 2) == config_["autcomplete_suffix"]) {
+      input.substr(input.size() - 2) == config_["autocomplete_suffix"]) {
     suffix1_ = true;
     autocomplete_input_trigger_ = input;
     should_autocomplete_ = true;
     return;
   } else if (!suffix0_ &&
-             input[input.size() - 1] == config_["autcomplete_suffix"][0]) {
+             input[input.size() - 1] == config_["autocomplete_suffix"][0]) {
     suffix0_ = true;
     autocomplete_completions_ = prev_completions_;
   } else {

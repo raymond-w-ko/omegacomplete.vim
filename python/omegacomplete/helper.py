@@ -54,9 +54,14 @@ def oc_update_current_buffer_info():
     # send tags we are using to the server
     oc_core_eval("current_tags " + vim.eval("&tags"))
 
-def oc_compute_popup_list():
+def oc_compute_popup_list(use_base):
+    partial_line = None
+    if use_base :
+        partial_line = vim.eval("a:base")
+    else:
+        partial_line = vim.eval("strpart(getline('.'), 0, col('.') - 1)")
     # send current line up to the cursor, triggering a complete event
-    oc_server_result = oc_eval('complete ' + vim.eval('partial_line'))
+    oc_server_result = oc_eval('complete ' + partial_line)
     if len(oc_server_result) == 0:
         vim.command('let g:omegacomplete_server_results=[]')
     else:
@@ -64,6 +69,6 @@ def oc_compute_popup_list():
 
     is_corrections_only = oc_eval("is_corrections_only ?")
     if is_corrections_only == '0':
-        vim.command('let is_corrections_only = 0')
+        vim.command('let g:omegacomplete_is_corrections_only = 0')
     else:
-        vim.command('let is_corrections_only = 1')
+        vim.command('let g:omegacomplete_is_corrections_only = 1')
