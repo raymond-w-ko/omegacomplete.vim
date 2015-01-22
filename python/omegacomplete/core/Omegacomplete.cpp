@@ -370,8 +370,12 @@ void Omegacomplete::queueParseJob(ParseJob job) {
   job_queue_condition_variable_.notify_one();
 }
 
+#ifdef __CYGWIN__
+#  include <windows.h>
+#endif
+
 void Omegacomplete::workerThreadLoop() {
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
   {
     BOOL success = SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_IDLE);
     if (!success)
