@@ -388,7 +388,12 @@ void Omegacomplete::workerThreadLoop() {
     pthread_t this_thread = pthread_self();
     struct sched_param params;
     params.sched_priority = 0;
+#ifndef SCHED_IDLE
+    // need to figure out the equivalent on Mac OS X
+    failed = 0;
+#else
     failed = pthread_setschedparam(this_thread, SCHED_IDLE, &params);
+#endif
     if (failed)
       exit(42);
 
@@ -396,8 +401,10 @@ void Omegacomplete::workerThreadLoop() {
     failed = pthread_getschedparam(this_thread, &policy, &params);
     if (failed)
       exit(42);
+#ifdef SCHED_IDLE
     if (policy != SCHED_IDLE)
       exit(42);
+#endif
   }
 #endif
 
