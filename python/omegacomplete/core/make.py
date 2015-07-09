@@ -2,20 +2,7 @@ import sys
 import os
 from distutils.core import setup, Extension
 
-files = [
-  'Algorithm.cpp',
-  'Buffer.cpp',
-  'DllMain.cpp',
-  'LookupTable.cpp',
-  'Omegacomplete.cpp',
-  'PythonMain.cpp',
-  'Tags.cpp',
-  'TagsCollection.cpp',
-  'TestCases.cpp',
-  'TrieNode.cpp',
-  'WordCollection.cpp',
-  'stdafx.cpp',
-  ]
+files = ['all.cpp']
 
 if sys.platform != 'darwin':
 
