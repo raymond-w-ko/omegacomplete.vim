@@ -70,6 +70,10 @@ function s:Init()
     " we pretty much have to force this otherwise this plugin is not helpful.
     set completeopt+=menu
     set completeopt+=menuone
+    if v:version > 704 || (v:version == 704 && has('patch775'))
+        set completeopt+=noinsert
+        set completeopt+=noselect
+    endif
 
     command OmegacompleteFlushServerCaches :call <SID>FlushServerCaches()
     command OmegacompleteUpdateConfig :call <SID>UpdateConfig()
@@ -160,7 +164,7 @@ endfunction
 function <SID>OnCursorMovedI()
     " disable when paste mode is active, to avoid massive processing lag
     if &paste
-        return ''
+        return
     endif
 
     let line = getline('.')
@@ -182,7 +186,11 @@ function <SID>OnCursorMovedI()
     python oc_update_current_buffer_info()
     python oc_compute_popup_list(False)
     if len(g:omegacomplete_server_results) > 0
-        call feedkeys("\<C-x>\<C-u>\<C-p>", 'n')
+        if v:version > 704 || (v:version == 704 && has('patch775'))
+            call feedkeys("\<C-x>\<C-u>", 'n')
+        else
+            call feedkeys("\<C-x>\<C-u>\<C-p>", 'n')
+        endif
     endif
 endfunction
 
