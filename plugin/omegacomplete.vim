@@ -71,7 +71,6 @@ function s:Init()
     set completeopt+=menu
     set completeopt+=menuone
     if v:version > 704 || (v:version == 704 && has('patch775'))
-        set completeopt+=noinsert
         set completeopt+=noselect
     endif
 
