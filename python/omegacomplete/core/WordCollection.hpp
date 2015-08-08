@@ -29,7 +29,6 @@ class WordCollection : public boost::noncopyable {
 
   boost::unordered_map<String, WordInfo> words_;
   std::vector<String> word_list_;
-  boost::unordered_set<int> empty_indices_;
 
   bool trie_enabled_;
   TrieNode* trie_;

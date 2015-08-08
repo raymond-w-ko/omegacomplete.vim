@@ -32,33 +32,33 @@ void WordCollection::updateWord(const std::string& word, int reference_count_del
   if (wi.ReferenceCount > 0) {
     // < 0 implies it doesn't exist in word_list_ yet
     if (wi.WordListIndex < 0) {
-      int index;
-      if (empty_indices_.size() > 0) {
-        index = *empty_indices_.begin();
-        empty_indices_.erase(index);
-        word_list_[index] = word;
-      } else {
-        index = static_cast<int>(word_list_.size());
-        word_list_.push_back(word);
-      }
+      int index = static_cast<int>(word_list_.size());
+      word_list_.push_back(word);
       wi.WordListIndex = index;
-    }
 
-    if (trie_enabled_) {
-      trie_->Insert(word);
+      if (trie_enabled_) {
+        trie_->Insert(word);
+      }
     }
-
   } else {
     // >= 0 implies that it exist in the word list and we need to free it
     if (wi.WordListIndex >= 0) {
+      int n = word_list_.size();
+
       int index = wi.WordListIndex;
       wi.WordListIndex = -1;
-      word_list_[index].clear();
-      empty_indices_.insert(index);
-    }
+      if (n == 1) {
+        word_list_.clear();
+      } else {
+        String last_word = word_list_[n - 1];
+        std::swap(word_list_[index], word_list_[n - 1]);
+        word_list_.resize(n - 1);
+        words_[last_word].WordListIndex = index;
+      }
 
-    if (trie_enabled_) {
-      trie_->Erase(word);
+      if (trie_enabled_) {
+        trie_->Erase(word);
+      }
     }
   }
 }
@@ -84,24 +84,11 @@ size_t WordCollection::Prune() {
     }
   }
 
-  // rebuild word_list_ to eliminate any holes, basically a compaction step
-  empty_indices_.clear();
-  word_list_.clear();
-  AUTO(iter, words_.begin());
-  int index = 0;
-  for (; iter != words_.end(); ++iter) {
-    const std::string& word = iter->first;
-    WordInfo& wi = iter->second;
-
-    word_list_.push_back(word);
-    wi.WordListIndex = index;
-    index++;
-  }
-
   // Fisher-Yates shuffle the word_list_ to evenly spread out words so
   // computationally intensive ones don't clump together in one core.
+  // Only shuffle 10% of the words though for speed purposes
   int num_words = (int)words_.size();
-  for (int i = num_words - 1; i > 0; --i) {
+  for (int i = num_words / 10; i > 0; --i) {
     int j = fastrand() % (i + 1);
 
     String word1 = word_list_[i];

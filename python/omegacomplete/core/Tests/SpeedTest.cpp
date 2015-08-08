@@ -82,6 +82,27 @@ int main() {
     "SetFra",
     "Get",
     "Set",
+    "seg",
+    "BASS_",
+    "Play",
+    "sfm",
+    "VoidCall",
+    "rffl",
+    "sem",
+    "SetFra",
+    "Get",
+    "Set",
+    "seg",
+    "BASS_",
+    "Play",
+    "sfm",
+    "VoidCall",
+    "rffl",
+    "sem",
+    "SetFra",
+    "Get",
+    "Set",
+    "SyS",
   };
 
   std::vector<std::string> results;
@@ -102,8 +123,15 @@ int main() {
   std::cout << lexical_cast<std::string>(tests.size()) << " completions ran in in " << d << " ms\n";
 
   for (size_t i = 0; i < results.size(); ++i) {
-    std::cout << results[i] << "\n\n";
+    /* std::cout << results[i] << "\n\n"; */
   }
+
+  watch.Start();
+  for (size_t i = 0; i < 10; ++i) {
+    omegacomplete->Eval("prune 1");
+  }
+  d = (double)watch.StopResult() / 1e6;
+  std::cout << "10 prunes finished in " << d << "ms\n";
 
   delete omegacomplete;
   omegacomplete = NULL;
