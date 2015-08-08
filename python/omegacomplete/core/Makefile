@@ -13,11 +13,14 @@ mac:
 	cp build/lib.*/core.* ../omegacomplete
 
 speedtest:
+	rm -f all.cpp
+	cat *.cpp > all.cpp
 	gcc \
 		-std=c++11 \
 		-pthread -fno-strict-aliasing -march=x86-64 -mtune=generic -O2 -pipe -fstack-protector --param=ssp-buffer-size=4 -DNDEBUG -march=x86-64 -mtune=generic -O2 -pipe -fstack-protector --param=ssp-buffer-size=4 -fPIC -I/usr/include/python2.7 \
 		-Wall -Wno-char-subscripts -mtune=native -march=native -fno-stack-protector -fstrict-aliasing -Ofast -flto \
 		-I.. -I. \
-		Algorithm.cpp  Buffer.cpp   LookupTable.cpp  Omegacomplete.cpp TagsCollection.cpp  Tags.cpp  TestCases.cpp  TrieNode.cpp  WordCollection.cpp Tests/SpeedTest.cpp \
+		all.cpp Tests/SpeedTest.cpp \
 		-o SpeedTest \
 		-Wl,-O1,--sort-common,--as-needed,-z,relro -L/usr/lib -lboost_thread -lboost_system -lboost_chrono -lboost_filesystem -lpython2.7 -lstdc++
+	./SpeedTest
