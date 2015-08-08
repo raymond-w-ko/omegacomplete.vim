@@ -30,7 +30,8 @@ python/omegacomplete/core/VC120/TrieNodeTest
 python/omegacomplete/core/VC120/SpeedTest
 python/omegacomplete/core/VC120/*.psess
 
-python/omegacomplete/core/SpeedTest
+python/omegacomplete/core/speedtest
+python/omegacomplete/core/trienodetest
 python/omegacomplete/core/all.cpp
 
 core.pyd

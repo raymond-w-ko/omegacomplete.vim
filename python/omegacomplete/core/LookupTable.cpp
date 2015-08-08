@@ -2,7 +2,7 @@
 
 #include "LookupTable.hpp"
 
-const unsigned LookupTable::kMaxNumCompletions = 32;
+const unsigned LookupTable::kMaxNumCompletions = 16;
 const unsigned LookupTable::kMaxNumQuickMatch = 10;
 
 char LookupTable::IsPartOfWord[256];

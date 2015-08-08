@@ -23,6 +23,6 @@ struct TrieNode : public boost::noncopyable {
   TrieNode* const Parent;
   const uchar Letter;
   bool IsWord;
-  TrieNode* Children[kNumChars];
   uchar NumChildren;
+  TrieNode* Children[kNumChars];
 };

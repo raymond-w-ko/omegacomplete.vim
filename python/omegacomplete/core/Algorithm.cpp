@@ -93,10 +93,10 @@ void Algorithm::ProcessWords(
     Omegacomplete::Completions* completions,
     Omegacomplete::DoneStatus* done_status,
     const std::vector<String>* word_list,
-    int begin,
-    int end,
+    const int begin,
+    const int end,
     const std::string& input,
-    bool terminus_mode) {
+    const bool terminus_mode) {
   CompleteItem item;
   for (int i = begin; i < end; ++i) {
     const String& word = (*word_list)[i];
@@ -134,7 +134,7 @@ void Algorithm::ProcessWords(
 }
 
 float Algorithm::GetWordScore(const std::string& word, const std::string& input,
-                              bool terminus_mode) {
+                              const bool terminus_mode) {
   if (terminus_mode && word[word.size() - 1] != '_')
     return 0;
 
@@ -145,17 +145,19 @@ float Algorithm::GetWordScore(const std::string& word, const std::string& input,
   std::string boundaries;
   Algorithm::GetWordBoundaries(word, boundaries);
 
-  if (boundaries.size() > 0 &&
-      IsSubsequence(input, boundaries) &&
-      IsSubsequence(word, input)) {
-    score1 = input.size() / word_size;
+  if (boundaries.size() > 0) {
+    if (IsSubsequence(input, boundaries) && IsSubsequence(word, input)) {
+      score1 = input.size() / word_size;
+    }
   }
 
   if (input.size() > 3 && boost::starts_with(word, input)) {
     score2 = input.size() / word_size;
   }
 
-  score1 = std::max(score1, score2);
+  float score3 = Algorithm::GetClumpingScore(word, input);
+
+  score1 = std::max(std::max(score1, score2), score3);
   if (terminus_mode) {
     score1 *= 2.0;
   }
@@ -209,4 +211,49 @@ void Algorithm::GetWordBoundaries(const std::string& word, std::string& boundari
   if (boundaries.size() == 1) {
     boundaries.clear();
   }
+}
+
+float Algorithm::GetClumpingScore(const std::string& word,
+                                  const std::string& input) {
+  if (word.size() < 8 || input.size() < 4) {
+    return 0.0f;
+  }
+
+  const float letter_score = 1.0f / word.size();
+
+  enum ClumpStatus {
+    kNoClumping,
+    kMatch1,
+    kMatch2OrMore,
+  };
+  size_t i = 0;
+  size_t j = 0;
+  ClumpStatus clumping = kNoClumping;
+  float score = 0.0f;
+
+  while (i < word.size() && j < input.size()) {
+    if (LookupTable::ToLower[word[i]] == LookupTable::ToLower[input[j]]) {
+      if (clumping == kNoClumping) {
+        // some clumping must happen, otherwise we get really crazy matches
+        // in fact, we penalize the initial match to prevent the case of
+        // initial clumping followed by sporadic unclumped match afterwards.
+        score -= 1.0f;
+        clumping = kMatch1;
+      } else if (clumping == kMatch1) {
+        score += 3.0 * letter_score;
+        clumping = kMatch2OrMore;
+      } else if (clumping == kMatch2OrMore) {
+        score += letter_score;
+      }
+      j++;
+    } else {
+      clumping = kNoClumping;
+    }
+    i++;
+  }
+
+  if (j != input.size())
+    return 0.0f;
+  else
+    return std::max(0.0f, score);
 }
