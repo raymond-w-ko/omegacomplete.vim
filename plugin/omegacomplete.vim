@@ -170,14 +170,14 @@ function <SID>OnCursorMovedI()
     let line_len = len(line)
     " user just pressed Enter, so now is a good time to send it
     if line_len == 0 
-        call s:SendCurrentBuffer()
+        " call s:SendCurrentBuffer()
         return
     endif
 
     " user entered a non-word character, send buffer
     let cursor_ch = line[col('.') - 2]
     if cursor_ch != '-' && cursor_ch =~# '\W'
-        call s:SendCurrentBuffer()
+        " call s:SendCurrentBuffer()
         return
     endif
 
