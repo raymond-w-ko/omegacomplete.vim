@@ -224,7 +224,8 @@ float Algorithm::GetClumpingScore(const std::string& word,
   enum ClumpStatus {
     kNoClumping,
     kMatch1,
-    kMatch2OrMore,
+    kMatch2,
+    kMatch3OrMore,
   };
   size_t i = 0;
   size_t j = 0;
@@ -237,12 +238,15 @@ float Algorithm::GetClumpingScore(const std::string& word,
         // some clumping must happen, otherwise we get really crazy matches
         // in fact, we penalize the initial match to prevent the case of
         // initial clumping followed by sporadic unclumped match afterwards.
-        score -= 1.0f;
+        score += 0.0f;
         clumping = kMatch1;
       } else if (clumping == kMatch1) {
-        score += 3.0 * letter_score;
-        clumping = kMatch2OrMore;
-      } else if (clumping == kMatch2OrMore) {
+        score += 1.5f * letter_score;
+        clumping = kMatch2;
+      } else if (clumping == kMatch2) {
+        score += 1.5f * letter_score;
+        clumping = kMatch3OrMore;
+      } else if (clumping == kMatch3OrMore) {
         score += letter_score;
       }
       j++;
