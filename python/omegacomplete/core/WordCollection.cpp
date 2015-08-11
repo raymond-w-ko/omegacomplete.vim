@@ -55,6 +55,7 @@ void WordCollection::updateWord(const std::string& word, int reference_count_del
         word_list_.resize(n - 1);
         words_[last_word].WordListIndex = index;
       }
+      words_.erase(word);
 
       if (trie_enabled_) {
         trie_->Erase(word);
@@ -65,24 +66,6 @@ void WordCollection::updateWord(const std::string& word, int reference_count_del
 
 size_t WordCollection::Prune() {
   boost::mutex::scoped_lock lock(mutex_);
-
-  // simply just looping through words_ and removing things might cause
-  // iterator invalidation, so be safe and built a set of things to remove
-  std::vector<std::string> to_be_pruned;
-  AUTO(i, words_.begin());
-  for (; i != words_.end(); ++i) {
-    if (i->second.ReferenceCount > 0)
-      continue;
-    to_be_pruned.push_back(i->first);
-  }
-
-  foreach (const std::string& word, to_be_pruned) {
-    words_.erase(word);
-
-    if (trie_enabled_) {
-      trie_->Erase(word);
-    }
-  }
 
   // Fisher-Yates shuffle the word_list_ to evenly spread out words so
   // computationally intensive ones don't clump together in one core.
@@ -103,7 +86,7 @@ size_t WordCollection::Prune() {
     word_info1.WordListIndex = j;
   }
 
-  return to_be_pruned.size();
+  return 0;
 }
 
 void WordCollection::GetLevenshteinCompletions(

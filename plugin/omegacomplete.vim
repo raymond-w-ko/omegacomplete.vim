@@ -167,29 +167,21 @@ function <SID>OnCursorMovedI()
     endif
 
     let line = getline('.')
-    let line_len = len(line)
-    " user just pressed Enter, so now is a good time to send it
-    if line_len == 0 
-        " call s:SendCurrentBuffer()
+    if len(line) == 0 
         return
     endif
-
-    " user entered a non-word character, send buffer
     let cursor_ch = line[col('.') - 2]
     if cursor_ch != '-' && cursor_ch =~# '\W'
-        " call s:SendCurrentBuffer()
+        return
+    endif
+    if pumvisible()
         return
     endif
 
-    " check for completion, and if there is, show popup menu
-    python oc_update_current_buffer_info()
-    python oc_compute_popup_list(False)
-    if len(g:omegacomplete_server_results) > 0
-        if v:version > 704 || (v:version == 704 && has('patch775'))
-            call feedkeys("\<C-x>\<C-u>", 'n')
-        else
-            call feedkeys("\<C-x>\<C-u>\<C-p>", 'n')
-        endif
+    if v:version > 704 || (v:version == 704 && has('patch775'))
+        call feedkeys("\<C-x>\<C-u>", 'n')
+    else
+        call feedkeys("\<C-x>\<C-u>\<C-p>", 'n')
     endif
 endfunction
 
@@ -285,8 +277,11 @@ endfunction
 " this needs to have global scope and it is what <C-X><C-U> depends on.
 " don't think  it can use script / scope specific functions
 function OmegacompleteFunc(findstart, base)
+    python oc_update_current_buffer_info()
+
     " on first invocation a:findstart is 1 and base is empty
     if a:findstart
+        python oc_compute_popup_list(False)
         " this should only be triggered if there is a valid initial match
         if len(g:omegacomplete_server_results) == 0
             if (v:version > 702)
