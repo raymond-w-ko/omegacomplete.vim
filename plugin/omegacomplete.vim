@@ -56,6 +56,10 @@ if !exists("g:omegacomplete_server_side_disambiguate")
     let g:omegacomplete_server_side_disambiguate=0
 endif
 
+if !exists("g:omegacomplete_client_side_disambiguate_mappings")
+    let g:omegacomplete_client_side_disambiguate_mappings=0
+endif
+
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " init
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -383,14 +387,16 @@ function <SID>ConfigureDisambiguateMode()
 
     " perform or remove mappings
     if (!g:omegacomplete_server_side_disambiguate)
-        let s:disambiguate_mode_keys =
-            \ ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9',]
+        if g:omegacomplete_client_side_disambiguate_mappings
+            let s:disambiguate_mode_keys =
+                \ ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9',]
 
-        for key in s:disambiguate_mode_keys
-            exe printf('inoremap <silent> <A-%s> ' .
-                     \ '<C-r>=<SID>PerformDisambiguate(%s)<CR>'
-                     \ , key, key)
-        endfor
+            for key in s:disambiguate_mode_keys
+                exe printf('inoremap <silent> <A-%s> ' .
+                    \ '<C-r>=<SID>PerformDisambiguate(%s)<CR>'
+                    \ , key, key)
+            endfor
+        endif
     elseif (s:performed_client_disambiguate_mappings)
         for key in s:disambiguate_mode_keys
             exe 'iunmap ' . key
