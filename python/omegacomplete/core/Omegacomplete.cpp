@@ -648,14 +648,6 @@ void Omegacomplete::addLevenshteinCorrections(
 
       if (word == input)
         continue;
-      if (boost::starts_with(input, word))
-        continue;
-      // it take some time for unique words to clear WordCollection,
-      // so counteract this
-      if ((input.size() < word.size()) &&
-          (word.size() - input.size() <= 2) &&
-          boost::starts_with(word, input))
-        continue;
       if (boost::ends_with(word, "-"))
         continue;
 
