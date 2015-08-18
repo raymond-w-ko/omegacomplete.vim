@@ -1,8 +1,11 @@
+let s:save_cpo = &cpo
+set cpo&vim
+
 " script load guard
-if exists('g:omegacomplete_loaded')
+if exists('g:loaded_omegacomplete')
     finish
 endif
-let g:omegacomplete_loaded = 1
+let g:loaded_omegacomplete = 1
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " config options
@@ -86,11 +89,26 @@ function s:Init()
         let s:ignored_buffer_names_set[buffer_name] = 1
     endfor
 
-    set completefunc=OmegacompleteFunc
+    set completefunc=omegacomplete#Complete
 
     " we pretty much have to force this otherwise this plugin is not helpful.
-    set completeopt+=menu
+    " copypasta from YouCompleteMe
+    "
+    " Some plugins (I'm looking at you, vim-notes) change completeopt by for
+    " instance adding 'longest'. This breaks YCM. So we force our settings.
+    " There's no two ways about this: if you want to use YCM then you have to
+    " have these completeopt settings, otherwise YCM won't work at all.
+    "
+    " We need menuone in completeopt, otherwise when there's only one candidate
+    " for completion, the menu doesn't show up.
+    set completeopt-=menu
     set completeopt+=menuone
+    " This is unnecessary with our features. People use this option to insert
+    " the common prefix of all the matches and then add more differentiating chars
+    " so that they can select a more specific match. With our features, they
+    " don't need to insert the prefix; they just type the differentiating chars.
+    " Also, having this option set breaks the plugin.
+    set completeopt-=longest
     if v:version > 704 || (v:version == 704 && has('patch775'))
         set completeopt+=noselect
     endif
@@ -276,7 +294,9 @@ function <SID>OnInsertEnter()
     let s:just_did_insertenter = 1
     call <SID>SyncCurrentBuffer()
     call <SID>PruneBuffers()
-    call <SID>OnCursorMovedI()
+    " this break . command, e.g. * then cw<ESC>n.n.n.
+    " causes strange jumping, maybe I have to hook into vim-repeat?
+    " call <SID>OnCursorMovedI()
 endfunction
 
 function <SID>OnIdle()
@@ -290,7 +310,7 @@ endfunction
 
 " this needs to have global scope and it is what <C-X><C-U> depends on.
 " don't think  it can use script / scope specific functions
-function OmegacompleteFunc(findstart, base)
+function omegacomplete#Complete(findstart, base)
     python oc_update_current_buffer_info()
 
     " on first invocation a:findstart is 1 and base is empty
@@ -419,3 +439,5 @@ endfunction
 
 " do initialization
 call s:Init()
+
+let &cpo = s:save_cpo
