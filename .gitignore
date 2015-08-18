@@ -30,6 +30,14 @@ python/omegacomplete/core/VC120/TrieNodeTest
 python/omegacomplete/core/VC120/SpeedTest
 python/omegacomplete/core/VC120/*.psess
 
+python/omegacomplete/core/VC140/Debug
+python/omegacomplete/core/VC140/Release
+python/omegacomplete/core/VC140/x64
+python/omegacomplete/core/VC140/OmegaCompletePythonModule
+python/omegacomplete/core/VC140/TrieNodeTest
+python/omegacomplete/core/VC140/SpeedTest
+python/omegacomplete/core/VC140/*.psess
+
 python/omegacomplete/core/speedtest
 python/omegacomplete/core/trienodetest
 python/omegacomplete/core/all.cpp
