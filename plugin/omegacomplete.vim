@@ -267,6 +267,7 @@ function <SID>OnInsertEnter()
     let s:just_did_insertenter = 1
     call <SID>NormalModeSyncBuffer()
     call <SID>PruneBuffers()
+    call <SID>OnCursorMovedI()
 endfunction
 
 function <SID>OnIdle()
