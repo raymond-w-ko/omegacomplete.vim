@@ -308,14 +308,14 @@ function OmegacompleteFunc(findstart, base)
         let i = col('.') - 2
         let line = getline('.')
         while 1
-            if (i == -1)
+            if i == -1
                 break
             endif
-            if (match(line[i], '[a-zA-Z0-9_\-]') == -1)
+            if match(line[i], '[a-zA-Z0-9_\-]') == -1
                 break
             endif
 
-            let i = i - 1
+            let i -= 1
         endwhile
         let result = i + 1
         return result
