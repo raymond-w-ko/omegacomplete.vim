@@ -43,7 +43,7 @@ void WordCollection::updateWord(const std::string& word, int reference_count_del
   } else {
     // >= 0 implies that it exist in the word list and we need to free it
     if (wi.WordListIndex >= 0) {
-      int n = word_list_.size();
+      size_t n = word_list_.size();
 
       int index = wi.WordListIndex;
       wi.WordListIndex = -1;
