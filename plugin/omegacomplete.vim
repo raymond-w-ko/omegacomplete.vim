@@ -5,7 +5,7 @@ endif
 let g:omegacomplete_loaded = 1
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" local script variables
+" config options
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " this variable acts a guard to prevent needlessly sending the same
 " buffer contents twice in a row
@@ -24,9 +24,6 @@ let s:last_disambiguate_index = -1
 if !exists('g:omegacomplete_log_file')
   let g:omegacomplete_log_file = ''
 endif
-
-" initialize this to be safe
-let g:omegacomplete_server_results=[]
 
 " current hilight mode (either normal or corrections)
 let s:current_hi_mode = 'unitialized'
@@ -60,6 +57,18 @@ if !exists("g:omegacomplete_client_side_disambiguate_mappings")
     let g:omegacomplete_client_side_disambiguate_mappings=0
 endif
 
+if !exists("g:omegacomplete_ignored_buffer_names")
+    let g:omegacomplete_ignored_buffer_names = [
+        \ '__Scratch__',
+        \ '__Gundo__',
+        \ 'GoToFile',
+        \ 'ControlP',
+        \ 'ControlP',
+        \ '__Gundo_Preview__',
+        \ ]
+endif
+let s:ignored_buffer_names_set = {}
+
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " init
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -68,6 +77,14 @@ function s:Init()
         echom "failed to load omegacomplete core plugin"
         return
     endif
+
+    " initialize this to be safe, where server results are stored
+    let g:omegacomplete_server_results=[]
+
+    " convert list to set
+    for buffer_name in g:omegacomplete_ignored_buffer_names
+        let s:ignored_buffer_names_set[buffer_name] = 1
+    endfor
 
     set completefunc=OmegacompleteFunc
 
@@ -107,6 +124,7 @@ function s:Init()
         " 'idle'
         autocmd CursorHold * call <SID>OnIdle()
         autocmd CursorHoldI * call <SID>OnIdle()
+        autocmd CursorHoldI * call <SID>SyncCurrentBuffer()
         autocmd FocusLost * call <SID>OnIdle()
         autocmd BufWritePre * call <SID>OnIdle()
 
@@ -160,10 +178,6 @@ function s:UpdatePopupMenuColorscheme()
     endif
 endfunction
 
-function s:SendCurrentBuffer()
-    python oc_send_current_buffer()
-endfunction
-
 function <SID>OnCursorMovedI()
     " disable when paste mode is active, to avoid massive processing lag
     if &paste
@@ -172,10 +186,6 @@ function <SID>OnCursorMovedI()
 
     let line = getline('.')
     if len(line) == 0 
-        return
-    endif
-    let cursor_ch = line[col('.') - 2]
-    if cursor_ch != '-' && cursor_ch =~# '\W'
         return
     endif
     if pumvisible()
@@ -218,20 +228,19 @@ endfunction
 " are entering a buffer for the first time (i.e. it just opened), or we are
 " switching windows and need it to be synced with the server in case you
 " added or deleted lines
-function <SID>NormalModeSyncBuffer()
+function <SID>SyncCurrentBuffer()
     let buffer_number = bufnr('%')
     let buffer_name = bufname('%') 
     let absolute_path = escape(expand('%:p'), '\')
 
     " don't process these special buffers from other plugins
-    if (match(buffer_name,
-            \ '\v(GoToFile|ControlP|__Scratch__|__Gundo__|__Gundo_Preview__)') != -1)
+    if has_key(s:ignored_buffer_names_set, buffer_name)
         return
     endif
 
     exe 'py oc_eval("current_buffer_id ' . buffer_number . '")'
     exe 'py oc_eval("current_buffer_absolute_path ' . absolute_path . '")'
-    call s:SendCurrentBuffer()
+    python oc_send_current_buffer()
 endfunction
 
 " When we don't want a buffer loaded in memory in VIM, we can 'delete' the
@@ -260,12 +269,12 @@ endfunction
 " of the buffer to the server since we could have changed the contents of the
 " buffer while in normal though commands like 'dd'
 function <SID>OnBufLeave()
-    call <SID>NormalModeSyncBuffer()
+    call <SID>SyncCurrentBuffer()
 endfunction
 
 function <SID>OnInsertEnter()
     let s:just_did_insertenter = 1
-    call <SID>NormalModeSyncBuffer()
+    call <SID>SyncCurrentBuffer()
     call <SID>PruneBuffers()
     call <SID>OnCursorMovedI()
 endfunction
@@ -276,7 +285,7 @@ function <SID>OnIdle()
 endfunction
 
 function <SID>OnBufReadPost()
-    call <SID>NormalModeSyncBuffer()
+    call <SID>SyncCurrentBuffer()
 endfunction
 
 " this needs to have global scope and it is what <C-X><C-U> depends on.
