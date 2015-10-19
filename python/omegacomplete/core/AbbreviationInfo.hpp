@@ -2,17 +2,12 @@
 
 struct AbbreviationInfo {
   AbbreviationInfo(unsigned weight, const std::string word)
-      : Weight(weight),
-        Word(word) {
-  }
+      : Weight(weight), Word(word) {}
 
   AbbreviationInfo(const AbbreviationInfo& other)
-      : Weight(other.Weight),
-        Word(other.Word) {
-  }
+      : Weight(other.Weight), Word(other.Word) {}
 
-  ~AbbreviationInfo() {
-  }
+  ~AbbreviationInfo() {}
 
   unsigned Weight;
   const std::string Word;
@@ -25,9 +20,9 @@ struct AbbreviationInfo {
 
     return Word < other.Word;
   }
+
  private:
-  AbbreviationInfo() {
-  }
+  AbbreviationInfo() {}
 
   AbbreviationInfo& operator=(const AbbreviationInfo&);
 };

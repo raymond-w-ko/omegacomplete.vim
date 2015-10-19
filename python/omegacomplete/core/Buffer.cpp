@@ -7,9 +7,8 @@
 
 using namespace std;
 
-void Buffer::TokenizeContentsIntoKeywords(
-    StringPtr contents,
-    UnorderedStringIntMapPtr words) {
+void Buffer::TokenizeContentsIntoKeywords(StringPtr contents,
+                                          UnorderedStringIntMapPtr words) {
   const std::string& text = *contents;
   size_t len = text.size();
   for (size_t i = 0; i < len; ++i) {
@@ -17,33 +16,28 @@ void Buffer::TokenizeContentsIntoKeywords(
     // This will be what is considered a "word".  I guess we have Unicode stuff
     // then we are screwed :-(
     uchar c = static_cast<uchar>(text[i]);
-    if (!LookupTable::IsPartOfWord[c])
-      continue;
+    if (!LookupTable::IsPartOfWord[c]) continue;
 
     // we have found the beginning of the word, loop until we reach the end or
     // we find a non-"word" character.
     size_t j = i + 1;
     for (; j < len; ++j) {
-      if (LookupTable::IsPartOfWord[static_cast<uchar>(text[j])])
-        continue;
+      if (LookupTable::IsPartOfWord[static_cast<uchar>(text[j])]) continue;
       break;
     }
 
     // strip leading hyphens (e.g. in the case of --number)
-    while (i < j && i < len && text[i] == '-')
-      ++i;
+    while (i < j && i < len && text[i] == '-') ++i;
 
     size_t next_index = j;
 
     // strip trailing hyphens (e.g. in the case of number-)
-    while (j > 0 && text[j - 1] == '-')
-      --j;
+    while (j > 0 && text[j - 1] == '-') --j;
 
     // construct word based off of pointer
     // don't want "words" that end in hyphen
     if (j > i) {
-      std::string word(text.begin() + i,
-                       text.begin() + j);
+      std::string word(text.begin() + i, text.begin() + j);
       (*words)[word]++;
     }
 
@@ -53,16 +47,15 @@ void Buffer::TokenizeContentsIntoKeywords(
 }
 
 Buffer::~Buffer() {
-    if (parent_ == NULL)
-        return;
-    if (words_ == NULL)
-        return;
+  if (parent_ == NULL) return;
+  if (words_ == NULL) return;
 
-    AUTO(i, words_->begin());
-    for (; i != words_->end(); ++i) {
-        i->second = -i->second;;
-    }
-    parent_->Words.UpdateWords(words_.get());
+  AUTO(i, words_->begin());
+  for (; i != words_->end(); ++i) {
+    i->second = -i->second;
+    ;
+  }
+  parent_->Words.UpdateWords(words_.get());
 }
 
 void Buffer::Init(Omegacomplete* parent, unsigned buffer_id) {
@@ -71,18 +64,17 @@ void Buffer::Init(Omegacomplete* parent, unsigned buffer_id) {
 }
 
 void Buffer::ReplaceContentsWith(StringPtr new_contents) {
-  if (!new_contents)
-    return;
+  if (!new_contents) return;
 
   // we have already parsed the exact samething, no need to reparse again
-  if (contents_ && *contents_ == *new_contents)
-    return;
+  if (contents_ && *contents_ == *new_contents) return;
 
   UnorderedStringIntMapPtr new_words;
   if (words_) {
     // prevent unnecessary rehashing on resize by allocating at least the
     // number of buckets of the previous hash table.
-    new_words = boost::make_shared<UnorderedStringIntMap>(words_->bucket_count());
+    new_words =
+        boost::make_shared<UnorderedStringIntMap>(words_->bucket_count());
   } else {
     new_words = boost::make_shared<UnorderedStringIntMap>();
   }
@@ -105,8 +97,7 @@ void Buffer::ReplaceContentsWith(StringPtr new_contents) {
     for (; i != words_->end(); ++i) {
       const std::string& word = i->first;
       const int ref_count = i->second;
-      if (!Contains(*new_words, word))
-        to_be_removed[word] -= ref_count;
+      if (!Contains(*new_words, word)) to_be_removed[word] -= ref_count;
     }
 
     // calculate words to be added, by checking checking lack of existence
@@ -115,8 +106,7 @@ void Buffer::ReplaceContentsWith(StringPtr new_contents) {
     for (; j != new_words->end(); ++j) {
       const std::string& word = j->first;
       const int ref_count = j->second;
-      if (!Contains(*words_, word))
-        to_be_added[word] += ref_count;
+      if (!Contains(*words_, word)) to_be_added[word] += ref_count;
     }
 
     // update reference count for words that both exist in new_words and

@@ -25,7 +25,7 @@ void LookupTable::InitStatic() {
     LookupTable::ToLower[index] = temp[0];
   }
 
-  QuickMatchKey.resize(kMaxNumCompletions, ' '),
+  QuickMatchKey.resize(kMaxNumCompletions, ' ');
 
   QuickMatchKey[0] = '1';
   QuickMatchKey[1] = '2';
@@ -44,11 +44,8 @@ void LookupTable::InitStatic() {
 }
 
 bool LookupTable::isPartOfWord(char c) {
-  if ((('a' <= c) && (c <= 'z')) ||
-      (('A' <= c) && (c <= 'Z')) ||
-      (c == '-') ||
-      (c == '_') ||
-      (('0' <= c) && (c <= '9'))) {
+  if ((('a' <= c) && (c <= 'z')) || (('A' <= c) && (c <= 'Z')) || (c == '-') ||
+      (c == '_') || (('0' <= c) && (c <= '9'))) {
     return true;
   }
 

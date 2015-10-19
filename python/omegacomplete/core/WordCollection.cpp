@@ -17,7 +17,8 @@ WordCollection::WordCollection(bool enable_trie) : trie_enabled_(enable_trie) {
   }
 }
 
-void WordCollection::UpdateWords(const UnorderedStringIntMap* word_ref_count_deltas) {
+void WordCollection::UpdateWords(
+    const UnorderedStringIntMap* word_ref_count_deltas) {
   boost::mutex::scoped_lock lock(mutex_);
 
   AUTO(end, word_ref_count_deltas->end());
@@ -26,7 +27,8 @@ void WordCollection::UpdateWords(const UnorderedStringIntMap* word_ref_count_del
   }
 }
 
-void WordCollection::updateWord(const std::string& word, int reference_count_delta) {
+void WordCollection::updateWord(const std::string& word,
+                                int reference_count_delta) {
   WordInfo& wi = words_[word];
   wi.ReferenceCount += reference_count_delta;
   if (wi.ReferenceCount > 0) {
@@ -90,14 +92,12 @@ size_t WordCollection::Prune() {
 }
 
 void WordCollection::GetLevenshteinCompletions(
-    const std::string& prefix,
-    LevenshteinSearchResults& results) {
+    const std::string& prefix, LevenshteinSearchResults& results) {
   boost::mutex::scoped_lock lock(mutex_);
 
   // only try correction if we have a sufficiently long enough
   // word to make it worthwhile
-  if (prefix.length() < kMinLengthForLevenshteinCompletion)
-    return;
+  if (prefix.length() < kMinLengthForLevenshteinCompletion) return;
 
   if (trie_enabled_) {
     Algorithm::LevenshteinSearch(prefix, kLevenshteinMaxCost, *trie_, results);

@@ -5,7 +5,7 @@
 #include "WordInfo.hpp"
 #include "AbbreviationInfo.hpp"
 
-typedef std::map< size_t, std::set<std::string> > LevenshteinSearchResults;
+typedef std::map<size_t, std::set<std::string> > LevenshteinSearchResults;
 
 class WordCollection : public boost::noncopyable {
  public:
@@ -15,7 +15,8 @@ class WordCollection : public boost::noncopyable {
   void UpdateWords(const UnorderedStringIntMap* word_ref_count_deltas);
   size_t Prune();
 
-  void GetLevenshteinCompletions(const std::string& prefix, LevenshteinSearchResults& results);
+  void GetLevenshteinCompletions(const std::string& prefix,
+                                 LevenshteinSearchResults& results);
 
   void Lock() { mutex_.lock(); }
   void Unlock() { mutex_.unlock(); }

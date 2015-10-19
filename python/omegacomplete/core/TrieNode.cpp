@@ -36,10 +36,7 @@ void TrieNode::InitStatic() {
 }
 
 TrieNode::TrieNode(TrieNode* parent, uchar letter)
-    : Parent(parent),
-      Letter(letter),
-      IsWord(false),
-      NumChildren(0) {
+    : Parent(parent), Letter(letter), IsWord(false), NumChildren(0) {
   for (int i = 0; i < kNumChars; ++i) {
     Children[i] = NULL;
   }
@@ -73,8 +70,7 @@ inline bool TrieNode::IsValidWord(const String& word) const {
 }
 
 void TrieNode::Insert(const String& word) {
-  if (!IsValidWord(word))
-    return;
+  if (!IsValidWord(word)) return;
 
   TrieNode* node = this;
   const size_t word_size = word.size();
@@ -91,8 +87,7 @@ void TrieNode::Insert(const String& word) {
 }
 
 void TrieNode::Erase(const String& word) {
-  if (!IsValidWord(word))
-    return;
+  if (!IsValidWord(word)) return;
 
   TrieNode* node = this;
   const size_t word_size = word.size();

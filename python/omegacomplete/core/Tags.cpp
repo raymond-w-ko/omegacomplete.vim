@@ -22,15 +22,15 @@ static inline void UnixGetClockTime(struct timespec& ts) {
 #endif
 
 Tags::Tags(TagsCollection* parent, const std::string& pathname)
-    : last_write_time_(0),
-      last_tick_count_(-1.0) {
+    : last_write_time_(0), last_tick_count_(-1.0) {
   parent_ = parent;
   pathname_ = pathname;
 
   if (!calculateParentDirectory()) {
-    //std::cout << "couldn't calculate parent directory for tags file, not parsing"
-        //<< std::endl;
-    //std::cout << pathname_ << std::endl;
+    // std::cout << "couldn't calculate parent directory for tags file, not
+    // parsing"
+    //<< std::endl;
+    // std::cout << pathname_ << std::endl;
     return;
   }
   this->Update();
@@ -48,14 +48,15 @@ bool Tags::calculateParentDirectory() {
   size_t pos = pathname_.rfind(directory_separator);
   // error out because we can't find the last directory separator
   if (pos == std::string::npos) {
-    //std::cout << "coulnd't find last directory separator" << std::endl;
-    //std::cout << pathname_ << std::endl;
+    // std::cout << "coulnd't find last directory separator" << std::endl;
+    // std::cout << pathname_ << std::endl;
     return false;
   }
   // there is nothing after the last directory separator
   if (pos >= (pathname_.size() - 1)) {
-    //std::cout << "there is nothing after the last directory separator" << std::endl;
-    //std::cout << pathname_ << std::endl;
+    // std::cout << "there is nothing after the last directory separator" <<
+    // std::endl;
+    // std::cout << pathname_ << std::endl;
     return false;
   }
 
@@ -64,15 +65,15 @@ bool Tags::calculateParentDirectory() {
   return true;
 }
 
-void Tags::updateWordRefCount(const std::multimap<String, String>& tags, int sign) {
+void Tags::updateWordRefCount(const std::multimap<String, String>& tags,
+                              int sign) {
   UnorderedStringIntMap deltas;
 
   std::string prev_word;
   AUTO(iter, tags.begin());
   for (; iter != tags.end(); ++iter) {
     const String& word = iter->first;
-    if (word == prev_word)
-      continue;
+    if (word == prev_word) continue;
 
     deltas[word] += sign * 1;
 
@@ -83,8 +84,7 @@ void Tags::updateWordRefCount(const std::multimap<String, String>& tags, int sig
 }
 
 void Tags::reparse() {
-  if (parent_directory_.empty())
-    return;
+  if (parent_directory_.empty()) return;
 
   updateWordRefCount(tags_, -1);
   tags_.clear();
@@ -95,13 +95,13 @@ void Tags::reparse() {
   for (std::string line; std::getline(file, line).good(); ++line_num) {
     // the first 6 lines contain a description of the tags file, which we don't
     // need
-    if (line_num < 6)
-      continue;
+    if (line_num < 6) continue;
 
     std::vector<std::string> tokens;
-    boost::split(tokens, line, boost::is_any_of("\t"), boost::token_compress_off);
+    boost::split(tokens, line, boost::is_any_of("\t"),
+                 boost::token_compress_off);
     if (tokens.size() < 3) {
-      //std::cout << "invalid tag line detected!" << std::endl;
+      // std::cout << "invalid tag line detected!" << std::endl;
       return;
     }
 
@@ -121,22 +121,16 @@ void Tags::VimTaglistFunction(const std::string& word, std::stringstream& ss) {
     const std::string& line = iter->second;
     std::string dummy;
     TagInfo tag_info;
-    if (!calculateTagInfo(line, dummy, tag_info))
-      continue;
+    if (!calculateTagInfo(line, dummy, tag_info)) continue;
 
     ss << "{";
 
-    ss << boost::str(boost::format(
-            "'name':'%s','filename':'%s','cmd':'%s',")
-        % tag_name
-        % tag_info.Location
-        % tag_info.Ex);
+    ss << boost::str(boost::format("'name':'%s','filename':'%s','cmd':'%s',") %
+                     tag_name % tag_info.Location % tag_info.Ex);
     for (TagInfo::InfoIterator pair = tag_info.Info.begin();
-         pair != tag_info.Info.end();
-         ++pair) {
-      ss << boost::str(boost::format(
-              "'%s':'%s',")
-          % pair->first % pair->second);
+         pair != tag_info.Info.end(); ++pair) {
+      ss << boost::str(boost::format("'%s':'%s',") % pair->first %
+                       pair->second);
     }
 
     ss << "},";
@@ -177,20 +171,16 @@ void Tags::Update() {
   }
 #endif
 
-  if (reparse_needed)
-    reparse();
+  if (reparse_needed) reparse();
 }
 
-
-bool Tags::calculateTagInfo(
-    const std::string& line,
-    std::string& tag_name,
-    TagInfo& tag_info) {
+bool Tags::calculateTagInfo(const std::string& line, std::string& tag_name,
+                            TagInfo& tag_info) {
   std::vector<std::string> tokens;
   boost::split(tokens, line, boost::is_any_of("\t"), boost::token_compress_off);
 
   if (tokens.size() < 3) {
-    //std::cout << "invalid tag line detected!" << std::endl;
+    // std::cout << "invalid tag line detected!" << std::endl;
     return false;
   }
 
@@ -214,16 +204,14 @@ bool Tags::calculateTagInfo(
   std::string ex;
   for (; index < tokens.size(); ++index) {
     std::string token = tokens[index];
-    if (token.empty())
-      token = "\t";
+    if (token.empty()) token = "\t";
 
     ex += token;
 
-    if (boost::ends_with(token, ";\""))
-      break;
+    if (boost::ends_with(token, ";\"")) break;
   }
   if (!boost::ends_with(ex, "\"")) {
-    //std::cout << "Ex didn't end with ;\"" << std::endl;
+    // std::cout << "Ex didn't end with ;\"" << std::endl;
     return false;
   }
 
@@ -236,9 +224,9 @@ bool Tags::calculateTagInfo(
     std::string token = tokens[index];
     size_t colon = token.find(":");
     if (colon == std::string::npos) {
-      //std::cout << "expected key value pair, but could not find ':'"
+      // std::cout << "expected key value pair, but could not find ':'"
       //<< std::endl;
-      //std::cout << line << std::endl;
+      // std::cout << line << std::endl;
       continue;
     }
 
@@ -254,9 +242,8 @@ bool Tags::calculateTagInfo(
   if ((header_index != std::string::npos) &&
       (footer_index != std::string::npos)) {
     header_index += 2;
-    std::string tag_prefix = tag_info.Ex.substr(
-        header_index,
-        footer_index - header_index);
+    std::string tag_prefix =
+        tag_info.Ex.substr(header_index, footer_index - header_index);
     // search back until we find a space to handle complex
     // return types like
     // std::map<int, int> FunctionName
@@ -277,23 +264,14 @@ bool Tags::win32_CheckIfModified() {
 #ifdef _WIN32
   bool reparse_needed = false;
 
-  HANDLE hFile = ::CreateFile(
-      pathname_.c_str(),
-      GENERIC_READ,
-      FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-      NULL,
-      OPEN_EXISTING,
-      FILE_ATTRIBUTE_NORMAL,
-      NULL);
-  if (hFile == INVALID_HANDLE_VALUE)
-    return false;
+  HANDLE hFile =
+      ::CreateFile(pathname_.c_str(), GENERIC_READ,
+                   FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL,
+                   OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+  if (hFile == INVALID_HANDLE_VALUE) return false;
 
   FILETIME ft_last_write_time;
-  ::GetFileTime(
-      hFile,
-      NULL,
-      NULL,
-      &ft_last_write_time);
+  ::GetFileTime(hFile, NULL, NULL, &ft_last_write_time);
 
   __int64 last_write_time = to_int64(ft_last_write_time);
   if (last_write_time > last_write_time_) {

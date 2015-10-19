@@ -26,10 +26,8 @@ class Tags {
 
   bool calculateParentDirectory();
   void reparse();
-  bool calculateTagInfo(
-      const std::string& line,
-      std::string& tag_name,
-      TagInfo& tag_info);
+  bool calculateTagInfo(const std::string& line, std::string& tag_name,
+                        TagInfo& tag_info);
 
   bool win32_CheckIfModified();
   bool unix_CheckIfModified();

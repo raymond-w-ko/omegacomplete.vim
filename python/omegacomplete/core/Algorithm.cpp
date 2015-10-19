@@ -6,41 +6,29 @@
 
 // translated from Python code provided by
 // http://stevehanov.ca/blog/index.php?id=114
-void Algorithm::LevenshteinSearch(
-    const std::string& word,
-    const size_t max_cost,
-    const TrieNode& trie,
-    LevenshteinSearchResults& results) {
+void Algorithm::LevenshteinSearch(const std::string& word,
+                                  const size_t max_cost, const TrieNode& trie,
+                                  LevenshteinSearchResults& results) {
   // generate sequence from [0, len(word)]
   size_t row_size = word.size() + 1;
   std::vector<size_t> current_row(row_size);
-  for (size_t i = 0; i < row_size; ++i)
-    current_row[i] = i;
+  for (size_t i = 0; i < row_size; ++i) current_row[i] = i;
 
   for (int i = 0; i < TrieNode::kNumChars; ++i) {
     TrieNode* next_node = trie.Children[i];
-    if (!next_node)
-      continue;
+    if (!next_node) continue;
     char letter = trie.Letter;
 
-    Algorithm::LevenshteinSearchRecursive(
-        *next_node,
-        letter,
-        word,
-        current_row,
-        results,
-        max_cost);
+    Algorithm::LevenshteinSearchRecursive(*next_node, letter, word, current_row,
+                                          results, max_cost);
   }
 }
 
 // translated from Python code provided by
 // http://stevehanov.ca/blog/index.php?id=114
 void Algorithm::LevenshteinSearchRecursive(
-    const TrieNode& node,
-    char letter,
-    const std::string& word,
-    const std::vector<size_t>& previous_row,
-    LevenshteinSearchResults& results,
+    const TrieNode& node, char letter, const std::string& word,
+    const std::vector<size_t>& previous_row, LevenshteinSearchResults& results,
     size_t max_cost) {
   size_t columns = word.length() + 1;
   std::vector<size_t> current_row(columns);
@@ -74,38 +62,27 @@ void Algorithm::LevenshteinSearchRecursive(
   if (*std::min_element(current_row.begin(), current_row.end()) <= max_cost) {
     for (int i = 0; i < TrieNode::kNumChars; ++i) {
       TrieNode* next_node = node.Children[i];
-      if (!next_node)
-        continue;
+      if (!next_node) continue;
       char next_letter = next_node->Letter;
 
-      LevenshteinSearchRecursive(
-          *next_node,
-          next_letter,
-          word,
-          current_row,
-          results,
-          max_cost);
+      LevenshteinSearchRecursive(*next_node, next_letter, word, current_row,
+                                 results, max_cost);
     }
   }
 }
 
-void Algorithm::ProcessWords(
-    Omegacomplete::Completions* completions,
-    Omegacomplete::DoneStatus* done_status,
-    const std::vector<String>* word_list,
-    const int begin,
-    const int end,
-    const std::string& input,
-    const bool terminus_mode) {
+void Algorithm::ProcessWords(Omegacomplete::Completions* completions,
+                             Omegacomplete::DoneStatus* done_status,
+                             const std::vector<String>* word_list,
+                             const int begin, const int end,
+                             const std::string& input,
+                             const bool terminus_mode) {
   CompleteItem item;
   for (int i = begin; i < end; ++i) {
     const String& word = (*word_list)[i];
-    if (word.empty())
-      continue;
-    if (word == input)
-      continue;
-    if (input.size() > word.size())
-      continue;
+    if (word.empty()) continue;
+    if (word == input) continue;
+    if (input.size() > word.size()) continue;
 
     item.Score = Algorithm::GetWordScore(word, input, terminus_mode);
 
@@ -119,13 +96,8 @@ void Algorithm::ProcessWords(
 
   if (input.size() >= 2 && input[input.size() - 1] == '_') {
     std::string trimmed_input(input.begin(), input.end() - 1);
-    Algorithm::ProcessWords(
-        completions,
-        done_status,
-        word_list,
-        begin, end,
-        trimmed_input,
-        true);
+    Algorithm::ProcessWords(completions, done_status, word_list, begin, end,
+                            trimmed_input, true);
   } else {
     boost::mutex::scoped_lock lock(done_status->Mutex);
     done_status->Count += 1;
@@ -135,8 +107,7 @@ void Algorithm::ProcessWords(
 
 float Algorithm::GetWordScore(const std::string& word, const std::string& input,
                               const bool terminus_mode) {
-  if (terminus_mode && word[word.size() - 1] != '_')
-    return 0;
+  if (terminus_mode && word[word.size() - 1] != '_') return 0;
 
   const float word_size = static_cast<float>(word.size());
   float score1 = 0;
@@ -164,18 +135,17 @@ float Algorithm::GetWordScore(const std::string& word, const std::string& input,
   return score1;
 }
 
-bool Algorithm::IsSubsequence(const std::string& haystack, const std::string& needle) {
+bool Algorithm::IsSubsequence(const std::string& haystack,
+                              const std::string& needle) {
   const size_t haystack_size = haystack.size();
   const size_t needle_size = needle.size();
 
-  if (needle_size > haystack_size)
-    return false;
+  if (needle_size > haystack_size) return false;
 
   size_t j = 0;
   for (size_t i = 0; i < haystack_size; ++i) {
     char haystack_ch = haystack[i];
-    if (j >= needle_size)
-      break;
+    if (j >= needle_size) break;
     char needle_ch = needle[j];
     if (LookupTable::ToLower[needle_ch] == LookupTable::ToLower[haystack_ch])
       j++;
@@ -187,7 +157,8 @@ bool Algorithm::IsSubsequence(const std::string& haystack, const std::string& ne
     return false;
 }
 
-void Algorithm::GetWordBoundaries(const std::string& word, std::string& boundaries) {
+void Algorithm::GetWordBoundaries(const std::string& word,
+                                  std::string& boundaries) {
   if (word.size() < 3) {
     return;
   }

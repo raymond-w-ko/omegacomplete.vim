@@ -22,17 +22,12 @@ static PyObject* eval(PyObject* self, PyObject* args) {
 }
 
 static PyMethodDef CoreMethods[] = {
-  {
-    "eval", eval,
-    METH_VARARGS,
-    "Send a message to the completion core and possibly receive a response"
-  },
-  {NULL, NULL, 0, NULL}
-};
+    {"eval", eval, METH_VARARGS,
+     "Send a message to the completion core and possibly receive a response"},
+    {NULL, NULL, 0, NULL}};
 
-PyMODINIT_FUNC
-initcore(void) {
-  (void) Py_InitModule("core", CoreMethods);
+PyMODINIT_FUNC initcore(void) {
+  (void)Py_InitModule("core", CoreMethods);
 
   Omegacomplete::InitStatic();
   omegacomplete = new Omegacomplete;

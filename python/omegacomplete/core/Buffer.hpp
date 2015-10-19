@@ -4,9 +4,8 @@ class Omegacomplete;
 
 class Buffer {
  public:
-  static void TokenizeContentsIntoKeywords(
-      StringPtr contents,
-      UnorderedStringIntMapPtr words);
+  static void TokenizeContentsIntoKeywords(StringPtr contents,
+                                           UnorderedStringIntMapPtr words);
 
  public:
   Buffer() : parent_(NULL) {}
@@ -31,9 +30,10 @@ class Buffer {
 };
 
 namespace boost {
-template<> struct hash<Buffer> {
-size_t operator()(const Buffer& buffer) const {
-  return boost::hash<int>()(buffer.GetNumber());
-}
+template <>
+struct hash<Buffer> {
+  size_t operator()(const Buffer& buffer) const {
+    return boost::hash<int>()(buffer.GetNumber());
+  }
 };
 }

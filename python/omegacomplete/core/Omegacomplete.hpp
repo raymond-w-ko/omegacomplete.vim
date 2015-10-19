@@ -40,14 +40,10 @@ class Omegacomplete : public boost::noncopyable {
     ParseJob() : BufferNumber(0) {}
 
     ParseJob(unsigned buffer_number, const StringPtr& contents)
-        : BufferNumber(buffer_number),
-          Contents(contents) {
-    }
+        : BufferNumber(buffer_number), Contents(contents) {}
 
     ParseJob(const ParseJob& other)
-        : BufferNumber(other.BufferNumber),
-          Contents(other.Contents) {
-    }
+        : BufferNumber(other.BufferNumber), Contents(other.Contents) {}
 
     unsigned BufferNumber;
     StringPtr Contents;
@@ -88,18 +84,14 @@ class Omegacomplete : public boost::noncopyable {
   void queueParseJob(ParseJob job);
   void workerThreadLoop();
 
-  void calculateCompletionCandidates(
-      const std::string& line,
-      std::string& result);
+  void calculateCompletionCandidates(const std::string& line,
+                                     std::string& result);
   std::string getWordToComplete(const std::string& line);
-  void genericKeywordCompletion(
-      const std::string& line,
-      std::string& result);
+  void genericKeywordCompletion(const std::string& line, std::string& result);
 
   bool shouldEnableDisambiguateMode(const std::string& word, unsigned& index);
-  void addLevenshteinCorrections(
-      const std::string& input,
-      CompleteItemVectorPtr& completions);
+  void addLevenshteinCorrections(const std::string& input,
+                                 CompleteItemVectorPtr& completions);
 
   ////////////////////////////////////////////////////////////////////////////
   // Omegacomplete Core
@@ -113,7 +105,7 @@ class Omegacomplete : public boost::noncopyable {
   boost::thread worker_thread_;
   volatile int is_quitting_;
 
-  std::map<String, boost::function<std::string (StringPtr)> >
+  std::map<String, boost::function<std::string(StringPtr)> >
       command_dispatcher_;
 
   boost::mutex buffers_mutex_;

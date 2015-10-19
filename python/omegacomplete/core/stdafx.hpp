@@ -4,40 +4,39 @@
 #include <stdint.h>
 
 #ifdef __CYGWIN__
-#  ifndef IPV6_JOIN_GROUP
-#    define IPV6_JOIN_GROUP IPV6_ADD_MEMBERSHIP
-#  endif
-#  ifndef IPV6_LEAVE_GROUP
-#    define IPV6_LEAVE_GROUP IPV6_DROP_MEMBERSHIP
-#  endif
+#ifndef IPV6_JOIN_GROUP
+#define IPV6_JOIN_GROUP IPV6_ADD_MEMBERSHIP
+#endif
+#ifndef IPV6_LEAVE_GROUP
+#define IPV6_LEAVE_GROUP IPV6_DROP_MEMBERSHIP
+#endif
 #endif
 
 // must be included before <windows.h> or an error occurs
 #ifdef _WIN32
-    #define _WIN32_WINNT 0x0501
+#define _WIN32_WINNT 0x0501
 #endif
 #include <boost/asio.hpp>
 
 #ifdef _WIN32
-    #ifndef _DEBUG
-        // disable checked iterators for performance
-        #define _SECURE_SCL 0
-    #endif
+#ifndef _DEBUG
+// disable checked iterators for performance
+#define _SECURE_SCL 0
+#endif
 
-    #include <windows.h>
+#include <windows.h>
 
-    inline
-    int64_t to_int64(const FILETIME& ft) {
-        return static_cast<int64_t>(ft.dwHighDateTime) << 32 | ft.dwLowDateTime;
-    }
+inline int64_t to_int64(const FILETIME& ft) {
+  return static_cast<int64_t>(ft.dwHighDateTime) << 32 | ft.dwLowDateTime;
+}
 #else
-    #include <sys/types.h>
-    #include <sys/stat.h>
-    // Mac OS X specific includes
-    #ifdef __MACH__
-        #include <mach/clock.h>
-        #include <mach/mach.h>
-    #endif
+#include <sys/types.h>
+#include <sys/stat.h>
+// Mac OS X specific includes
+#ifdef __MACH__
+#include <mach/clock.h>
+#include <mach/mach.h>
+#endif
 #endif
 
 #include <string>
@@ -80,20 +79,20 @@
 
 template <typename Container, typename Item>
 bool Contains(const Container& container, const Item& item) {
-    return container.find(item) != container.end();
+  return container.find(item) != container.end();
 }
 
 inline void NormalizeToUnixPathSeparators(std::string& pathname) {
-    boost::replace_all(pathname, "\\", "/");
+  boost::replace_all(pathname, "\\", "/");
 }
 
 inline void NormalizeToWindowsPathSeparators(std::string& pathname) {
-    boost::replace_all(pathname, "/", "\\");
+  boost::replace_all(pathname, "/", "\\");
 }
 
 struct FileLocation {
-    unsigned Line;
-    unsigned Column;
+  unsigned Line;
+  unsigned Column;
 };
 
 typedef unsigned char uchar;
