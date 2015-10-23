@@ -77,6 +77,7 @@ void Omegacomplete::initCommandDispatcher() {
   CONNECT("start_stopwatch", cmdStartStopwatch)
   CONNECT("stop_stopwatch", cmdStopStopwatch)
   CONNECT("do_tests", cmdDoTests)
+  CONNECT("current_iskeyword", cmdCurrentIskeyword)
 
 #undef CONNECT
 }
@@ -343,6 +344,11 @@ std::string Omegacomplete::cmdStopStopwatch(StringPtr argument) {
 std::string Omegacomplete::cmdDoTests(StringPtr argument) {
   std::stringstream results;
   log_file_ << results.str();
+  return kDefaultResponse;
+}
+
+std::string Omegacomplete::cmdCurrentIskeyword(StringPtr argument) {
+  buffers_[current_buffer_id_].SetIskeyword(*argument);
   return kDefaultResponse;
 }
 

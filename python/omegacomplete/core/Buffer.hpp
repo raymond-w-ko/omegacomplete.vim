@@ -4,7 +4,7 @@ class Omegacomplete;
 
 class Buffer {
  public:
-  static void TokenizeContentsIntoKeywords(StringPtr contents,
+  void TokenizeContentsIntoKeywords(StringPtr contents,
                                            UnorderedStringIntMapPtr words);
 
  public:
@@ -18,6 +18,8 @@ class Buffer {
   unsigned GetNumber() const { return buffer_id_; }
 
   void ReplaceContentsWith(StringPtr new_contents);
+  
+  void SetIskeyword(std::string iskeyword);
 
  private:
   Omegacomplete* parent_;
@@ -27,6 +29,9 @@ class Buffer {
   StringPtr contents_;
   // set of all unique words generated from this buffer's contents
   UnorderedStringIntMapPtr words_;
+  
+  std::string mIskeyword;
+  uchar mIsWord[256];
 };
 
 namespace boost {

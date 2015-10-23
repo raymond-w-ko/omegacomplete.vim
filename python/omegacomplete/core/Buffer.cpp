@@ -16,23 +16,15 @@ void Buffer::TokenizeContentsIntoKeywords(StringPtr contents,
     // This will be what is considered a "word".  I guess we have Unicode stuff
     // then we are screwed :-(
     uchar c = static_cast<uchar>(text[i]);
-    if (!LookupTable::IsPartOfWord[c]) continue;
+    if (!mIskeyword[c]) continue;
 
     // we have found the beginning of the word, loop until we reach the end or
     // we find a non-"word" character.
     size_t j = i + 1;
     for (; j < len; ++j) {
-      if (LookupTable::IsPartOfWord[static_cast<uchar>(text[j])]) continue;
+      if (mIskeyword[static_cast<uchar>(text[j])]) continue;
       break;
     }
-
-    // strip leading hyphens (e.g. in the case of --number)
-    while (i < j && i < len && text[i] == '-') ++i;
-
-    size_t next_index = j;
-
-    // strip trailing hyphens (e.g. in the case of number-)
-    while (j > 0 && text[j - 1] == '-') --j;
 
     // construct word based off of pointer
     // don't want "words" that end in hyphen
@@ -42,7 +34,7 @@ void Buffer::TokenizeContentsIntoKeywords(StringPtr contents,
     }
 
     // for loop will autoincrement
-    i = next_index;
+    i = j;
   }
 }
 
@@ -127,4 +119,90 @@ void Buffer::ReplaceContentsWith(StringPtr new_contents) {
   // replace old contents and words with thew new ones
   contents_ = new_contents;
   words_ = new_words;
+}
+
+static int read_char(const std::string& str, int i, uchar* outch) {
+  if (!LookupTable::IsNumber[str[i]]) {
+    *outch = str[i];
+    return i + 1;
+  } else {
+    const int n = str.size();
+    int digit = 0;
+    while (i < n && LookupTable::IsNumber[str[i]]) {
+      digit = 10 * digit + (str[i] - '0');
+      i++;
+    }
+
+    *outch = (uchar)digit;
+    return i;
+  }
+}
+
+void Buffer::SetIskeyword(std::string iskeyword) {
+  if (mIskeyword == iskeyword) return;
+  mIskeyword = iskeyword;
+
+  for (int i = 0; i < 256; ++i) {
+    mIsWord[i] = 0;
+  }
+
+  enum Mode : int {
+    kAcceptFirstChar,
+    kMaybeAcceptSecondChar,
+    kAcceptSecondChar,
+  };
+
+  const int n = iskeyword.size();
+  int i = 0;
+  uchar ch = 0;
+  uchar begin_char = 0;
+  uchar end_char = 0;
+  int mode = 0;
+  bool process = false;
+  bool exclude = false;
+  while (i <= n) {
+    if (process || i == n) {
+      for (char c = begin_char; c <= end_char; ++c) {
+        mIsWord[c] = !exclude;
+      }
+
+      begin_char = 0;
+      end_char = 0;
+      process = false;
+      exclude = false;
+
+      if (i == n)
+        break;
+      else
+        ++i;
+    }
+
+    ch = (uchar)iskeyword[i];
+
+    if (mode == kAcceptFirstChar) {
+      i = read_char(iskeyword, i, &begin_char);
+      end_char = begin_char;
+      mode++;
+    }
+    else if (mode == kMaybeAcceptSecondChar) {
+      if (begin_char == '^') {
+        exclude = true;
+        begin_char = ch;
+        i++;
+      } else if (ch == '-') {
+        mode++;
+        i++;
+      } else if (ch == ',') {
+        process = true;
+        i++;
+        mode++;
+        continue;
+      } else {
+        assert(false);
+      }
+    }
+    else if (mode == kAcceptSecondChar) {
+      i = read_char(iskeyword, i, &end_char);
+    }
+  }
 }

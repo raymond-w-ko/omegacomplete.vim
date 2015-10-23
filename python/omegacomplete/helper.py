@@ -53,6 +53,9 @@ def oc_update_current_buffer_info():
     oc_core_eval("current_directory " + vim.eval('getcwd()'))
     # send tags we are using to the server
     oc_core_eval("current_tags " + vim.eval("&tags"))
+    
+    # send iskeyword so we can be smarter on what is considered a word
+    oc_core_eval("current_iskeyword " + vim.eval("&iskeyword"))
 
 def oc_compute_popup_list(use_base):
     partial_line = None
