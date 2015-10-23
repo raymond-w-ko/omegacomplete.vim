@@ -144,9 +144,9 @@ void Tags::Update() {
 #ifdef _WIN32
   if (last_tick_count_ == -1) {
     reparse_needed = true;
-    last_tick_count_ = static_cast<double>(::GetTickCount());
+    last_tick_count_ = static_cast<double>(::GetTickCount64());
   } else {
-    double new_count = static_cast<double>(::GetTickCount());
+    double new_count = static_cast<double>(::GetTickCount64());
     if (::fabs(new_count - last_tick_count_) > check_time) {
       reparse_needed = win32_CheckIfModified();
       last_tick_count_ = new_count;
