@@ -31,7 +31,7 @@ class Buffer {
   UnorderedStringIntMapPtr words_;
   
   std::string mIskeyword;
-  uchar mIsWord[256];
+  bool mIsWord[256];
 };
 
 namespace boost {

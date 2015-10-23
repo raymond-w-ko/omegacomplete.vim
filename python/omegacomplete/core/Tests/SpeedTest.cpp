@@ -43,6 +43,19 @@ int main() {
       resp = omegacomplete->Eval(command);
       //std::cout << resp << "\n";
 
+      /*
+      command = "current_iskeyword @,^a-z";
+  	  resp = omegacomplete->Eval(command);
+  	  command = "current_iskeyword 48-57,,,_";
+  	  resp = omegacomplete->Eval(command);
+  	  command = "current_iskeyword ^a-z,#,^";
+  	  resp = omegacomplete->Eval(command);
+  	  command = "current_iskeyword _,-,128-140,#-43";
+  	  resp = omegacomplete->Eval(command);
+      */
+  	  command = "current_iskeyword 97-122,65-90,_";
+  	  resp = omegacomplete->Eval(command);
+
       command = "current_buffer_absolute_path " + filename;
       resp = omegacomplete->Eval(command);
       //std::cout << resp << "\n";

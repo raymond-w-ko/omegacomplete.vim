@@ -14,7 +14,8 @@
 
 // must be included before <windows.h> or an error occurs
 #ifdef _WIN32
-#define _WIN32_WINNT 0x0501
+// at least 0x600 needed for GetTickCount64()
+#define _WIN32_WINNT 0x0600
 #endif
 #include <boost/asio.hpp>
 

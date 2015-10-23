@@ -8,7 +8,7 @@
 using namespace std;
 
 void Buffer::TokenizeContentsIntoKeywords(StringPtr contents,
-                                          UnorderedStringIntMapPtr words) {
+  UnorderedStringIntMapPtr words) {
   const std::string& text = *contents;
   size_t len = text.size();
   for (size_t i = 0; i < len; ++i) {
@@ -16,13 +16,13 @@ void Buffer::TokenizeContentsIntoKeywords(StringPtr contents,
     // This will be what is considered a "word".  I guess we have Unicode stuff
     // then we are screwed :-(
     uchar c = static_cast<uchar>(text[i]);
-    if (!mIskeyword[c]) continue;
+    if (!mIsWord[c]) continue;
 
     // we have found the beginning of the word, loop until we reach the end or
     // we find a non-"word" character.
     size_t j = i + 1;
     for (; j < len; ++j) {
-      if (mIskeyword[static_cast<uchar>(text[j])]) continue;
+      if (mIsWord[static_cast<uchar>(text[j])]) continue;
       break;
     }
 
@@ -66,8 +66,9 @@ void Buffer::ReplaceContentsWith(StringPtr new_contents) {
     // prevent unnecessary rehashing on resize by allocating at least the
     // number of buckets of the previous hash table.
     new_words =
-        boost::make_shared<UnorderedStringIntMap>(words_->bucket_count());
-  } else {
+      boost::make_shared<UnorderedStringIntMap>(words_->bucket_count());
+  }
+  else {
     new_words = boost::make_shared<UnorderedStringIntMap>();
   }
   Buffer::TokenizeContentsIntoKeywords(new_contents, new_words);
@@ -75,7 +76,8 @@ void Buffer::ReplaceContentsWith(StringPtr new_contents) {
   if (!contents_) {
     // easy first case, just increment reference count for each word
     parent_->Words.UpdateWords(new_words.get());
-  } else {
+  }
+  else {
     // otherwise we have to a slow calculation of words to add and words to
     // remove. since this happens in a background thread, it is okay to be
     // slow.
@@ -121,12 +123,13 @@ void Buffer::ReplaceContentsWith(StringPtr new_contents) {
   words_ = new_words;
 }
 
-static int read_char(const std::string& str, int i, uchar* outch) {
+static size_t read_char(const std::string& str, size_t i, uchar* outch) {
   if (!LookupTable::IsNumber[str[i]]) {
     *outch = str[i];
     return i + 1;
-  } else {
-    const int n = str.size();
+  }
+  else {
+    const size_t n = str.size();
     int digit = 0;
     while (i < n && LookupTable::IsNumber[str[i]]) {
       digit = 10 * digit + (str[i] - '0');
@@ -143,7 +146,7 @@ void Buffer::SetIskeyword(std::string iskeyword) {
   mIskeyword = iskeyword;
 
   for (int i = 0; i < 256; ++i) {
-    mIsWord[i] = 0;
+    mIsWord[i] = false;
   }
 
   enum Mode : int {
@@ -152,8 +155,8 @@ void Buffer::SetIskeyword(std::string iskeyword) {
     kAcceptSecondChar,
   };
 
-  const int n = iskeyword.size();
-  int i = 0;
+  const size_t n = iskeyword.size();
+  size_t i = 0;
   uchar ch = 0;
   uchar begin_char = 0;
   uchar end_char = 0;
@@ -162,26 +165,40 @@ void Buffer::SetIskeyword(std::string iskeyword) {
   bool exclude = false;
   while (i <= n) {
     if (process || i == n) {
-      for (char c = begin_char; c <= end_char; ++c) {
-        mIsWord[c] = !exclude;
+      if (begin_char == '@' && end_char == 0) {
+        for (uchar c = 'A'; c <= 'Z'; ++c) {
+          mIsWord[c] = !exclude;
+        }
+        for (uchar c = 'a'; c <= 'z'; ++c) {
+          mIsWord[c] = !exclude;
+        }
+      }
+      else {
+        if (end_char == 0)
+          end_char = begin_char;
+        for (uchar c = begin_char; c <= end_char && c != 0; ++c) {
+          mIsWord[c] = !exclude;
+        }
       }
 
       begin_char = 0;
       end_char = 0;
       process = false;
       exclude = false;
+      mode = kAcceptFirstChar;
 
       if (i == n)
         break;
-      else
-        ++i;
     }
 
     ch = (uchar)iskeyword[i];
 
-    if (mode == kAcceptFirstChar) {
+    if (mode != kAcceptFirstChar && ch == ',') {
+      process = true;
+      i++;
+    }
+    else if (mode == kAcceptFirstChar) {
       i = read_char(iskeyword, i, &begin_char);
-      end_char = begin_char;
       mode++;
     }
     else if (mode == kMaybeAcceptSecondChar) {
@@ -189,15 +206,12 @@ void Buffer::SetIskeyword(std::string iskeyword) {
         exclude = true;
         begin_char = ch;
         i++;
-      } else if (ch == '-') {
+      }
+      else if (ch == '-') {
         mode++;
         i++;
-      } else if (ch == ',') {
-        process = true;
-        i++;
-        mode++;
-        continue;
-      } else {
+      }
+      else {
         assert(false);
       }
     }
