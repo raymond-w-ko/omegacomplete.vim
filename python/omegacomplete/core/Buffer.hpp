@@ -5,7 +5,7 @@ class Omegacomplete;
 class Buffer {
  public:
   void TokenizeContentsIntoKeywords(StringPtr contents,
-                                           UnorderedStringIntMapPtr words);
+                                    UnorderedStringIntMapPtr words);
 
  public:
   Buffer() : parent_(NULL) {}
@@ -28,7 +28,7 @@ class Buffer {
   StringPtr contents_;
   // set of all unique words generated from this buffer's contents
   UnorderedStringIntMapPtr words_;
-  
+
   std::string mIskeyword;
   bool mIsWord[256];
 };

@@ -8,7 +8,7 @@
 using namespace std;
 
 void Buffer::TokenizeContentsIntoKeywords(StringPtr contents,
-  UnorderedStringIntMapPtr words) {
+                                          UnorderedStringIntMapPtr words) {
   const std::string& text = *contents;
   size_t len = text.size();
   for (size_t i = 0; i < len; ++i) {
@@ -66,9 +66,8 @@ void Buffer::ReplaceContentsWith(StringPtr new_contents) {
     // prevent unnecessary rehashing on resize by allocating at least the
     // number of buckets of the previous hash table.
     new_words =
-      boost::make_shared<UnorderedStringIntMap>(words_->bucket_count());
-  }
-  else {
+        boost::make_shared<UnorderedStringIntMap>(words_->bucket_count());
+  } else {
     new_words = boost::make_shared<UnorderedStringIntMap>();
   }
   Buffer::TokenizeContentsIntoKeywords(new_contents, new_words);
@@ -76,8 +75,7 @@ void Buffer::ReplaceContentsWith(StringPtr new_contents) {
   if (!contents_) {
     // easy first case, just increment reference count for each word
     parent_->Words.UpdateWords(new_words.get());
-  }
-  else {
+  } else {
     // otherwise we have to a slow calculation of words to add and words to
     // remove. since this happens in a background thread, it is okay to be
     // slow.
@@ -127,8 +125,7 @@ static size_t read_char(const std::string& str, size_t i, uchar* outch) {
   if (!LookupTable::IsNumber[str[i]]) {
     *outch = str[i];
     return i + 1;
-  }
-  else {
+  } else {
     const size_t n = str.size();
     int digit = 0;
     while (i < n && LookupTable::IsNumber[str[i]]) {
@@ -172,10 +169,8 @@ void Buffer::SetIskeyword(std::string iskeyword) {
         for (uchar c = 'a'; c <= 'z'; ++c) {
           mIsWord[c] = !exclude;
         }
-      }
-      else {
-        if (end_char == 0)
-          end_char = begin_char;
+      } else {
+        if (end_char == 0) end_char = begin_char;
         for (uchar c = begin_char; c <= end_char && c != 0; ++c) {
           mIsWord[c] = !exclude;
         }
@@ -187,8 +182,7 @@ void Buffer::SetIskeyword(std::string iskeyword) {
       exclude = false;
       mode = kAcceptFirstChar;
 
-      if (i == n)
-        break;
+      if (i == n) break;
     }
 
     ch = (uchar)iskeyword[i];
@@ -196,26 +190,21 @@ void Buffer::SetIskeyword(std::string iskeyword) {
     if (mode != kAcceptFirstChar && ch == ',') {
       process = true;
       i++;
-    }
-    else if (mode == kAcceptFirstChar) {
+    } else if (mode == kAcceptFirstChar) {
       i = read_char(iskeyword, i, &begin_char);
       mode++;
-    }
-    else if (mode == kMaybeAcceptSecondChar) {
+    } else if (mode == kMaybeAcceptSecondChar) {
       if (begin_char == '^') {
         exclude = true;
         begin_char = ch;
         i++;
-      }
-      else if (ch == '-') {
+      } else if (ch == '-') {
         mode++;
         i++;
-      }
-      else {
+      } else {
         assert(false);
       }
-    }
-    else if (mode == kAcceptSecondChar) {
+    } else if (mode == kAcceptSecondChar) {
       i = read_char(iskeyword, i, &end_char);
     }
   }

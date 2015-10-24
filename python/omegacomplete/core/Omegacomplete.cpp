@@ -426,7 +426,7 @@ void Omegacomplete::calculateCompletionCandidates(const std::string& line,
 
 void Omegacomplete::genericKeywordCompletion(const std::string& line,
                                              std::string& result) {
-  //std::string input = getWordToComplete(line);
+  // std::string input = getWordToComplete(line);
   // test using a:base
   const std::string& input = line;
   if (input.empty()) return;
@@ -569,8 +569,8 @@ std::string Omegacomplete::getWordToComplete(const std::string& line) {
 
   // we can potentially have an empty line
   int partial_end = static_cast<int>(line.length());
-  int partial_begin = buffers_[current_buffer_id_].GetWordBeginIndex(
-    line, cursor_pos_);
+  int partial_begin =
+      buffers_[current_buffer_id_].GetWordBeginIndex(line, cursor_pos_);
   if (partial_begin < 0) return "";
 
   std::string partial(&line[partial_begin], &line[partial_end]);
@@ -578,11 +578,13 @@ std::string Omegacomplete::getWordToComplete(const std::string& line) {
 }
 
 std::string Omegacomplete::cmdGetWordBeginIndex(StringPtr argument) {
-  int index = buffers_[current_buffer_id_].GetWordBeginIndex(
-    current_line_, cursor_pos_);
+  int index = buffers_[current_buffer_id_].GetWordBeginIndex(current_line_,
+                                                             cursor_pos_);
   // cursor column point is 1 indexed
-  if (index < 0) return "-1";
-  else return boost::lexical_cast<std::string>(index);
+  if (index < 0)
+    return "-1";
+  else
+    return boost::lexical_cast<std::string>(index);
 }
 
 bool Omegacomplete::shouldEnableDisambiguateMode(const std::string& word,
