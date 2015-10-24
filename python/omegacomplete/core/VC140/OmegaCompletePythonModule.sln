@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30110.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OmegaCompletePythonModule", "OmegaCompletePythonModule.vcxproj", "{1AAFBA2E-3DFF-4815-BB5E-56B24A9D585E}"
 EndProject
@@ -28,6 +28,7 @@ Global
 		{1AAFBA2E-3DFF-4815-BB5E-56B24A9D585E}.Debug|Win32.ActiveCfg = Debug|Win32
 		{1AAFBA2E-3DFF-4815-BB5E-56B24A9D585E}.Debug|Win32.Build.0 = Debug|Win32
 		{1AAFBA2E-3DFF-4815-BB5E-56B24A9D585E}.Debug|x64.ActiveCfg = Debug|x64
+		{1AAFBA2E-3DFF-4815-BB5E-56B24A9D585E}.Debug|x64.Build.0 = Debug|x64
 		{1AAFBA2E-3DFF-4815-BB5E-56B24A9D585E}.Release|Mixed Platforms.ActiveCfg = Release|Win32
 		{1AAFBA2E-3DFF-4815-BB5E-56B24A9D585E}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{1AAFBA2E-3DFF-4815-BB5E-56B24A9D585E}.Release|Win32.ActiveCfg = Release|x64
@@ -50,7 +51,6 @@ Global
 		{2CCB59C3-063D-4992-99E3-4C60CC0E85DF}.Debug|Win32.ActiveCfg = Debug|Win32
 		{2CCB59C3-063D-4992-99E3-4C60CC0E85DF}.Debug|Win32.Build.0 = Debug|Win32
 		{2CCB59C3-063D-4992-99E3-4C60CC0E85DF}.Debug|x64.ActiveCfg = Debug|x64
-		{2CCB59C3-063D-4992-99E3-4C60CC0E85DF}.Debug|x64.Build.0 = Debug|x64
 		{2CCB59C3-063D-4992-99E3-4C60CC0E85DF}.Release|Mixed Platforms.ActiveCfg = Release|Win32
 		{2CCB59C3-063D-4992-99E3-4C60CC0E85DF}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{2CCB59C3-063D-4992-99E3-4C60CC0E85DF}.Release|Win32.ActiveCfg = Release|Win32

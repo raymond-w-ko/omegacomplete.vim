@@ -78,6 +78,7 @@ void Omegacomplete::initCommandDispatcher() {
   CONNECT("stop_stopwatch", cmdStopStopwatch)
   CONNECT("do_tests", cmdDoTests)
   CONNECT("current_iskeyword", cmdCurrentIskeyword)
+  CONNECT("get_word_begin_index", cmdGetWordBeginIndex)
 
 #undef CONNECT
 }
@@ -425,7 +426,9 @@ void Omegacomplete::calculateCompletionCandidates(const std::string& line,
 
 void Omegacomplete::genericKeywordCompletion(const std::string& line,
                                              std::string& result) {
-  std::string input = getWordToComplete(line);
+  //std::string input = getWordToComplete(line);
+  // test using a:base
+  const std::string& input = line;
   if (input.empty()) return;
 
   // check to see if autocomplete is tripped
@@ -566,18 +569,20 @@ std::string Omegacomplete::getWordToComplete(const std::string& line) {
 
   // we can potentially have an empty line
   int partial_end = static_cast<int>(line.length());
-  int partial_begin = partial_end - 1;
-  for (; partial_begin >= 0; --partial_begin) {
-    uchar c = static_cast<uchar>(line[partial_begin]);
-    if (LookupTable::IsPartOfWord[c]) continue;
+  int partial_begin = buffers_[current_buffer_id_].GetWordBeginIndex(
+    line, cursor_pos_);
+  if (partial_begin < 0) return "";
 
-    break;
-  }
-
-  if ((partial_begin + 1) == partial_end) return "";
-
-  std::string partial(&line[partial_begin + 1], &line[partial_end]);
+  std::string partial(&line[partial_begin], &line[partial_end]);
   return partial;
+}
+
+std::string Omegacomplete::cmdGetWordBeginIndex(StringPtr argument) {
+  int index = buffers_[current_buffer_id_].GetWordBeginIndex(
+    current_line_, cursor_pos_);
+  // cursor column point is 1 indexed
+  if (index < 0) return "-1";
+  else return boost::lexical_cast<std::string>(index);
 }
 
 bool Omegacomplete::shouldEnableDisambiguateMode(const std::string& word,

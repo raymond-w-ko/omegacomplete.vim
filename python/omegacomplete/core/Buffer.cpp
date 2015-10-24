@@ -220,3 +220,16 @@ void Buffer::SetIskeyword(std::string iskeyword) {
     }
   }
 }
+
+int Buffer::GetWordBeginIndex(const std::string& line, FileLocation loc) {
+  // cursor column point is 1 indexed
+  int i = loc.Column - 1;
+  if (!mIsWord[line[i]]) return -1;
+
+  for (;;) {
+    if (i == -1) break;
+    if (!mIsWord[line[i]]) break;
+    i--;
+  }
+  return i + 1;
+}

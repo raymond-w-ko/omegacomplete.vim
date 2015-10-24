@@ -18,6 +18,8 @@ def oc_eval(cmd):
     return oc_core_eval(cmd)
 
 def oc_send_current_buffer():
+    # send iskeyword so we can be smarter on what is considered a word
+    oc_core_eval("current_iskeyword " + vim.eval("&iskeyword"))
     # this approach takes around 0.8 to 1.8 ms for 3700 - 6751 line file that
     # is 180 to 208 KB, which is acceptable for now
     oc_core_eval("buffer_contents_follow 1")
@@ -53,18 +55,13 @@ def oc_update_current_buffer_info():
     oc_core_eval("current_directory " + vim.eval('getcwd()'))
     # send tags we are using to the server
     oc_core_eval("current_tags " + vim.eval("&tags"))
-    
-    # send iskeyword so we can be smarter on what is considered a word
-    oc_core_eval("current_iskeyword " + vim.eval("&iskeyword"))
 
-def oc_compute_popup_list(use_base):
-    partial_line = None
-    if use_base :
-        partial_line = vim.eval("a:base")
-    else:
-        partial_line = vim.eval("strpart(getline('.'), 0, col('.') - 1)")
-    # send current line up to the cursor, triggering a complete event
-    oc_server_result = oc_eval('complete ' + partial_line)
+def oc_get_word_begin_index():
+    oc_word_begin_index = oc_eval('get_word_begin_index current_buffer')
+    vim.command('let g:omegacomplete_word_begin_index=' + oc_word_begin_index)
+
+def oc_compute_popup_list():
+    oc_server_result = oc_eval('complete ' + vim.eval('a:base'))
     if len(oc_server_result) == 0:
         vim.command('let g:omegacomplete_server_results=[]')
     else:

@@ -72,6 +72,10 @@ if !exists("g:omegacomplete_ignored_buffer_names")
 endif
 let s:ignored_buffer_names_set = {}
 
+" variables to keep track of cursor so infinite completion loop by CursorMovedI is avoided
+let s:last_completed_row = -1
+let s:last_completed_col = -1
+
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " init
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -83,6 +87,7 @@ function s:Init()
 
     " initialize this to be safe, where server results are stored
     let g:omegacomplete_server_results=[]
+    let g:omegacomplete_word_begin_index=-1
 
     " convert list to set
     for buffer_name in g:omegacomplete_ignored_buffer_names
@@ -110,7 +115,7 @@ function s:Init()
     " Also, having this option set breaks the plugin.
     set completeopt-=longest
     if v:version > 704 || (v:version == 704 && has('patch775'))
-        set completeopt+=noselect
+        set completeopt+=noselect,noinsert
     endif
 
     command OmegacompleteFlushServerCaches :call <SID>FlushServerCaches()
@@ -121,11 +126,11 @@ function s:Init()
 
     augroup Omegacomplete
         autocmd!
-    
+
         " whenever you delete a buffer, delete it from the server so that it
         " doesn't cause any outdated completions to be offered
         autocmd BufDelete * call <SID>OnBufDelete()
-    
+
         " whenever we leave a current buffer, send it to the server to it can
         " decide if we have to update it. this keeps the state of the buffer
         " in sync so we can offer accurate completions when we switch to
@@ -202,8 +207,16 @@ function <SID>OnCursorMovedI()
         return
     endif
 
+    let c = col('.')
+    let r = line('.')
+    if s:last_completed_row == r && s:last_completed_col == c
+        return
+    endif
+    let s:last_completed_row = r
+    let s:last_completed_col = c
+
     let line = getline('.')
-    if len(line) == 0 
+    if len(line) == 0
         return
     endif
     if pumvisible()
@@ -248,7 +261,7 @@ endfunction
 " added or deleted lines
 function <SID>SyncCurrentBuffer()
     let buffer_number = bufnr('%')
-    let buffer_name = bufname('%') 
+    let buffer_name = bufname('%')
     let absolute_path = escape(expand('%:p'), '\')
 
     " don't process these special buffers from other plugins
@@ -287,6 +300,8 @@ endfunction
 " of the buffer to the server since we could have changed the contents of the
 " buffer while in normal though commands like 'dd'
 function <SID>OnBufLeave()
+    let s:last_completed_row = -1
+    let s:last_completed_col = -1
     call <SID>SyncCurrentBuffer()
 endfunction
 
@@ -311,36 +326,23 @@ endfunction
 " this needs to have global scope and it is what <C-X><C-U> depends on.
 " don't think  it can use script / scope specific functions
 function omegacomplete#Complete(findstart, base)
-    python oc_update_current_buffer_info()
-
     " on first invocation a:findstart is 1 and base is empty
     if a:findstart
-        python oc_compute_popup_list(False)
+        python oc_update_current_buffer_info()
+        python oc_get_word_begin_index()
+
         " this should only be triggered if there is a valid initial match
-        if len(g:omegacomplete_server_results) == 0
+        if g:omegacomplete_word_begin_index < 0
             if (v:version > 702)
                 return -3
             else
                 return -1
             endif
+        else
+            return g:omegacomplete_word_begin_index
         endif
-
-        let i = col('.') - 2
-        let line = getline('.')
-        while 1
-            if i == -1
-                break
-            endif
-            if match(line[i], '[a-zA-Z0-9_\-]') == -1
-                break
-            endif
-
-            let i -= 1
-        endwhile
-        let result = i + 1
-        return result
     else
-        python oc_compute_popup_list(True)
+        python oc_compute_popup_list()
         call s:UpdatePopupMenuColorscheme()
         if (v:version > 702)
             return {'words' : g:omegacomplete_server_results, 'refresh' : 'always'}

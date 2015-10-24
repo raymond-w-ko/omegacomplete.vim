@@ -16,10 +16,9 @@ class Buffer {
     return buffer_id_ == other.buffer_id_;
   }
   unsigned GetNumber() const { return buffer_id_; }
-
   void ReplaceContentsWith(StringPtr new_contents);
-  
   void SetIskeyword(std::string iskeyword);
+  int GetWordBeginIndex(const std::string& line, FileLocation loc);
 
  private:
   Omegacomplete* parent_;

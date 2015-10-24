@@ -78,6 +78,7 @@ class Omegacomplete : public boost::noncopyable {
   std::string cmdStopStopwatch(StringPtr argument);
   std::string cmdDoTests(StringPtr argument);
   std::string cmdCurrentIskeyword(StringPtr argument);
+  std::string cmdGetWordBeginIndex(StringPtr argument);
 
   ////////////////////////////////////////////////////////////////////////////
   // Omegacomplete Core
