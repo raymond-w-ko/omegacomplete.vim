@@ -52,6 +52,10 @@ if !exists("g:omegacomplete_ignored_buffer_names")
 endif
 let s:ignored_buffer_names_set = {}
 
+if !exists("g:omegacomplete_quick_select")
+    let g:omegacomplete_quick_select=1
+endif
+
 " variables to keep track of cursor so infinite completion loop by CursorMovedI is avoided
 let s:last_completed_row = -1
 let s:last_completed_col = -1
@@ -95,7 +99,7 @@ function s:Init()
     " Also, having this option set breaks the plugin.
     set completeopt-=longest
     if v:version > 704 || (v:version == 704 && has('patch775'))
-        set completeopt+=noselect,noinsert
+        set completeopt+=noselect
     endif
 
     command OmegacompleteFlushServerCaches :call <SID>FlushServerCaches()
@@ -103,6 +107,13 @@ function s:Init()
     command OmegacompleteDoTests :call <SID>DoTests()
 
     call <SID>UpdateConfig()
+
+    if g:omegacomplete_quick_select
+        for i in range(1, 10, 1)
+            let cmd = printf("imap %d \<C-r>=omegacomplete#quick_select(%d)\<CR>", i % 10, i % 10)
+            exe cmd
+        endfor
+    endif
 
     augroup Omegacomplete
         autocmd!
@@ -349,6 +360,19 @@ endfunction
 
 function <SID>FlushServerCaches()
     exe 'py oc_eval("flush_caches 1")'
+endfunction
+
+function omegacomplete#quick_select(index)
+    if !pumvisible()
+        return string(a:index)
+    else
+        let keys = ""
+        for i in range(a:index)
+            let keys .= "\<C-n>"
+        endfor
+        let keys .= "\<C-y>"
+        return keys
+    endif
 endfunction
 
 " send config options to the C++ portion
