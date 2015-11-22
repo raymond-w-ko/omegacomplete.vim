@@ -40,10 +40,6 @@ if !exists("g:omegacomplete_corrections_hi_cmds")
         \ ]
 endif
 
-if !exists("g:omegacomplete_autocomplete_suffix")
-    let g:omegacomplete_autocomplete_suffix="jj"
-endif
-
 if !exists("g:omegacomplete_ignored_buffer_names")
     let g:omegacomplete_ignored_buffer_names = [
         \ '__Scratch__',
@@ -357,9 +353,6 @@ endfunction
 
 " send config options to the C++ portion
 function <SID>UpdateConfig()
-    exe 'py oc_eval("config autocomplete_suffix ' .
-        \ g:omegacomplete_autocomplete_suffix . '")'
-
     if len(g:omegacomplete_log_file) > 0
       exe 'py oc_eval("set_log_file ' . g:omegacomplete_log_file . '")'
     endif
