@@ -14,14 +14,6 @@ let g:loaded_omegacomplete = 1
 " buffer contents twice in a row
 let s:just_did_insertenter = 0
 
-" this variable indicates whether client side disambiguation mappings were
-" performed
-let s:performed_client_disambiguate_mappings = 0
-
-" how many <C-p> to issue before <C-n> is issued so pressing ALT+number always
-" goes to that selection
-let s:last_disambiguate_index = -1
-
 " path of log file to write debug output
 " right now the only thing that uses this the stopwatch
 if !exists('g:omegacomplete_log_file')
@@ -50,14 +42,6 @@ endif
 
 if !exists("g:omegacomplete_autocomplete_suffix")
     let g:omegacomplete_autocomplete_suffix="jj"
-endif
-
-if !exists("g:omegacomplete_server_side_disambiguate")
-    let g:omegacomplete_server_side_disambiguate=0
-endif
-
-if !exists("g:omegacomplete_client_side_disambiguate_mappings")
-    let g:omegacomplete_client_side_disambiguate_mappings=0
 endif
 
 if !exists("g:omegacomplete_ignored_buffer_names")
@@ -230,31 +214,6 @@ function <SID>OnCursorMovedI()
     endif
 endfunction
 
-function <SID>PerformDisambiguate(index)
-    let index = str2nr(a:index)
-    if (index == 0)
-        let lndex = 10
-    endif
-
-    if (index > len(g:omegacomplete_server_results))
-        return ''
-    endif
-
-    let keys = ''
-    if (s:last_disambiguate_index > 0)
-        for i in range(s:last_disambiguate_index)
-            let keys = keys . "\<C-p>"
-        endfor
-    endif
-    for i in range(index)
-        let keys = keys . "\<C-n>"
-    endfor
-
-    let s:last_disambiguate_index = index
-
-    return keys
-endfunction
-
 " When we want to sync a buffer in normal mode. This mainly occurs when we
 " are entering a buffer for the first time (i.e. it just opened), or we are
 " switching windows and need it to be synced with the server in case you
@@ -401,8 +360,6 @@ function <SID>UpdateConfig()
     exe 'py oc_eval("config autocomplete_suffix ' .
         \ g:omegacomplete_autocomplete_suffix . '")'
 
-    call <SID>ConfigureDisambiguateMode()
-
     if len(g:omegacomplete_log_file) > 0
       exe 'py oc_eval("set_log_file ' . g:omegacomplete_log_file . '")'
     endif
@@ -410,33 +367,6 @@ endfunction
 
 function <SID>DoTests()
   python oc_eval("do_tests now")
-endfunction
-
-function <SID>ConfigureDisambiguateMode()
-    " configure server
-    exe 'py oc_eval("config server_side_disambiguate ' .
-       \ g:omegacomplete_server_side_disambiguate . '")'
-
-    " perform or remove mappings
-    if (!g:omegacomplete_server_side_disambiguate)
-        if g:omegacomplete_client_side_disambiguate_mappings
-            let s:disambiguate_mode_keys =
-                \ ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9',]
-
-            for key in s:disambiguate_mode_keys
-                exe printf('inoremap <silent> <A-%s> ' .
-                    \ '<C-r>=<SID>PerformDisambiguate(%s)<CR>'
-                    \ , key, key)
-            endfor
-        endif
-    elseif (s:performed_client_disambiguate_mappings)
-        for key in s:disambiguate_mode_keys
-            exe 'iunmap ' . key
-        endfor
-        let s:disambiguate_mode_keys = []
-
-        s:performed_client_disambiguate_mappings = 0
-    endif
 endfunction
 
 " do initialization
