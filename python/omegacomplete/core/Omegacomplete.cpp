@@ -74,6 +74,7 @@ void Omegacomplete::initCommandDispatcher() {
   CONNECT("config", cmdConfig)
   CONNECT("get_autocomplete", cmdGetAutocomplete)
   CONNECT("set_log_file", cmdSetLogFile)
+  CONNECT("set_quick_select_keys", cmdSetQuickSelectKeys)
   CONNECT("start_stopwatch", cmdStartStopwatch)
   CONNECT("stop_stopwatch", cmdStopStopwatch)
   CONNECT("do_tests", cmdDoTests)
@@ -330,6 +331,11 @@ std::string Omegacomplete::cmdSetLogFile(StringPtr argument) {
   return kDefaultResponse;
 }
 
+std::string Omegacomplete::cmdSetQuickSelectKeys(StringPtr argument) {
+  quick_select_keys_ = *argument;
+  return kDefaultResponse;
+}
+
 std::string Omegacomplete::cmdStartStopwatch(StringPtr argument) {
   stopwatch_.Start();
   return kDefaultResponse;
@@ -541,13 +547,13 @@ void Omegacomplete::genericKeywordCompletion(const std::string& line,
   // try to spell check if we have no candidates
   addLevenshteinCorrections(input, final_items);
 
-  // assign quick match number of entries
-  for (size_t i = 0; i < LookupTable::kMaxNumQuickMatch; ++i) {
+  // assign quick select keys to entries
+  for (size_t i = 0; i < quick_select_keys_.size(); ++i) {
     if (i >= final_items->size()) break;
 
     CompleteItem& item = (*final_items)[i];
-    item.Menu =
-        lexical_cast<string>(LookupTable::QuickMatchKey[i]) + " " + item.Menu;
+    std::string key = lexical_cast<std::string>(quick_select_keys_[i]);
+    item.Menu = key + " " + item.Menu;
   }
 
   result += "[";

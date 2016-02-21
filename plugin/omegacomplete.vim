@@ -55,6 +55,9 @@ let s:ignored_buffer_names_set = {}
 if !exists("g:omegacomplete_quick_select")
     let g:omegacomplete_quick_select=1
 endif
+if !exists("g:omegacomplete_quick_select_keys")
+    let g:omegacomplete_quick_select_keys="FJDKSLA"
+endif
 
 " variables to keep track of cursor so infinite completion loop by CursorMovedI is avoided
 let s:last_completed_row = -1
@@ -109,8 +112,10 @@ function s:Init()
     call <SID>UpdateConfig()
 
     if g:omegacomplete_quick_select
-        for i in range(1, 10, 1)
-            let cmd = printf("imap %d \<C-r>=omegacomplete#quick_select(%d)\<CR>", i % 10, i % 10)
+        let n = strlen(g:omegacomplete_quick_select_keys) - 1
+        for i in range(0, n, 1)
+            let key = g:omegacomplete_quick_select_keys[i]
+            let cmd = printf("imap %s \<C-r>=omegacomplete#quick_select('%s', %d)\<CR>", key, key, i+1)
             exe cmd
         endfor
     endif
@@ -362,9 +367,9 @@ function <SID>FlushServerCaches()
     exe 'py oc_eval("flush_caches 1")'
 endfunction
 
-function omegacomplete#quick_select(index)
+function omegacomplete#quick_select(key, index)
     if !pumvisible()
-        return string(a:index)
+        return a:key
     else
         let keys = ""
         for i in range(a:index)
@@ -380,6 +385,7 @@ function <SID>UpdateConfig()
     if len(g:omegacomplete_log_file) > 0
       exe 'py oc_eval("set_log_file ' . g:omegacomplete_log_file . '")'
     endif
+    exe 'py oc_eval("set_quick_select_keys ' . g:omegacomplete_quick_select_keys . '")'
 endfunction
 
 function <SID>DoTests()

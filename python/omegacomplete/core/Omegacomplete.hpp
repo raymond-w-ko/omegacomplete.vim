@@ -74,6 +74,7 @@ class Omegacomplete : public boost::noncopyable {
   std::string cmdConfig(StringPtr argument);
   std::string cmdGetAutocomplete(StringPtr argument);
   std::string cmdSetLogFile(StringPtr argument);
+  std::string cmdSetQuickSelectKeys(StringPtr argument);
   std::string cmdStartStopwatch(StringPtr argument);
   std::string cmdStopStopwatch(StringPtr argument);
   std::string cmdDoTests(StringPtr argument);
@@ -144,6 +145,7 @@ class Omegacomplete : public boost::noncopyable {
 
   Stopwatch stopwatch_;
   std::ofstream log_file_;
+  std::string quick_select_keys_;
 
   TestCases test_cases_;
 };
