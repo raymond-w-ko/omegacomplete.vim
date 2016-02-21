@@ -56,7 +56,7 @@ if !exists("g:omegacomplete_quick_select")
     let g:omegacomplete_quick_select=1
 endif
 if !exists("g:omegacomplete_quick_select_keys")
-    let g:omegacomplete_quick_select_keys="FJDKSLA"
+    let g:omegacomplete_quick_select_keys="1234567890"
 endif
 
 " variables to keep track of cursor so infinite completion loop by CursorMovedI is avoided
