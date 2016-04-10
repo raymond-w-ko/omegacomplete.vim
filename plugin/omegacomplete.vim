@@ -115,7 +115,7 @@ function s:Init()
         let n = strlen(g:omegacomplete_quick_select_keys) - 1
         for i in range(0, n, 1)
             let key = g:omegacomplete_quick_select_keys[i]
-            let cmd = printf("imap %s \<C-r>=omegacomplete#quick_select('%s', %d)\<CR>", key, key, i+1)
+            let cmd = printf("inoremap %s \<C-r>=omegacomplete#quick_select('%s', %d)\<CR>", key, key, i+1)
             exe cmd
         endfor
     endif
