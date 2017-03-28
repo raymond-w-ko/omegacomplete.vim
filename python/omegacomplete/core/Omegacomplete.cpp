@@ -1,9 +1,9 @@
 #include "stdafx.hpp"
 
+#include "Algorithm.hpp"
+#include "LookupTable.hpp"
 #include "Omegacomplete.hpp"
 #include "TagsCollection.hpp"
-#include "LookupTable.hpp"
-#include "Algorithm.hpp"
 #include "TrieNode.hpp"
 
 using namespace std;
@@ -32,7 +32,7 @@ Omegacomplete::Omegacomplete()
     : Words(true),
       io_service_work_(io_service_),
       is_quitting_(0),
-      buffer_contents_follow_(false),
+      buffer_contents_follow_(0),
       prev_input_(3),
       is_corrections_only_(false),
       should_autocomplete_(false),
@@ -98,10 +98,20 @@ const std::string Omegacomplete::Eval(const std::string& request) {
 const std::string Omegacomplete::Eval(const char* request,
                                       const int request_len) {
   if (buffer_contents_follow_) {
-    StringPtr argument =
-        boost::make_shared<string>(request, static_cast<size_t>(request_len));
-
-    return queueBufferContents(argument);
+    int content_mode = buffer_contents_follow_;
+    buffer_contents_follow_ = 0;
+    if (content_mode == 1) {
+      ParseJob job(current_buffer_id_, request, request_len, false);
+      queueParseJob(job);
+    } else if (content_mode == 2) {
+      std::string p(request, request_len);
+      const char* buf =
+          reinterpret_cast<const char*>(lexical_cast<uint64_t>(p));
+      size_t buf_len = strlen(buf);
+      ParseJob job(current_buffer_id_, buf, buf_len, true);
+      queueParseJob(job);
+    }
+    return kDefaultResponse;
   } else {
     // find first space
     int index = -1;
@@ -160,17 +170,7 @@ std::string Omegacomplete::cmdCursorPosition(StringPtr argument) {
 }
 
 std::string Omegacomplete::cmdBufferContentsFollow(StringPtr argument) {
-  buffer_contents_follow_ = true;
-  return kDefaultResponse;
-}
-
-std::string Omegacomplete::queueBufferContents(StringPtr argument) {
-  buffer_contents_follow_ = false;
-  current_contents_ = argument;
-
-  ParseJob job(current_buffer_id_, current_contents_);
-  queueParseJob(job);
-
+  buffer_contents_follow_ = lexical_cast<int>(*argument);
   return kDefaultResponse;
 }
 
@@ -421,7 +421,12 @@ void Omegacomplete::workerThreadLoop() {
     // do the job
     boost::mutex::scoped_lock lock(buffers_mutex_);
     if (!Contains(buffers_, job.BufferNumber)) continue;
-    buffers_[job.BufferNumber].ReplaceContentsWith(job.Contents);
+    StringPtr contents =
+        boost::make_shared<string>(job.Contents, job.ContentsLength);
+    buffers_[job.BufferNumber].ReplaceContentsWith(contents);
+    if (job.NeedFree) {
+      ::free((void*)job.Contents);
+    }
   }
 }
 

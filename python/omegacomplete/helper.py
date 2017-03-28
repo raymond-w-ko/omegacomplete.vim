@@ -22,8 +22,13 @@ def oc_send_current_buffer():
     oc_core_eval("current_iskeyword " + vim.eval("&iskeyword"))
     # this approach takes around 0.8 to 1.8 ms for 3700 - 6751 line file that
     # is 180 to 208 KB, which is acceptable for now
-    oc_core_eval("buffer_contents_follow 1")
-    return oc_core_eval('\n'.join(vim.current.buffer))
+    if hasattr(vim, "copy_buf"):
+        oc_core_eval("buffer_contents_follow 2")
+        p = str(vim.copy_buf())
+        return oc_core_eval(p)
+    else:
+        oc_core_eval("buffer_contents_follow 1")
+        return oc_core_eval('\n'.join(vim.current.buffer))
 
 def oc_prune():
     return oc_core_eval('prune 1')

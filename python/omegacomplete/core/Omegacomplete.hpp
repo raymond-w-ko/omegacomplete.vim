@@ -1,11 +1,11 @@
 #pragma once
 
 #include "Buffer.hpp"
-#include "WordCollection.hpp"
 #include "CompleteItem.hpp"
 #include "Stopwatch.hpp"
 #include "TagsCollection.hpp"
 #include "TestCases.hpp"
+#include "WordCollection.hpp"
 
 class Omegacomplete : public boost::noncopyable {
  public:
@@ -39,14 +39,23 @@ class Omegacomplete : public boost::noncopyable {
   struct ParseJob {
     ParseJob() : BufferNumber(0) {}
 
-    ParseJob(unsigned buffer_number, const StringPtr& contents)
-        : BufferNumber(buffer_number), Contents(contents) {}
+    ParseJob(unsigned buffer_number, const char* contents,
+             size_t contents_length, bool need_free)
+        : BufferNumber(buffer_number),
+          Contents(contents),
+          ContentsLength(contents_length),
+          NeedFree(need_free) {}
 
     ParseJob(const ParseJob& other)
-        : BufferNumber(other.BufferNumber), Contents(other.Contents) {}
+        : BufferNumber(other.BufferNumber),
+          Contents(other.Contents),
+          ContentsLength(other.ContentsLength),
+          NeedFree(other.NeedFree) {}
 
     unsigned BufferNumber;
-    StringPtr Contents;
+    const char* Contents;
+    size_t ContentsLength;
+    bool NeedFree;
   };
 
   void initCommandDispatcher();
@@ -59,7 +68,6 @@ class Omegacomplete : public boost::noncopyable {
   std::string cmdCurrentLine(StringPtr argument);
   std::string cmdCursorPosition(StringPtr argument);
   std::string cmdBufferContentsFollow(StringPtr argument);
-  std::string queueBufferContents(StringPtr argument);
   std::string cmdComplete(StringPtr argument);
   std::string cmdFreeBuffer(StringPtr argument);
   std::string cmdCurrentDirectory(StringPtr argument);
@@ -122,8 +130,7 @@ class Omegacomplete : public boost::noncopyable {
   std::string current_buffer_absolute_path_;
   std::string current_line_;
   FileLocation cursor_pos_;
-  bool buffer_contents_follow_;
-  StringPtr current_contents_;
+  int buffer_contents_follow_;
 
   std::string current_directory_;
   std::vector<std::string> current_tags_;
