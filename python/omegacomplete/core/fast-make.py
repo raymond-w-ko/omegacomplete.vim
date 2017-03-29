@@ -18,7 +18,7 @@ if sys.platform != 'darwin':
     for i in xrange(len(libs)):
       libs[i] = libs[i] + '-mt'
 
-  global_args = ['-std=c++11', '-mtune=native', '-march=native', '-fno-stack-protector', '-fstrict-aliasing', '-O0']
+  global_args = ['-std=c++11', '-mtune=native', '-march=native', '-fno-stack-protector', '-fstrict-aliasing', '-O1']
   if platform.system().startswith("CYGWIN"):
     global_args.append("-D_GNU_SOURCE")
   #global_args = ['-std=c++11', '-fstrict-aliasing', '-O0', '-ggdb']
@@ -35,7 +35,7 @@ if sys.platform != 'darwin':
       extra_link_args = link_args,
       sources = files)
 else:
-  global_args = ['-std=c++11', '-mtune=native', '-march=native', '-fno-stack-protector', '-O0']
+  global_args = ['-std=c++11', '-mtune=native', '-march=native', '-fno-stack-protector', '-O1']
 
   compile_args = ['-Wall', '-Wno-char-subscripts', '-Wno-error=unused-command-line-argument']
   compile_args.extend(global_args)
