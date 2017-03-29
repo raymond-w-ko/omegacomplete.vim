@@ -6,6 +6,12 @@ all:
 	cat *.cpp > all.cpp
 	if hash python2 2>/dev/null; then python2 make.py build; else python make.py build; fi
 	cp build/lib.*/core.* ../omegacomplete
+	
+fast-make:
+	rm -rf build
+	rm -f all.cpp
+	if hash python2 2>/dev/null; then python2 fast-make.py build; else python fast-make.py build; fi
+	cp build/lib.*/core.* ../omegacomplete
 
 mac:
 	rm -rf build
