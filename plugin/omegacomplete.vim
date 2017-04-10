@@ -23,6 +23,7 @@ endif
 " current hilight mode (either normal or corrections)
 let s:current_hi_mode = 'unitialized'
 
+let g:omegacomplete_is_corrections_only=0
 if !exists("g:omegacomplete_normal_hi_cmds")
     let g:omegacomplete_normal_hi_cmds=[
     \ "hi Pmenu guifg=#00ff00 guibg=#003300 gui=none " .
@@ -110,6 +111,7 @@ function s:Init()
     command OmegacompleteDoTests :call <SID>DoTests()
 
     call <SID>UpdateConfig()
+    call s:UpdatePopupMenuColorscheme()
 
     if g:omegacomplete_quick_select
         let n = strlen(g:omegacomplete_quick_select_keys) - 1
