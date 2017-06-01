@@ -17,6 +17,13 @@ def oc_is_disabled():
 def oc_eval(cmd):
     return oc_core_eval(cmd)
 
+def oc_update_config():
+    log_file_path = vim.eval("g:omegacomplete_log_file")
+    if len(log_file_path) > 0:
+        oc_eval("set_log_file " + log_file_path)
+    quick_select_keys = vim.eval("g:omegacomplete_quick_select_keys")
+    oc_eval("set_quick_select_keys " + quick_select_keys)
+
 def oc_send_current_buffer():
     # send iskeyword so we can be smarter on what is considered a word
     oc_core_eval("current_iskeyword " + vim.eval("&iskeyword"))
@@ -71,12 +78,29 @@ def oc_compute_popup_list():
     word = vim.current.line[begin:end]
     oc_server_result = oc_eval('complete ' + word)
     if len(oc_server_result) == 0:
-        vim.command('let g:omegacomplete_server_results=[]')
+        vim.command('let s:completions=[]')
     else:
-        vim.command('let g:omegacomplete_server_results=' + oc_server_result)
+        vim.command('let s:completions=' + oc_server_result)
 
     is_corrections_only = oc_eval("is_corrections_only ?")
     if is_corrections_only == '0':
-        vim.command('let g:omegacomplete_is_corrections_only = 0')
+        vim.command('let s:is_corrections_only = 0')
     else:
-        vim.command('let g:omegacomplete_is_corrections_only = 1')
+        vim.command('let s:is_corrections_only = 1')
+
+def oc_taglist():
+    if oc_core_plugin_load_exception:
+        return
+    # send current directory to server in preparation for sending tags
+    current_directory = vim.eval("getcwd()")
+    oc_eval("current_directory " + current_directory)
+
+    # send current tags we are using to the server
+    current_tags = vim.eval("&tags")
+    oc_eval("taglist_tags " + current_tags)
+
+    expr = vim.eval("a:expr")
+    results = oc_eval("vim_taglist_function " + expr)
+    if len(results) == 0:
+        return
+    vim.command("let l:taglist_results=" + results)

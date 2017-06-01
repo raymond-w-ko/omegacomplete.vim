@@ -2,71 +2,13 @@
 let s:save_cpo = &cpo
 set cpo&vim
 
-" script load guard
-if exists('g:loaded_omegacomplete')
-    finish
-endif
-let g:loaded_omegacomplete = 1
-
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" config options
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" this variable acts a guard to prevent needlessly sending the same
-" buffer contents twice in a row
-let s:just_did_insertenter = 0
-
-" path of log file to write debug output
-" right now the only thing that uses this the stopwatch
-if !exists('g:omegacomplete_log_file')
-  let g:omegacomplete_log_file = ''
-endif
-
-" current hilight mode (either normal or corrections)
-let s:current_hi_mode = 'unitialized'
-
-let g:omegacomplete_is_corrections_only=0
-if !exists("g:omegacomplete_normal_hi_cmds")
-    let g:omegacomplete_normal_hi_cmds=[
-    \ "hi Pmenu guifg=#00ff00 guibg=#003300 gui=none " .
-             \ "ctermbg=022 ctermfg=046 cterm=none",
-    \ "hi PmenuSel guifg=#003300 guibg=#00ff00 gui=none " .
-                \ "ctermbg=046 ctermfg=022 cterm=none",
-        \ ]
-endif
-if !exists("g:omegacomplete_corrections_hi_cmds")
-    let g:omegacomplete_corrections_hi_cmds=[
-    \ "hi Pmenu guifg=#ffff00 guibg=#333300 gui=none " .
-              \"ctermbg=058 ctermfg=226 cterm=none",
-    \ "hi PmenuSel guifg=#333300 guibg=#ffff00 gui=none " .
-                \ "ctermbg=226 ctermfg=058 cterm=none",
-        \ ]
-endif
-
-if !exists("g:omegacomplete_ignored_buffer_names")
-  let g:omegacomplete_ignored_buffer_names = [
-      \ '__Scratch__',
-      \ '__Gundo__',
-      \ 'GoToFile',
-      \ 'ControlP',
-      \ '__Gundo_Preview__',
-      \ ]
-endif
-
-if !exists("g:omegacomplete_quick_select")
-    let g:omegacomplete_quick_select=1
-endif
-if !exists("g:omegacomplete_quick_select_keys")
-    let g:omegacomplete_quick_select_keys="1234567890"
-endif
-
-let g:omegacomplete_server_results = []
-let g:omegacomplete_filesize_limit = 1024 * 1024
-let g:omegacomplete_completion_delay = 256
-let g:omegacomplete_auto_close_doc = 1
-
+let s:current_hi_mode = v:null
+let s:is_corrections_only=0
 let s:char_inserted = v:false
-let s:ignored_buffer_names_set = {}
+let s:buffer_name_blacklist = {}
 let s:completion_begin_col = -1
+let s:completions = []
+let s:status = {"pos": [], "nr": -1, "input": "", "ft": ""}
 
 function omegacomplete#completefunc(findstart, base)
   " on first invocation a:findstart is 1 and base is empty
@@ -77,13 +19,13 @@ function omegacomplete#completefunc(findstart, base)
       return s:completion_begin_col
     endif
   else
-    call s:UpdatePopupMenuColorscheme()
-    return {'words' : g:omegacomplete_server_results, 'refresh' : 'always'}
+    call s:update_popup_menu_color_scheme()
+    return {'words' : s:completions, 'refresh' : 'always'}
   endif
 endfunction
 
 function s:consistent()
-  return v:true
+  return s:status.nr == bufnr('') && s:status.pos == getcurpos() && s:status.ft == &ft
 endfunction
 
 function omegacomplete#trigger()
@@ -97,7 +39,7 @@ function omegacomplete#trigger()
       python oc_compute_popup_list()
     endif
 
-    if len(g:omegacomplete_server_results) == 0
+    if len(s:completions) == 0
       let is_empty = v:true
     endif
   endif
@@ -117,11 +59,14 @@ function omegacomplete#do_complete()
 endfunction
 
 function s:reset()
-  let g:omegacomplete_server_results = []
+  let s:completions = []
+  " TODO stop jobs here
 endfunction
 
 function s:complete(...)
   call s:reset()
+  if !s:consistent() | return | endif
+
   call omegacomplete#do_complete()
 endfunction
 
@@ -132,7 +77,7 @@ function s:skip()
   let skip = 0
       \ || (buftype ==? "quickfix")
       \ || (fsize == -2) || fsize > g:omegacomplete_filesize_limit
-      \ || has_key(s:ignored_buffer_names_set, name)
+      \ || has_key(s:buffer_name_blacklist, name)
   return skip || !s:char_inserted
 endfunction
 
@@ -144,6 +89,10 @@ function s:on_text_change()
     call timer_stop(s:timer)
   endif
 
+  let x = col(".") - 2
+  let inputted = x >= 0 ? getline(".")[:x] : ""
+
+  let s:status = {'input': inputted, 'pos': getcurpos(), 'nr': bufnr(''), 'ft': &ft}
   let s:timer = timer_start(g:omegacomplete_completion_delay, function("s:complete"))
 endfunction
 
@@ -156,15 +105,15 @@ endfunction
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 function s:setup_commands()
   command OmegacompleteFlushServerCaches :call <SID>FlushServerCaches()
-  command OmegacompleteUpdateConfig :call <SID>UpdateConfig()
-  command OmegacompleteDoTests :call <SID>DoTests()
+  command OmegacompleteUpdateConfig :call <SID>update_config()
+  command OmegacompleteDoTests :call <SID>do_tests()
 endfunction
 
 function s:setup_keybinds()
   noremap  <silent> <Plug>OmegacompleteTrigger <nop>
   inoremap <silent> <Plug>OmegacompleteTrigger <c-x><c-u><c-p>
 
-  if g:omegacomplete_quick_select
+  if g:omegacomplete_enable_quick_select
     let n = strlen(g:omegacomplete_quick_select_keys) - 1
     for i in range(0, n, 1)
       let key = g:omegacomplete_quick_select_keys[i]
@@ -186,38 +135,33 @@ function s:setup_events()
 
     " whenever you delete a buffer, delete it from the server so that it
     " doesn't cause any outdated completions to be offered
-    autocmd BufDelete * call <SID>OnBufDelete()
+    autocmd BufDelete * call <SID>on_buf_delete()
 
     " whenever we leave a current buffer, send it to the server to it can
     " decide if we have to update it. this keeps the state of the buffer
     " in sync so we can offer accurate completions when we switch to
     " another buffer
-    autocmd BufLeave * call <SID>OnBufLeave()
+    autocmd BufLeave * call <SID>on_buf_leave()
 
     " just before you enter insert mode, send the contents of the buffer
     " so that the server has a chance to synchronize before we start
     " offering completions
-    autocmd InsertEnter * call <SID>OnInsertEnter()
+    autocmd InsertEnter * call <SID>on_insert_enter()
 
     " if we are idle, then we take this change to prune unused global
     " words set and trie. there are a variety of things which we consider
     " 'idle'
-    autocmd CursorHold * call <SID>OnIdle()
-    autocmd CursorHoldI * call <SID>OnIdle()
-    " autocmd CursorHoldI * call <SID>SyncCurrentBuffer()
-    autocmd FocusLost * call <SID>OnIdle()
-    autocmd BufWritePre * call <SID>OnIdle()
+    autocmd CursorHold * call <SID>on_idle()
+    autocmd CursorHoldI * call <SID>on_idle()
+    autocmd CursorHoldI * call <SID>sync_current_buffer()
+    autocmd FocusLost * call <SID>on_idle()
+    autocmd BufWritePre * call <SID>on_idle()
 
     " when we open a file, send it contents to the server since we usually
     " have some time before we need to start editing the file (usually you
     " have to mentally parse where you are and/or go to the correct
     " location before entering insert mode)
-    autocmd BufReadPost * call <SID>OnBufReadPost()
-
-    " when the cursor has moved without the popup menu, we take this time
-    " to send the buffer to the the completion engine. hopefully this
-    " avoid the fragmented word problem.
-    " autocmd CursorMovedI * call <SID>OnCursorMovedI()
+    autocmd BufReadPost * call <SID>on_buf_read_post()
   augroup END
 endfunction
 
@@ -229,16 +173,16 @@ function omegacomplete#enable()
   endif
 
   " convert list to set
-  for buffer_name in g:omegacomplete_ignored_buffer_names
-    let s:ignored_buffer_names_set[buffer_name] = 1
+  for buffer_name in g:omegacomplete_buffer_name_blacklist
+    let s:buffer_name_blacklist[buffer_name] = 1
   endfor
 
   call s:setup_commands()
   call s:setup_keybinds()
   call s:setup_events()
 
-  call <SID>UpdateConfig()
-  call s:UpdatePopupMenuColorscheme()
+  call <SID>update_config()
+  call s:update_popup_menu_color_scheme()
 endfunction
 
 function omegacomplete#disable()
@@ -268,13 +212,58 @@ EOF
     return result
 endfunction
 
-function s:UpdatePopupMenuColorscheme()
-  if g:omegacomplete_is_corrections_only && s:current_hi_mode != 'corrections'
+" When we don't want a buffer loaded in memory in VIM, we can 'delete' the
+" buffer. This must be reflected on the server, otherwise we get completions
+" that we no longer want.
+function <SID>on_buf_delete()
+  let buffer_number = expand('<abuf>')
+  exe 'py oc_eval("free_buffer ' . buffer_number . '")'
+
+  call <SID>prune()
+endfunction
+
+" Not that expensive, just checks for dead buffers and kills them if they are
+" not in the set of alive buffers
+function <SID>prune_buffers()
+    py oc_prune_buffers()
+endfunction
+
+" Fairly expensive as it has to rebuild it's list of words and shuffle them.
+function <SID>prune()
+    py oc_prune()
+endfunction
+
+" When we are leaving buffer (either by opening another buffer, switching
+" tabs, or moving to another split), then we have to inform send the contents
+" of the buffer to the server since we could have changed the contents of the
+" buffer while in normal though commands like 'dd'
+function <SID>on_buf_leave()
+    call <SID>sync_current_buffer()
+endfunction
+
+function <SID>on_insert_enter()
+  call <SID>sync_current_buffer()
+  call <SID>prune_buffers()
+endfunction
+
+function <SID>on_idle()
+  call <SID>prune_buffers()
+  call <SID>prune()
+endfunction
+
+function <SID>on_buf_read_post()
+    call <SID>sync_current_buffer()
+endfunction
+
+""""""""""""""""""""""""""""""""""""""""
+
+function s:update_popup_menu_color_scheme()
+  if s:is_corrections_only && s:current_hi_mode != 'corrections'
     for cmd in g:omegacomplete_corrections_hi_cmds
       exe cmd
     endfor
     let s:current_hi_mode = 'corrections'
-  elseif !g:omegacomplete_is_corrections_only && s:current_hi_mode != 'normal'
+  elseif !s:is_corrections_only && s:current_hi_mode != 'normal'
     for cmd in g:omegacomplete_normal_hi_cmds
       exe cmd
     endfor
@@ -286,13 +275,13 @@ endfunction
 " are entering a buffer for the first time (i.e. it just opened), or we are
 " switching windows and need it to be synced with the server in case you
 " added or deleted lines
-function <SID>SyncCurrentBuffer()
+function <SID>sync_current_buffer()
   let buffer_number = bufnr('%')
   let buffer_name = bufname('%')
   let absolute_path = escape(expand('%:p'), '\')
 
   " don't process these special buffers from other plugins
-  if has_key(s:ignored_buffer_names_set, buffer_name)
+  if has_key(s:buffer_name_blacklist, buffer_name)
     return
   endif
 
@@ -301,83 +290,18 @@ function <SID>SyncCurrentBuffer()
   python oc_send_current_buffer()
 endfunction
 
-" When we don't want a buffer loaded in memory in VIM, we can 'delete' the
-" buffer. This must be reflected on the server, otherwise we get completions
-" that we no longer want.
-function <SID>OnBufDelete()
-  let buffer_number = expand('<abuf>')
-  exe 'py oc_eval("free_buffer ' . buffer_number . '")'
-
-  call <SID>Prune()
+function! <SID>update_config()
+  py oc_update_config()
 endfunction
 
-" Not that expensive, just checks for dead buffers and kills them if they are
-" not in the set of alive buffers
-function <SID>PruneBuffers()
-    py oc_prune_buffers()
+function! <SID>do_tests()
+  python oc_eval("do_tests now")
 endfunction
 
-" Fairly expensive as it has to rebuild it's list of words and shuffle them.
-function <SID>Prune()
-    py oc_prune()
-endfunction
-
-" When we are leaving buffer (either by opening another buffer, switching
-" tabs, or moving to another split), then we have to inform send the contents
-" of the buffer to the server since we could have changed the contents of the
-" buffer while in normal though commands like 'dd'
-function <SID>OnBufLeave()
-    call <SID>SyncCurrentBuffer()
-endfunction
-
-function <SID>OnInsertEnter()
-  let s:just_did_insertenter = 1
-  call <SID>SyncCurrentBuffer()
-  call <SID>PruneBuffers()
-endfunction
-
-function <SID>OnIdle()
-  call <SID>PruneBuffers()
-  call <SID>Prune()
-endfunction
-
-function <SID>OnBufReadPost()
-    call <SID>SyncCurrentBuffer()
-endfunction
-
-" substitute for VIM's taglist() function
-function omegacomplete#taglist(expr)
-  " send current directory to server in preparation for sending tags
-  exe 'py current_directory = vim.eval("getcwd()")'
-  exe 'py oc_eval("current_directory " + current_directory)'
-
-  " send current tags we are using to the server
-  exe 'py current_tags = vim.eval("&tags")'
-  exe 'py oc_eval("taglist_tags " + current_tags)'
-
-  " check if plugin has disabled itself because of connection problems
-  " we can only do this only after 1 oc_eval() has occurred
-  let is_oc_disabled=""
-  exe 'py vim.command("let is_oc_disabled = " + oc_disable_check())'
-  if (is_oc_disabled == "1")
-    return []
-  endif
-
-  exe 'py oc_server_result = oc_eval("vim_taglist_function " + "' . a:expr . '")'
-
-  " check to make sure we get something
-  python << EOF
-  if len(oc_server_result) == 0:
-    vim.command("return []")
-EOF
-
-  " try to show popup menu
-  exe 'py vim.command("let taglist_results=" + oc_server_result)'
-
-  return taglist_results
-endfunction
-
-function omegacomplete#UseFirstEntryOfPopup()
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" public functions
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+function omegacomplete#use_first_entry_of_popup()
   if pumvisible()
     return "\<C-n>\<C-y>"
   else
@@ -389,7 +313,7 @@ function <SID>FlushServerCaches()
   exe 'py oc_eval("flush_caches 1")'
 endfunction
 
-function omegacomplete#quick_select(key, index)
+function! omegacomplete#quick_select(key, index)
   if !pumvisible()
     return a:key
   else
@@ -402,19 +326,14 @@ function omegacomplete#quick_select(key, index)
   endif
 endfunction
 
-" send config options to the C++ portion
-function <SID>UpdateConfig()
-  if len(g:omegacomplete_log_file) > 0
-    exe 'py oc_eval("set_log_file ' . g:omegacomplete_log_file . '")'
-  endif
-  exe 'py oc_eval("set_quick_select_keys ' . g:omegacomplete_quick_select_keys . '")'
+" a substitute for VIM's taglist() function
+function omegacomplete#taglist(expr)
+  let l:taglist_results = []
+  py oc_taglist()
+  return l:taglist_results
 endfunction
 
-function <SID>DoTests()
-  python oc_eval("do_tests now")
-endfunction
-
-call omegacomplete#enable()
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
