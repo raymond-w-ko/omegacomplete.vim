@@ -63,10 +63,13 @@ def oc_update_current_buffer_info():
 
 def oc_get_word_begin_index():
     oc_word_begin_index = oc_eval('get_word_begin_index current_buffer')
-    vim.command('let g:omegacomplete_word_begin_index=' + oc_word_begin_index)
+    vim.command('let s:completion_begin_col=' + oc_word_begin_index)
 
 def oc_compute_popup_list():
-    oc_server_result = oc_eval('complete ' + vim.eval('a:base'))
+    begin = int(vim.eval("s:completion_begin_col"))
+    end = vim.current.window.cursor[1]
+    word = vim.current.line[begin:end]
+    oc_server_result = oc_eval('complete ' + word)
     if len(oc_server_result) == 0:
         vim.command('let g:omegacomplete_server_results=[]')
     else:
