@@ -1,3 +1,4 @@
+" vim: et ts=2 sts=2 sw=2
 let s:save_cpo = &cpo
 set cpo&vim
 
