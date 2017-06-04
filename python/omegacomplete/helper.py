@@ -106,7 +106,7 @@ def oc_compute_popup_list():
 
 def oc_free_current_buffer():
     buffer_number = vim.eval("expand('<abuf>')")
-    oc_core_eval("free_buffer " + str(buffer_name))
+    oc_core_eval("free_buffer " + str(buffer_number))
 
 def oc_flush_caches():
     oc_core_eval("flush_caches 1")
