@@ -1,5 +1,6 @@
 __pycache__
 *.pyc
+*.vs
 *.suo
 *.user
 *.sdf
@@ -8,6 +9,8 @@ __pycache__
 *.gch
 *.ncb
 *.exe
+*.dll
+*.pyd
 
 /python/omegacomplete/core/build/
 /python/omegacomplete/core/all.cpp
