@@ -1,28 +1,35 @@
+PYTHON := python3
+
 .PHONY: all mac speedtest trienodetest
 
-all:
+all: normal
+
+########################################
+
+clean:
 	rm -rf build
 	rm -f all.cpp
+
+concat:
 	cat *.cpp > all.cpp
-	if hash python2 2>/dev/null; then python2 make.py build; else python make.py build; fi
-	cp build/lib.*/core.* ../omegacomplete
 	
-fast-make:
-	rm -rf build
-	rm -f all.cpp
-	if hash python2 2>/dev/null; then python2 fast-make.py build; else python fast-make.py build; fi
+########################################
+
+normal: clean concat
+	$(PYTHON) make.py build
 	cp build/lib.*/core.* ../omegacomplete
 
-mac:
-	rm -rf build
-	rm -f all.cpp
-	cat *.cpp > all.cpp
-	CFLAGS=-Wunused-command-line-argument-hard-error-in-future python make.py build
+fast-make: clean concat
+	$(PYTHON) fast-make.py build
 	cp build/lib.*/core.* ../omegacomplete
 
-speedtest:
-	rm -f all.cpp
-	cat *.cpp > all.cpp
+mac: clean concat
+	CFLAGS=-Wunused-command-line-argument-hard-error-in-future $(PYTHON) make.py build
+	cp build/lib.*/core.* ../omegacomplete
+
+########################################
+
+speedtest: clean concat
 	gcc \
 		-std=c++11 \
 		-pthread -fno-strict-aliasing -pipe -fstack-protector --param=ssp-buffer-size=4 -DNDEBUG -fPIC -I/usr/include/python2.7 \
@@ -33,9 +40,7 @@ speedtest:
 		-L/usr/lib -lboost_thread -lboost_system -lboost_chrono -lboost_filesystem -lpython2.7 -lstdc++
 	./speedtest
 
-trienodetest:
-	rm -f all.cpp
-	cat *.cpp > all.cpp
+trienodetest: clean concat
 	gcc \
 		-std=c++11 \
 		-pthread -fno-strict-aliasing -pipe -fstack-protector --param=ssp-buffer-size=4 -DNDEBUG -fPIC -I/usr/include/python2.7 \
