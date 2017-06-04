@@ -1,11 +1,19 @@
+import vim
+import os
+import sys
+script_dir = os.path.join(vim.eval("s:python_dir"), "omegacomplete")
+sys.path.append(script_dir)
+
 # these are probably global to the VIM Python interpreter, so prefix with "oc_"
 # to prevent conflicts with any other Python plugins
 
 oc_core_plugin_load_exception = False
 try:
     from omegacomplete.core import eval as oc_core_eval
+    vim.command("let s:loaded_core_module=1")
 except Exception as e:
     oc_core_plugin_load_exception = True
+    vim.command("let s:loaded_core_module=0")
 
 def oc_is_disabled():
     global oc_core_plugin_load_exception
@@ -25,15 +33,23 @@ def oc_update_config():
     oc_eval("set_quick_select_keys " + quick_select_keys)
 
 def oc_send_current_buffer():
+    b = vim.current.buffer
+    path = vim.eval("escape(expand('%:p'), '\')")
+
+    oc_core_eval("current_buffer_id " + str(b.number))
+    oc_core_eval("current_buffer_absolute_path " + path)
     # send iskeyword so we can be smarter on what is considered a word
     oc_core_eval("current_iskeyword " + vim.eval("&iskeyword"))
-    # this approach takes around 0.8 to 1.8 ms for 3700 - 6751 line file that
-    # is 180 to 208 KB, which is acceptable for now
     if hasattr(vim, "copy_buf"):
+        # this copy_buf() function is found only in my Vim fork
+        # it generate a copy of the current buffer in C and returns a raw pointer
+        # github.com/raymond-w-ko/vim
         oc_core_eval("buffer_contents_follow 2")
         p = str(vim.copy_buf())
         return oc_core_eval(p)
     else:
+        # this approach takes around 0.8 to 1.8 ms for 3700 - 6751 line file that
+        # is 180 to 208 KB, which is acceptable for now
         oc_core_eval("buffer_contents_follow 1")
         return oc_core_eval('\n'.join(vim.current.buffer))
 
@@ -87,6 +103,16 @@ def oc_compute_popup_list():
         vim.command('let s:is_corrections_only = 0')
     else:
         vim.command('let s:is_corrections_only = 1')
+
+def oc_free_current_buffer():
+    buffer_number = vim.eval("expand('<abuf>')")
+    oc_core_eval("free_buffer " + str(buffer_name))
+
+def oc_flush_caches():
+    oc_core_eval("flush_caches 1")
+
+def oc_do_tests():
+    oc_core_eval("do_tests now")
 
 def oc_taglist():
     if oc_core_plugin_load_exception:

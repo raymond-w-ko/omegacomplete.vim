@@ -2,6 +2,15 @@
 let s:save_cpo = &cpo
 set cpo&vim
 
+if has("python")
+  let s:_py = ":python"
+  let s:_pyfile = ":pyfile"
+elseif has("python3")
+  let s:_py = ":python3"
+  let s:_pyfile = ":py3file"
+endif
+
+let s:python_dir = fnamemodify(expand('<sfile>'), ':p:h:h') . "/python"
 let s:current_hi_mode = v:null
 let s:is_corrections_only=0
 let s:char_inserted = v:false
@@ -33,10 +42,10 @@ function omegacomplete#trigger()
   if !s:consistent()
     let is_empty = v:true
   else
-    python oc_update_current_buffer_info()
-    python oc_get_word_begin_index()
+    exe s:_py "oc_update_current_buffer_info()"
+    exe s:_py "oc_get_word_begin_index()"
     if s:completion_begin_col >= 0
-      python oc_compute_popup_list()
+      exe s:_py "oc_compute_popup_list()"
     endif
 
     if len(s:completions) == 0
@@ -168,7 +177,7 @@ endfunction
 function omegacomplete#enable()
   " load Python <---> C++ plugin
   if !s:load_core_plugin()
-    echom "failed to load omegacomplete core plugin"
+    echom "failed to load omegacomplete C++ core plugin"
     return
   endif
 
@@ -190,47 +199,27 @@ function omegacomplete#disable()
 endfunction
 
 function s:load_core_plugin()
-    python << EOF
-import vim
-import os
-
-# find omegacomplete directory
-path_list = vim.eval('&runtimepath').split(',')
-omegacomplete_path = ""
-for path in path_list:
-    candidate_path = path + '/python/omegacomplete'
-    if (os.path.exists(candidate_path)):
-        omegacomplete_path = candidate_path
-
-sys.path.append(omegacomplete_path)
-
-# load omegacomplete python functions
-client_path = omegacomplete_path + '/helper.py'
-exec(compile(open(client_path).read(), client_path, 'exec'))
-vim.command('let result = ' + oc_is_disabled())
-EOF
-    return result
+  exe s:_pyfile s:python_dir."/omegacomplete/helper.py"
+  return s:loaded_core_module
 endfunction
 
 " When we don't want a buffer loaded in memory in VIM, we can 'delete' the
 " buffer. This must be reflected on the server, otherwise we get completions
 " that we no longer want.
 function <SID>on_buf_delete()
-  let buffer_number = expand('<abuf>')
-  exe 'py oc_eval("free_buffer ' . buffer_number . '")'
-
+  exe s:_py "oc_free_current_buffer()"
   call <SID>prune()
 endfunction
 
 " Not that expensive, just checks for dead buffers and kills them if they are
 " not in the set of alive buffers
 function <SID>prune_buffers()
-    py oc_prune_buffers()
+    exe s:_py "oc_prune_buffers()"
 endfunction
 
 " Fairly expensive as it has to rebuild it's list of words and shuffle them.
 function <SID>prune()
-    py oc_prune()
+    exe s:_py "oc_prune()"
 endfunction
 
 " When we are leaving buffer (either by opening another buffer, switching
@@ -276,26 +265,21 @@ endfunction
 " switching windows and need it to be synced with the server in case you
 " added or deleted lines
 function <SID>sync_current_buffer()
-  let buffer_number = bufnr('%')
-  let buffer_name = bufname('%')
-  let absolute_path = escape(expand('%:p'), '\')
-
   " don't process these special buffers from other plugins
+  let buffer_name = bufname('%')
   if has_key(s:buffer_name_blacklist, buffer_name)
     return
   endif
 
-  exe 'py oc_eval("current_buffer_id ' . buffer_number . '")'
-  exe 'py oc_eval("current_buffer_absolute_path ' . absolute_path . '")'
-  python oc_send_current_buffer()
+  exe s:_py "oc_send_current_buffer()"
 endfunction
 
 function! <SID>update_config()
-  py oc_update_config()
+  exe s:_py "oc_update_config()"
 endfunction
 
 function! <SID>do_tests()
-  python oc_eval("do_tests now")
+  exe s:_py "oc_do_tests()"
 endfunction
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -310,7 +294,7 @@ function omegacomplete#use_first_entry_of_popup()
 endfunction
 
 function <SID>FlushServerCaches()
-  exe 'py oc_eval("flush_caches 1")'
+  exe s:_py "oc_flush_caches()"
 endfunction
 
 function! omegacomplete#quick_select(key, index)
@@ -329,7 +313,7 @@ endfunction
 " a substitute for VIM's taglist() function
 function omegacomplete#taglist(expr)
   let l:taglist_results = []
-  py oc_taglist()
+  exe s:_py "oc_taglist()"
   return l:taglist_results
 endfunction
 

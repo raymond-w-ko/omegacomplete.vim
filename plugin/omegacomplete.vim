@@ -10,7 +10,7 @@ endfunction
 
 function! s:has_features()
 	return
-      \ ((has('python')) && has('job') && has('timers') && has('lambda'))
+      \ ((has("python") || has("python3")) && has("job") && has("timers") && has("lambda"))
       \ || has('nvim')
 endfunction
 
@@ -19,7 +19,7 @@ if exists("g:loaded_omegacomplete_plugin")
   finish
 elseif !s:has_features()
   echohl WarningMsg
-  echomsg "Omegacomplete requires vim compiled with python and has features `job`, `timers`, and `lambda`"
+  echomsg "Omegacomplete requires vim compiled with python or python3 and has features `job`, `timers`, and `lambda`"
   echohl None
   call s:restore_cpo()
   finish
