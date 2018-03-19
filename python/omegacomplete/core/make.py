@@ -39,10 +39,7 @@ else:
 
   module1 = Extension(
       'core',
-      include_dirs = ['/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7',
-                      '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7/',
-                      '/usr/local/include',
-                      ],
+      include_dirs = ['/usr/local/include'],
       library_dirs = ['/usr/local/lib'],
       libraries = ['boost_thread-mt', 'boost_system-mt', 'boost_chrono-mt'],
       extra_compile_args = compile_args,
