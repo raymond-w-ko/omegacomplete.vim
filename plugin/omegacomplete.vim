@@ -28,15 +28,15 @@ let g:loaded_omegacomplete_plugin = 1
 
 let s:default_normal_highlight = [
     \ "hi Pmenu guifg=#00ff00 guibg=#003300 gui=none " .
-    \          "ctermbg=022 ctermfg=046 cterm=none",
+    \          "ctermbg=22 ctermfg=46 term=none cterm=none",
     \ "hi PmenuSel guifg=#003300 guibg=#00ff00 gui=none " .
-    \             "ctermbg=046 ctermfg=022 cterm=none",
+    \             "ctermbg=46 ctermfg=22 term=none cterm=none",
     \ ]
 let s:default_corrections_highlight = [
     \ "hi Pmenu guifg=#ffff00 guibg=#333300 gui=none " .
-    \          "ctermbg=058 ctermfg=226 cterm=none",
+    \          "ctermbg=058 ctermfg=226 term=none cterm=none",
     \ "hi PmenuSel guifg=#333300 guibg=#ffff00 gui=none " .
-    \             "ctermbg=226 ctermfg=058 cterm=none",
+    \             "ctermbg=226 ctermfg=058 term=none cterm=none",
     \ ]
 
 let s:default_buffer_name_blacklist = [
