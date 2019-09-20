@@ -78,7 +78,7 @@ let g:omegacomplete_filesize_limit =
 
 " time delay before popping up completion menu (in milliseconds)
 let g:omegacomplete_completion_delay =
-    \ get(g:, "omegacomplete_completion_delay", 256)
+    \ get(g:, "omegacomplete_completion_delay", 333)
 
 " auto-close preview window when popup closes (not used currently)
 let g:omegacomplete_auto_close_doc = get(g:, "omegacomplete_auto_close_doc", 1)
