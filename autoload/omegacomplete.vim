@@ -156,6 +156,8 @@ function s:setup_events()
     " so that the server has a chance to synchronize before we start
     " offering completions
     autocmd InsertEnter * call <SID>on_insert_enter()
+    " also update colorscheme again in case you play with :syntax on/off
+    autocmd InsertEnter * call s:update_popup_menu_color_scheme()
 
     " if we are idle, then we take this change to prune unused global
     " words set and trie. there are a variety of things which we consider
