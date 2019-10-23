@@ -1,9 +1,7 @@
 #include "stdafx.hpp"
 #include "Omegacomplete.hpp"
 
-#ifdef _WIN32
-#define HAVE_ROUND
-#endif
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
 static Omegacomplete* omegacomplete = NULL;
@@ -23,7 +21,7 @@ static PyObject* eval(PyObject* self, PyObject* args) {
   (void)self;
 
   const char* input;
-  int len;
+  Py_ssize_clean_t len;
   if (!PyArg_ParseTuple(args, "s#", &input, &len)) {
     return NULL;
   }
@@ -35,7 +33,7 @@ static PyObject* eval(PyObject* self, PyObject* args) {
   }
 #endif
 
-  const std::string& result = omegacomplete->Eval(input, len);
+  const std::string& result = omegacomplete->Eval(input, static_cast<int>(len));
   return Py_BuildValue("s", result.c_str());
 }
 
