@@ -29,7 +29,9 @@ function omegacomplete#completefunc(findstart, base)
     endif
   else
     call s:update_popup_menu_color_scheme()
-    return {'words' : s:completions, 'refresh' : 'always'}
+    return {
+        \ 'words' : s:completions,
+        \ 'refresh' : 'always'}
   endif
 endfunction
 
@@ -59,7 +61,9 @@ function omegacomplete#trigger()
   setlocal completeopt-=longest
   setlocal completeopt+=menuone
   setlocal completeopt-=menu
+  setlocal completeopt+=popup
   setlocal completeopt+=noselect
+  setlocal completepopup=height:10,width:60,align:item,border:on
   call feedkeys("\<Plug>OmegacompleteTrigger")
 endfunction
 
