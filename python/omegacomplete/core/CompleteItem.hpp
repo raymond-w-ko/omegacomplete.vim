@@ -10,7 +10,7 @@ struct CompleteItem {
   String Word;
 
   // how it will look like
-  String Abbr;
+  /* String Abbr; */
 
   // extra text after Word or Abbr
   String Menu;
@@ -69,7 +69,7 @@ struct CompleteItem {
   CompleteItem(const CompleteItem& other)
       : Score(other.Score),
         Word(other.Word),
-        Abbr(other.Abbr),
+        /* Abbr(other.Abbr), */
         Menu(other.Menu),
         // Info(other.Info),
         // Kind(other.Kind),
@@ -92,11 +92,11 @@ struct CompleteItem {
     else if (result > 0)
       return false;
 
-    result = Abbr.compare(other.Abbr);
-    if (result < 0)
-      return true;
-    else if (result > 0)
-      return false;
+    /* result = Abbr.compare(other.Abbr); */
+    /* if (result < 0) */
+    /*   return true; */
+    /* else if (result > 0) */
+    /*   return false; */
 
     result = Menu.compare(other.Menu);
     if (result < 0)
@@ -108,22 +108,22 @@ struct CompleteItem {
   }
 
   bool operator==(const CompleteItem& other) const {
-    return Score == other.Score && Word == other.Word && Abbr == other.Abbr &&
-           Menu == other.Menu;
+    return Score == other.Score && Word == other.Word && Menu == other.Menu;
   }
 
-  std::string SerializeToVimDict() const {
+  std::string SerializeToVimDict(size_t index) const {
     if (Word.empty()) return "";
 
     std::string result;
     result += "{";
 
     result += boost::str(boost::format("'word':'%s',") % Word);
+    result += boost::str(boost::format("'abbr':'%d %s',") % (index + 1) % Word);
 
-    if (!Abbr.empty())
-      result += boost::str(boost::format("'abbr':'%s',") % Abbr);
-    if (!Menu.empty())
-      result += boost::str(boost::format("'menu':'%s',") % Menu);
+    /* if (!Abbr.empty()) */
+    /*   result += boost::str(boost::format("'abbr':'%s',") % Abbr); */
+    /* if (!Menu.empty()) */
+    /*   result += boost::str(boost::format("'menu':'%s',") % Menu); */
     // if (!Info.empty())
     // result += boost::str(boost::format("'info':'%s',") % Info);
     // if (!Kind.empty())
