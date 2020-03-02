@@ -12,12 +12,13 @@ endif
 
 let s:python_dir = fnamemodify(expand('<sfile>'), ':p:h:h') . "/python"
 let s:current_hi_mode = v:null
-let s:is_corrections_only=0
+let s:is_corrections_only = 0
 let s:char_inserted = v:false
 let s:buffer_name_blacklist = {}
 let s:completion_begin_col = -1
 let s:completions = []
 let s:status = {"pos": [], "nr": -1, "input": "", "ft": ""}
+let s:pause_completion = 0
 
 function omegacomplete#completefunc(findstart, base)
   " on first invocation a:findstart is 1 and base is empty
@@ -101,6 +102,9 @@ function s:on_text_change()
   if exists("s:timer")
     call timer_stop(s:timer)
   endif
+  if s:pause_completion
+    return
+  endif
 
   let x = col(".") - 2
   let inputted = x >= 0 ? getline(".")[:x] : ""
@@ -120,6 +124,15 @@ function s:setup_commands()
   command OmegacompleteFlushServerCaches :call <SID>FlushServerCaches()
   command OmegacompleteUpdateConfig :call <SID>update_config()
   command OmegacompleteDoTests :call <SID>do_tests()
+endfunction
+
+function omegacomplete#toggle_pause_completion()
+  if s:pause_completion
+    let s:pause_completion = 0
+  else
+    let s:pause_completion = 1
+  endif
+  return ''
 endfunction
 
 function s:setup_keybinds()
